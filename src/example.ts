@@ -1,9 +1,6 @@
-import * as CrdpClient from 'crdpClient'
 
 type WSSocketClient = any;
-type SocketClient = CrdpClient.IDebugger & CrdpClient.IConsole & WSSocketClient;
+//type SocketClient = CrdpClient.IDebugger & CrdpClient.IConsole & WSSocketClient;
 
-let socketClient: SocketClient;
-
-socketClient.
+//let socketClient: SocketClient;
 

@@ -1,8 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
-const destFilePath = `${__dirname}/../src/crdpClient.d.ts`
-const moduleName = path.basename(destFilePath, ".d.ts")
+const destFilePath = `${__dirname}/../src/crdpClient.ts`
+const moduleName = path.basename(destFilePath, ".ts")
 const jsProtocol = JSON.parse(fs.readFileSync(`${__dirname}/js_protocol.json`))
 const browserProtocol = JSON.parse(fs.readFileSync(`${__dirname}/browser_protocol.json`))
 const protocolDomains = jsProtocol.domains.concat(browserProtocol.domains)
@@ -25,14 +25,14 @@ const emitLine = (str = "") => {
     emit(`${str}\n`)
 }
 
-const emitOpenBlock = (str) => {
-    emitLine(`${str}{`)
+const emitOpenBlock = (str, openChar = ' {') => {
+    emitLine(`${str}${openChar}`)
     numIndents++
 }
 
-const emitCloseBlock = () => {
+const emitCloseBlock = (closeChar = '}') => {
     numIndents--
-    emitLine(`}`)
+    emitLine(closeChar)
 }
 
 const emitHeaderComments = () => {
@@ -44,7 +44,7 @@ const emitHeaderComments = () => {
 
 const emitModule = (moduleName, domains) => {
     emitHeaderComments()
-    emitOpenBlock(`declare module '${moduleName}'`)
+    emitOpenBlock(`export module ${toTitleCase(moduleName)}`)
     domains.forEach(emitDomain)
     emitCloseBlock()
 }
@@ -53,13 +53,15 @@ const emitDomain = (domain) => {
     const domainName = toTitleCase(domain.domain)
     emitLine()    
     emitDescription(domain.description)
-    emitOpenBlock(`module ${domainName}`)
+    emitOpenBlock(`export module ${domainName}`)
     domain.types ? domain.types.forEach(emitType) : null
     const commandSignatures = domain.commands ? domain.commands.map(c => emitCommand(c, domainName)) : []
     const eventSignatures = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
+    emitNames(commandSignatures, "CommandNames")
+    emitNames(eventSignatures, "EventNames")
     emitCloseBlock()
     emitLine()
-    emitOpenBlock(`interface I${domainName}`)
+    emitOpenBlock(`export interface I${domainName}`)
     commandSignatures.forEach(emitSignature)   
     eventSignatures.forEach(emitSignature)   
     emitCloseBlock()
@@ -88,7 +90,7 @@ const emitProperty = (prop) => {
 
 const emitInterface = (interfaceName, props, emitNewLine = true) => {
     emitNewLine ? emitLine() : null
-    emitOpenBlock(`interface ${interfaceName}`)
+    emitOpenBlock(`export interface ${interfaceName}`)
     props ? props.forEach(emitProperty) : emitLine('[key: string]: string;')
     emitCloseBlock()
     return interfaceName
@@ -101,7 +103,7 @@ const emitType = (type) => {
     if (type.type === "object") {
         emitInterface(type.id, type.properties, false)
     } else {
-        emitLine(`type ${type.id} = ${getPropertyType(type)};`)
+        emitLine(`export type ${type.id} = ${getPropertyType(type)};`)
     }
 }
 
@@ -111,7 +113,8 @@ const emitCommand = (command, domain) => {
     const titleCase = toTitleCase(command.name)
     const requestParams = command.parameters ? `params: ${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : ''
     const responseType = `Promise<${command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : 'void' }>`
-    return { 
+    return {
+        name: command.name, 
         description: command.description, 
         signature: `${command.name}(${requestParams}): ${responseType};`
     }
@@ -120,7 +123,8 @@ const emitCommand = (command, domain) => {
 const emitEvent = (event, domain) => {
     const titleCase = toTitleCase(event.name)
     const eventParams = event.parameters ? `event: ${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
-    return { 
+    return {
+        name: event.name, 
         description: event.description, 
         signature: `on${titleCase}(handler: (${eventParams}) => void);`
     }
@@ -129,6 +133,13 @@ const emitEvent = (event, domain) => {
 const emitSignature = ({description, signature}) => {
     emitDescription(description)
     emitLine(signature)
+}
+
+const emitNames = (signatures, arrayName) => {
+    emitLine()
+    emitOpenBlock(`export const ${arrayName} = `, '[')
+    signatures.forEach(s => emitLine(`'${s.name}',`))
+    emitCloseBlock(']')
 }
 
 emitModule(moduleName, protocolDomains)
