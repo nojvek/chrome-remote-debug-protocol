@@ -1,8 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
-const destFilePath = `${__dirname}/../src/crdpApi.ts`
-const moduleName = path.basename(destFilePath, path.extname(destFilePath))
+const destFilePath = `${__dirname}/../src/crdpClient.d.ts`
+const moduleName = path.basename(destFilePath, ".d.ts")
 const jsProtocol = JSON.parse(fs.readFileSync(`${__dirname}/js_protocol.json`))
 const browserProtocol = JSON.parse(fs.readFileSync(`${__dirname}/browser_protocol.json`))
 const protocolDomains = jsProtocol.domains.concat(browserProtocol.domains)
@@ -22,17 +22,17 @@ const emitIndent = () => {
 
 const emitLine = (str = "") => {
     emitIndent()
-    emit(str + "\n")
+    emit(`${str}\n`)
 }
 
 const emitOpenBlock = (str) => {
-    emitLine(str + " {")
+    emitLine(`${str}{`)
     numIndents++
 }
 
 const emitCloseBlock = () => {
     numIndents--
-    emitLine("}")
+    emitLine(`}`)
 }
 
 const emitHeaderComments = () => {
@@ -45,88 +45,91 @@ const emitHeaderComments = () => {
 const emitModule = (moduleName, domains) => {
     emitHeaderComments()
     emitOpenBlock(`declare module '${moduleName}'`)
-    emitGlobalTypedefs()
     domains.forEach(emitDomain)
     emitCloseBlock()
 }
 
 const emitDomain = (domain) => {
+    const domainName = toTitleCase(domain.domain)
+    emitLine()    
     emitDescription(domain.description)
-    emitOpenBlock(`namespace ${domain.domain}`)
+    emitOpenBlock(`module ${domainName}`)
     domain.types ? domain.types.forEach(emitType) : null
-    domain.commands ? domain.commands.forEach(emitCommand) : null
-    domain.events ? domain.events.forEach(emitEvent) : null
+    const commandSignatures = domain.commands ? domain.commands.map(c => emitCommand(c, domainName)) : []
+    const eventSignatures = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
+    emitCloseBlock()
+    emitLine()
+    emitOpenBlock(`interface I${domainName}`)
+    commandSignatures.forEach(emitSignature)   
+    eventSignatures.forEach(emitSignature)   
     emitCloseBlock()
 }
 
-const emitGlobalTypedefs = () => {
-    emitLine()
-    emitLine(`type integer = number;`)
-    emitLine(`type object = any;`)
-}
+const formatDescription = (description) => `/** ${description.replace(/<code>(.*)<\/code>/g, "'$1'")} */`
 
 const emitDescription = (description) => {
-    emitLine()
-    description ? emitLine(`/** ${description} */`) : null
+    description ? emitLine(formatDescription(description)) : null
 }
 
-const getPropertyStr = (prop) => {
-    let propStr = `${prop.name}${prop.optional ? '?' : ''}: `
+const getPropertyType = (prop)  => { 
+    if (prop.$ref) return prop.$ref
+    else if (prop.type == 'array') return `${getPropertyType(prop.items)}[]`
+    else if (prop.type == 'integer') return `number`
+    else if (prop.type == 'object') return `any`
+    else if (prop.type == 'string' && prop.enum) return prop.enum.map(v => `'${v}'`).join(' | ')
 
-    if (prop.$ref) propStr += prop.$ref
-    else if (prop.type == 'array') propStr += `${prop.items.$ref || prop.items.type}[]`
-    else propStr += prop.type
-
-    return propStr;
+    return prop.type
 }
 
-const emitTypeProperty = (prop) => {
+const emitProperty = (prop) => {
     emitDescription(prop.description)
-    emitLine(getPropertyStr(prop) + ";")
+    emitLine(`${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)};`)
+}
+
+const emitInterface = (interfaceName, props, emitNewLine = true) => {
+    emitNewLine ? emitLine() : null
+    emitOpenBlock(`interface ${interfaceName}`)
+    props ? props.forEach(emitProperty) : emitLine('[key: string]: string;')
+    emitCloseBlock()
+    return interfaceName
 }
 
 const emitType = (type) => {
+    emitLine()
     emitDescription(type.description)
 
     if (type.type === "object") {
-        emitOpenBlock(`interface ${type.id}`)
-        type.properties ? type.properties.forEach(emitTypeProperty) : emitLine('[key: string]: string;')
-        emitCloseBlock()
-    } else if (type.type === "array") {
-        emitLine(`type ${type.id} = ${type.items.type || type.items.$ref}[];`)
+        emitInterface(type.id, type.properties, false)
     } else {
-        emitLine(`type ${type.id} = ${type.type};`)
+        emitLine(`type ${type.id} = ${getPropertyType(type)};`)
     }
 }
 
-const emitCommand = (command) => {
-    emitLine()    
-    if (command.description || command.parameters) {
-        emitLine(`/**`)
-        command.description ? emitLine(` * ${command.description}`) : null
-        command.parameters ? command.parameters.forEach(p => emitLine(` * @param ${p.name} - ${p.description || ''}`)) : null
-        emitLine(` */`)
-    }
+const toTitleCase = (str) => str[0].toUpperCase() + str.substr(1)
 
-    const params = command.parameters
-    const parametersStr = params ? params.map(p => getPropertyStr(p)).join(", ") : ''
-    emitLine(`function ${command.name}(${parametersStr});`)
+const emitCommand = (command, domain) => {
+    const titleCase = toTitleCase(command.name)
+    const requestParams = command.parameters ? `params: ${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : ''
+    const responseType = `Promise<${command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : 'void' }>`
+    return { 
+        description: command.description, 
+        signature: `${command.name}(${requestParams}): ${responseType};`
+    }
 }
 
-const emitEvent = (event) => {
-    // Add on prefix for events
-    const funcName = `on${event.name[0].toUpperCase()}${event.name.substr(1)}`
-    emitLine()    
-    if (event.description || event.parameters) {
-        emitLine(`/**`)
-        event.description ? emitLine(` * ${event.description}`) : null
-        event.parameters ? event.parameters.forEach(p => emitLine(` * @param ${p.name} - ${p.description || ''}`)) : null
-        emitLine(` */`)
+const emitEvent = (event, domain) => {
+    const titleCase = toTitleCase(event.name)
+    const eventParams = event.parameters ? `event: ${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
+    return { 
+        description: event.description, 
+        signature: `on${titleCase}(handler: (${eventParams}) => void);`
     }
+}
 
-    const params = event.parameters
-    const parametersStr = params ? params.map(p => getPropertyStr(p)).join(", ") : ''
-    emitLine(`function ${funcName}(handler: (${parametersStr}) => void);`)}
+const emitSignature = ({description, signature}) => {
+    emitDescription(description)
+    emitLine(signature)
+}
 
 emitModule(moduleName, protocolDomains)
 fs.writeFileSync(destFilePath, emitStr, 'utf-8')

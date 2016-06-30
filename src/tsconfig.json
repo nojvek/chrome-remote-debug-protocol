@@ -10,6 +10,6 @@
     },
     "include": [
         "../typings/index.d.ts",
-        "*.ts"
+        "*.d.ts"
     ]
 }
