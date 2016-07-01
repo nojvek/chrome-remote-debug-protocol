@@ -1,18 +1,11 @@
+/// <reference path="../typings/index.d.ts" />
+
 import Crdi from './crdi'
+import * as fs from 'fs'
 
-type WSSocketClient = any;
-//type SocketClient = CrdpClient.IDebugger & CrdpClient.IConsole & WSSocketClient;
+let client: Crdi.DebuggerAdapter;
 
-//let socketClient: SocketClient;
-
-interface Domain {
-    CommandNames: string[]
-    EventNames: string[]
-}
-
-const createClient = (domains: Domain[]): any => {
-
-}
-
-const wsClient = <Crdi.RuntimeClient & Crdi.DebuggerClient>createClient([Crdi.Runtime, Crdi.Debugger])
+client.onEnable(() => new Promise((resolve, reject) => {
+    resolve()
+}))
 

@@ -8,9 +8,5 @@
         "declaration": true,
         "outDir": "../out",
         "moduleResolution": "node"
-    },
-    "include": [
-        "../typings/index.d.ts",
-        "*.ts"
-    ]
+    }
 }

@@ -46,10 +46,19 @@ const emitModule = (moduleName, domains) => {
     moduleName = toTitleCase(moduleName)
     emitHeaderComments()
     emitOpenBlock(`export module ${moduleName}`)
+    emitGlobalTypeDefs()
+    emitInterface(`${moduleName}Client`, domains.map(d => getDomainDef(d.domain, 'Client')))
+    emitInterface(`${moduleName}Adapter`, domains.map(d => getDomainDef(d.domain, 'Adapter')))
     domains.forEach(emitDomain)
     emitCloseBlock()
     emitLine()
     emitLine(`export default ${moduleName};`)
+}
+
+const emitGlobalTypeDefs = () => {
+    emitLine()
+    emitLine(`export type integer = number`)
+    emitLine(`export type PromiseOrNot<T> = T | Promise<T>;`)
 }
 
 const emitDomain = (domain) => {
@@ -58,21 +67,18 @@ const emitDomain = (domain) => {
     emitDescription(domain.description)
     emitOpenBlock(`export module ${domainName}`)
     domain.types ? domain.types.forEach(emitType) : null
-    const commandSignatures = domain.commands ? domain.commands.map(c => emitCommand(c, domainName)) : []
-    const eventSignatures = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
-    emitNames(commandSignatures, "CommandNames")
-    emitNames(eventSignatures, "EventNames")
+    const commandDefs = domain.commands ? domain.commands.map(c => emitCommand(c, domainName)) : []
+    const eventDefs = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
+    const functionDefs = commandDefs.concat(eventDefs)
+    emitNames(commandDefs, "CommandNames")
+    emitNames(eventDefs, "EventNames")
     emitCloseBlock()
-    emitLine()
-    // TODO use emitInterface
-    emitOpenBlock(`export interface ${domainName}Client`)
-    commandSignatures.forEach(emitSignature)
-    eventSignatures.forEach(emitSignature)
-    emitCloseBlock()
-    emitOpenBlock(`export interface ${domainName}Server`)
-    commandSignatures.forEach(emitSignature)
-    eventSignatures.forEach(emitSignature)
-    emitCloseBlock()
+    emitInterface(`${domainName}Client`, functionDefs.map(s => s.client))
+    emitInterface(`${domainName}Adapter`, functionDefs.map(s => s.adapter))
+}
+
+getDomainDef = (domainName, type) => {
+    return {name: domainName, $ref: `${domainName}${type}`}
 }
 
 const formatDescription = (description) => `/** ${description.replace(/<code>(.*)<\/code>/g, "'$1'")} */`
@@ -81,20 +87,20 @@ const emitDescription = (description) => {
     description ? emitLine(formatDescription(description)) : null
 }
 
+const getPropertyDef = (prop) => `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
+
 const getPropertyType = (prop)  => {
     if (prop.$ref) return prop.$ref
     else if (prop.type == 'array') return `${getPropertyType(prop.items)}[]`
-    else if (prop.type == 'integer') return `number`
     else if (prop.type == 'object') return `any`
-    else if (prop.type == 'function') return `any`
+    else if (prop.type == 'function') return `(${prop.accepts.map(getPropertyDef).join(', ')}) => ${prop.returns || 'void'}`
     else if (prop.type == 'string' && prop.enum) return prop.enum.map(v => `'${v}'`).join(' | ')
-
     return prop.type
 }
 
 const emitProperty = (prop) => {
     emitDescription(prop.description)
-    emitLine(`${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)};`)
+    emitLine(`${getPropertyDef(prop)};`)
 }
 
 const emitInterface = (interfaceName, props, emitNewLine = true) => {
@@ -120,23 +126,60 @@ const toTitleCase = (str) => str[0].toUpperCase() + str.substr(1)
 
 const emitCommand = (command, domain) => {
     const titleCase = toTitleCase(command.name)
-    const requestParams = command.parameters ? `params: ${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : ''
-    const responseType = `Promise<${command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : 'void' }>`
-    return {
-        name: command.name,
+    const requestType = command.parameters ? `${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : null
+    const responseType = command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : null
+    const requestArgDef = requestType ? [{name: 'request', $ref: requestType}] : []
+    const clientDef = {
+        type: 'function',
         description: command.description,
-        signature: `${command.name}(${requestParams}): ${responseType};`
+        name: command.name,
+        accepts: requestArgDef,
+        returns: `Promise<${responseType || '{}'}>`
     }
+
+    const commandDef = {
+        name: command.name,
+        client: clientDef,
+        adapter: Object.assign({}, clientDef, {
+            name: `on${titleCase}`,
+            accepts: [{
+                name: "handler",
+                type: "function",
+                accepts: requestArgDef,
+                returns: `PromiseOrNot<${responseType || '{}'}>`
+            }],
+            returns: null
+        })
+    }
+
+    return commandDef
 }
 
 const emitEvent = (event, domain) => {
     const titleCase = toTitleCase(event.name)
-    const eventParams = event.parameters ? `event: ${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
-    return {
-        name: event.name,
+    const eventType = event.parameters ? `${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
+    const eventArgDef = eventType ? [{name: 'event', $ref: eventType}] : []
+    const clientDef = {
+        type: 'function',
         description: event.description,
-        signature: `on${titleCase}(handler: (${eventParams}) => void);`
+        name: `on${titleCase}`,
+        accepts: [{
+            name: "handler",
+            type: "function",
+            accepts: eventArgDef
+        }],
     }
+    
+    const eventDef = {
+        name: event.name,
+        client: clientDef,
+        adapter: Object.assign({}, clientDef, {
+            name: `fire${titleCase}`,
+            accepts: eventArgDef
+        })
+    }
+
+    return eventDef
 }
 
 const emitSignature = ({description, signature}) => {
