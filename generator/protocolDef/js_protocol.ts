@@ -1,3 +1,5 @@
+import {IProtocol} from '../protocol'
+export const protocol: IProtocol =
 {
     "version": { "major": "1", "minor": "1" },
     "domains": [{

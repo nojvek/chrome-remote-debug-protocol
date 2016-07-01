@@ -2,12 +2,25 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import {Crdi} from './protocol'
+import {IProtocol, Protocol} from './protocol'
+// Rather than reading json as JSON.parse, we import a typed object
+import {protocol as jsProtocol} from './protocolDef/js_protocol'
+import {protocol as browserProtocol} from './protocolDef/browser_protocol'
 
-const destFilePath = `${__dirname}/../src/crdi.ts`
+// This is used to hold adapter and client interface definitions
+interface ClientAdapterDef {
+    name: string
+    client: FunctionType
+    adapter: FunctionType
+}
+
+interface FunctionType extends Protocol.Type {
+    accepts?: FunctionType[]    
+    returns?: FunctionType
+}
+
+const destFilePath = `${__dirname}/../../src/crdi.ts`
 const moduleName = path.basename(destFilePath, ".ts")
-const jsProtocol: Crdi.IProtocol = JSON.parse(fs.readFileSync(`${__dirname}/json/js_protocol.json`, 'utf-8'))
-const browserProtocol: Crdi.IProtocol = JSON.parse(fs.readFileSync(`${__dirname}/json/browser_protocol.json`, 'utf-8'))
 const protocolDomains = jsProtocol.domains.concat(browserProtocol.domains)
 
 let numIndents = 0
@@ -28,7 +41,7 @@ const emitLine = (str = "") => {
     emit(`${str}\n`)
 }
 
-const emitOpenBlock = (str, openChar = ' {') => {
+const emitOpenBlock = (str: string, openChar = ' {') => {
     emitLine(`${str}${openChar}`)
     numIndents++
 }
@@ -45,7 +58,7 @@ const emitHeaderComments = () => {
     emitLine()
 }
 
-const emitModule = (moduleName, domains) => {
+const emitModule = (moduleName:string, domains: Protocol.Domain[]) => {
     moduleName = toTitleCase(moduleName)
     emitHeaderComments()
     emitOpenBlock(`export module ${moduleName}`)
@@ -64,7 +77,7 @@ const emitGlobalTypeDefs = () => {
     emitLine(`export type PromiseOrNot<T> = T | Promise<T>;`)
 }
 
-const emitDomain = (domain) => {
+const emitDomain = (domain: Protocol.Domain) => {
     const domainName = toTitleCase(domain.domain)
     emitLine()
     emitDescription(domain.description)
@@ -80,33 +93,33 @@ const emitDomain = (domain) => {
     emitInterface(`${domainName}Adapter`, functionDefs.map(s => s.adapter))
 }
 
-const getDomainDef = (domainName, type) => {
-    return {name: domainName, $ref: `${domainName}${type}`}
+const getDomainDef = (domainName: string, $ref:string ) => {
+    return {name: domainName, $ref: `${domainName}${$ref}`}
 }
 
-const formatDescription = (description) => `/** ${description.replace(/<code>(.*)<\/code>/g, "'$1'")} */`
+const formatDescription = (description: string) => `/** ${description.replace(/<code>(.*)<\/code>/g, "'$1'")} */`
 
-const emitDescription = (description) => {
+const emitDescription = (description: string) => {
     description ? emitLine(formatDescription(description)) : null
 }
 
-const getPropertyDef = (prop) => `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
+const getPropertyDef = (prop: Protocol.Type) => `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
 
-const getPropertyType = (prop)  => {
+const getPropertyType = (prop: Protocol.Type): string  => {
     if (prop.$ref) return prop.$ref
     else if (prop.type == 'array') return `${getPropertyType(prop.items)}[]`
     else if (prop.type == 'object') return `any`
-    else if (prop.type == 'function') return `(${prop.accepts.map(getPropertyDef).join(', ')}) => ${prop.returns || 'void'}`
+    else if (prop.type == 'function') return `(${(<FunctionType>prop).accepts.map(getPropertyDef).join(', ')}) => ${(<FunctionType>prop).returns || 'void'}`
     else if (prop.type == 'string' && prop.enum) return prop.enum.map(v => `'${v}'`).join(' | ')
     return prop.type
 }
 
-const emitProperty = (prop) => {
+const emitProperty = (prop: Protocol.Type) => {
     emitDescription(prop.description)
     emitLine(`${getPropertyDef(prop)};`)
 }
 
-const emitInterface = (interfaceName, props, emitNewLine = true): string => {
+const emitInterface = (interfaceName: string, props: Protocol.Type[], emitNewLine = true): string => {
     emitNewLine ? emitLine() : null
     emitOpenBlock(`export interface ${interfaceName}`)
     props ? props.forEach(emitProperty) : emitLine('[key: string]: string;')
@@ -114,7 +127,7 @@ const emitInterface = (interfaceName, props, emitNewLine = true): string => {
     return interfaceName
 }
 
-const emitType = (type) => {
+const emitType = (type: Protocol.Type) => {
     emitLine()
     emitDescription(type.description)
 
@@ -125,14 +138,14 @@ const emitType = (type) => {
     }
 }
 
-const toTitleCase = (str) => str[0].toUpperCase() + str.substr(1)
+const toTitleCase = (str: string) => str[0].toUpperCase() + str.substr(1)
 
-const emitCommand = (command, domain) => {
+const emitCommand = (command: Protocol.Command, domain: string): ClientAdapterDef => {
     const titleCase = toTitleCase(command.name)
     const requestType = command.parameters ? `${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : null
     const responseType = command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : null
     const requestArgDef = requestType ? [{name: 'request', $ref: requestType}] : []
-    const clientDef = {
+    const clientDef: FunctionType = {
         type: 'function',
         description: command.description,
         name: command.name,
@@ -140,7 +153,7 @@ const emitCommand = (command, domain) => {
         returns: `Promise<${responseType || '{}'}>`
     }
 
-    const commandDef = {
+    const commandDef: ClientAdapterDef = {
         name: command.name,
         client: clientDef,
         adapter: Object.assign({}, clientDef, {
@@ -158,11 +171,11 @@ const emitCommand = (command, domain) => {
     return commandDef
 }
 
-const emitEvent = (event, domain) => {
+const emitEvent = (event: Protocol.Event, domain: string): ClientAdapterDef => {
     const titleCase = toTitleCase(event.name)
     const eventType = event.parameters ? `${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
     const eventArgDef = eventType ? [{name: 'event', $ref: eventType}] : []
-    const clientDef = {
+    const clientDef: FunctionType = {
         type: 'function',
         description: event.description,
         name: `on${titleCase}`,
@@ -173,7 +186,7 @@ const emitEvent = (event, domain) => {
         }],
     }
     
-    const eventDef = {
+    const eventDef: ClientAdapterDef = {
         name: event.name,
         client: clientDef,
         adapter: Object.assign({}, clientDef, {
@@ -185,17 +198,13 @@ const emitEvent = (event, domain) => {
     return eventDef
 }
 
-const emitSignature = ({description, signature}) => {
-    emitDescription(description)
-    emitLine(signature)
-}
-
-const emitNames = (signatures, arrayName) => {
+const emitNames = (names: ClientAdapterDef[], arrayName: string) => {
     emitLine()
-    emitOpenBlock(`export const ${arrayName} = `, '[')
-    signatures.forEach(s => emitLine(`'${s.name}',`))
+    emitOpenBlock(`export const ${arrayName}: string[] = `, '[')
+    names.forEach(s => emitLine(`'${s.name}',`))
     emitCloseBlock(']')
 }
 
+/// Main
 emitModule(moduleName, protocolDomains)
 fs.writeFileSync(destFilePath, emitStr, 'utf-8')
