@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const destFilePath = `${__dirname}/../src/crdpClient.ts`
+const destFilePath = `${__dirname}/../src/crdi.ts`
 const moduleName = path.basename(destFilePath, ".ts")
 const jsProtocol = JSON.parse(fs.readFileSync(`${__dirname}/js_protocol.json`))
 const browserProtocol = JSON.parse(fs.readFileSync(`${__dirname}/browser_protocol.json`))
@@ -43,15 +43,18 @@ const emitHeaderComments = () => {
 }
 
 const emitModule = (moduleName, domains) => {
+    moduleName = toTitleCase(moduleName)
     emitHeaderComments()
-    emitOpenBlock(`export module ${toTitleCase(moduleName)}`)
+    emitOpenBlock(`export module ${moduleName}`)
     domains.forEach(emitDomain)
     emitCloseBlock()
+    emitLine()
+    emitLine(`export default ${moduleName};`)
 }
 
 const emitDomain = (domain) => {
     const domainName = toTitleCase(domain.domain)
-    emitLine()    
+    emitLine()
     emitDescription(domain.description)
     emitOpenBlock(`export module ${domainName}`)
     domain.types ? domain.types.forEach(emitType) : null
@@ -61,9 +64,14 @@ const emitDomain = (domain) => {
     emitNames(eventSignatures, "EventNames")
     emitCloseBlock()
     emitLine()
-    emitOpenBlock(`export interface I${domainName}`)
-    commandSignatures.forEach(emitSignature)   
-    eventSignatures.forEach(emitSignature)   
+    // TODO use emitInterface
+    emitOpenBlock(`export interface ${domainName}Client`)
+    commandSignatures.forEach(emitSignature)
+    eventSignatures.forEach(emitSignature)
+    emitCloseBlock()
+    emitOpenBlock(`export interface ${domainName}Server`)
+    commandSignatures.forEach(emitSignature)
+    eventSignatures.forEach(emitSignature)
     emitCloseBlock()
 }
 
@@ -73,11 +81,12 @@ const emitDescription = (description) => {
     description ? emitLine(formatDescription(description)) : null
 }
 
-const getPropertyType = (prop)  => { 
+const getPropertyType = (prop)  => {
     if (prop.$ref) return prop.$ref
     else if (prop.type == 'array') return `${getPropertyType(prop.items)}[]`
     else if (prop.type == 'integer') return `number`
     else if (prop.type == 'object') return `any`
+    else if (prop.type == 'function') return `any`
     else if (prop.type == 'string' && prop.enum) return prop.enum.map(v => `'${v}'`).join(' | ')
 
     return prop.type
@@ -114,8 +123,8 @@ const emitCommand = (command, domain) => {
     const requestParams = command.parameters ? `params: ${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : ''
     const responseType = `Promise<${command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : 'void' }>`
     return {
-        name: command.name, 
-        description: command.description, 
+        name: command.name,
+        description: command.description,
         signature: `${command.name}(${requestParams}): ${responseType};`
     }
 }
@@ -124,8 +133,8 @@ const emitEvent = (event, domain) => {
     const titleCase = toTitleCase(event.name)
     const eventParams = event.parameters ? `event: ${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
     return {
-        name: event.name, 
-        description: event.description, 
+        name: event.name,
+        description: event.description,
         signature: `on${titleCase}(handler: (${eventParams}) => void);`
     }
 }
