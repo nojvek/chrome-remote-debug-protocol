@@ -8,23 +8,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nojvek/chrome-debug-protocol-tsdgen.git"
+    "url": "git+ssh://git@github.com/nojvek/chrome-remote-debug-interface"
   },
   "keywords": [
     "chrome",
     "debug",
     "protocol",
+    "interface",
     "json",
-    "to",
+    "generator",
     "typescript",
-    "definition",
-    "tsd",
+    "crdi",
+    "adapter",
+    "client",
     "converter"
   ],
   "author": "nojvek",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nojvek/chrome-debug-protocol-tsdgen/issues"
+    "url": "https://github.com/nojvek/chrome-remote-debug-interface/issues"
   },
-  "homepage": "https://github.com/nojvek/chrome-debug-protocol-tsdgen#readme"
+  "homepage": "https://github.com/nojvek/chrome-remote-debug-interface#readme",
+  "dependencies": {
+    "ws": "^1.1.1"
+  }
 }

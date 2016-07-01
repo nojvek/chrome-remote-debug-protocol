@@ -2,6 +2,7 @@
 
 import Crdi from './crdi'
 import * as fs from 'fs'
+import * as ws from 'ws'
 
 let client: Crdi.DebuggerAdapter;
 
