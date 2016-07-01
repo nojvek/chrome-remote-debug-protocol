@@ -8,4 +8,3 @@ let client: Crdi.DebuggerAdapter;
 client.onEnable(() => new Promise((resolve, reject) => {
     resolve()
 }))
-
