@@ -6,10 +6,11 @@
         "sourceMap": true,
         "target": "ES6",
         "declaration": true,
-        "outDir": "../out"
+        "outDir": "../out",
+        "moduleResolution": "node"
     },
     "include": [
         "../typings/index.d.ts",
-        "*.d.ts"
+        "*.ts"
     ]
 }
