@@ -767,78 +767,6 @@ export const protocol: IProtocol =
         ]
     },
     {
-        "domain": "Console",
-        "description": "Console domain defines methods and events for interaction with the JavaScript console. Console collects messages created by means of the <a href='http://getfirebug.com/wiki/index.php/Console_API'>JavaScript Console API</a>. One needs to enable this domain using <code>enable</code> command in order to start receiving the console messages. Browser collects messages issued while console domain is not enabled as well and reports them using <code>messageAdded</code> notification upon enabling.",
-        "dependencies": ["Runtime"],
-        "types": [
-            {
-                "id": "Timestamp",
-                "type": "number",
-                "description": "Number of seconds since epoch.",
-                "hidden": true
-            },
-            {
-                "id": "ConsoleMessage",
-                "type": "object",
-                "description": "Console message.",
-                "properties": [
-                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "security", "other", "deprecation"], "description": "Message source." },
-                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info", "revokedError"], "description": "Message severity." },
-                    { "name": "text", "type": "string", "description": "Message text." },
-                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Console message type." },
-                    { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
-                    { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
-                    { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
-                    { "name": "column", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message." },
-                    { "name": "repeatCount", "type": "integer", "optional": true, "description": "Repeat count for repeated messages." },
-                    { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Message parameters in case of the formatted message." },
-                    { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
-                    { "name": "networkRequestId", "$ref": "Network.RequestId", "optional": true, "description": "Identifier of the network request associated with this message." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
-                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true },
-                    { "name": "messageId", "type": "integer", "hidden": true, "optional": true, "description": "Message id." },
-                    { "name": "relatedMessageId", "type": "integer", "hidden": true, "optional": true, "description": "Related message id." }
-                ]
-            }
-        ],
-        "commands": [
-            {
-                "name": "enable",
-                "description": "Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification."
-            },
-            {
-                "name": "disable",
-                "description": "Disables console domain, prevents further console messages from being reported to the client."
-            },
-            {
-                "name": "clearMessages",
-                "description": "Clears console messages collected in the browser."
-            }
-        ],
-        "events": [
-            {
-                "name": "messageAdded",
-                "parameters": [
-                    { "name": "message", "$ref": "ConsoleMessage", "description": "Console message that has been added." }
-                ],
-                "description": "Issued when new console message is added."
-            },
-            {
-                "name": "messageRepeatCountUpdated",
-                "parameters": [
-                    { "name": "count", "type": "integer", "description": "New repeat count value." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
-                ],
-                "description": "Is not issued. Will be gone in the future versions of the protocol.",
-                "deprecated": true
-            },
-            {
-                "name": "messagesCleared",
-                "description": "Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation."
-            }
-        ]
-    },
-    {
         "domain": "Security",
         "description": "Security",
         "hidden": true,
@@ -929,6 +857,12 @@ export const protocol: IProtocol =
                 "description": "Request / response headers as keys / values of JSON object."
             },
             {
+                "id": "ConnectionType",
+                "type": "string",
+                "enum": ["none", "cellular2g", "cellular3g", "cellular4g", "bluetooth", "ethernet", "wifi", "wimax", "other"],
+                "description": "Loading priority of a resource request."
+            },
+            {
                 "id": "ResourceTiming",
                 "type": "object",
                 "description": "Timing information for the request.",
@@ -1002,6 +936,21 @@ export const protocol: IProtocol =
                 ]
             },
             {
+                "id": "SignedCertificateTimestamp",
+                "type" : "object",
+                "description": "Details of a signed certificate timestamp (SCT).",
+                "properties": [
+                    { "name": "status", "type": "string", "description": "Validation status." },
+                    { "name": "origin", "type": "string", "description": "Origin." },
+                    { "name": "logDescription", "type": "string", "description": "Log name / description." },
+                    { "name": "logId", "type": "string", "description": "Log ID." },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Issuance date." },
+                    { "name": "hashAlgorithm", "type": "string", "description": "Hash algorithm." },
+                    { "name": "signatureAlgorithm", "type": "string", "description": "Signature algorithm." },
+                    { "name": "signatureData", "type": "string", "description": "Signature data." }
+                ]
+            },
+            {
                 "id": "SecurityDetails",
                 "type": "object",
                 "description": "Security details about a request.",
@@ -1011,7 +960,8 @@ export const protocol: IProtocol =
                     { "name": "cipher", "type": "string", "description": "Cipher name." },
                     { "name": "mac", "type": "string", "optional": true, "description": "TLS MAC. Note that AEAD ciphers do not have separate MACs." },
                     { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate ID value." },
-                    { "name": "certificateValidationDetails", "$ref": "CertificateValidationDetails", "optional": true, "description": "Validation details for the request's certficate." }
+                    { "name": "certificateValidationDetails", "$ref": "CertificateValidationDetails", "optional": true, "description": "Validation details for the request's certficate." },
+                    { "name": "signedCertificateTimestampList", "type": "array", "items": { "$ref": "SignedCertificateTimestamp" }, "description": "List of signed certificate timestamps (SCTs)." }
                 ]
             },
             {
@@ -1254,10 +1204,11 @@ export const protocol: IProtocol =
                     { "name": "offline", "type": "boolean", "description": "True to emulate internet disconnection." },
                     { "name": "latency", "type": "number", "description": "Additional latency (ms)." },
                     { "name": "downloadThroughput", "type": "number", "description": "Maximal aggregated download throughput." },
-                    { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." }
+                    { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." },
+                    { "name": "connectionType", "$ref": "ConnectionType", "optional": true, "description": "Connection type if known."}
                 ],
                 "hidden": true,
-                "handlers": ["browser"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "setCacheDisabled",
@@ -1406,7 +1357,8 @@ export const protocol: IProtocol =
                 "description": "Fired upon WebSocket creation.",
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
-                    { "name": "url", "type": "string", "description": "WebSocket request URL." }
+                    { "name": "url", "type": "string", "description": "WebSocket request URL." },
+                    { "name": "initiator", "$ref": "Initiator", "optional": true, "description": "Request initiator." }
                 ],
                 "hidden": true
             },
@@ -4195,7 +4147,6 @@ export const protocol: IProtocol =
                     "local_storage",
                     "shader_cache",
                     "websql",
-                    "webrtc_indetity",
                     "service_workers",
                     "cache_storage",
                     "all"
