@@ -2,26 +2,20 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import {IProtocol, Protocol} from './protocol'
+import {IProtocol, Protocol as P} from './protocol'
 // Rather than reading json as JSON.parse, we import a typed object
 import {protocol as jsProtocol} from './protocolDef/js_protocol'
 import {protocol as browserProtocol} from './protocolDef/browser_protocol'
 
+
 // This is used to hold adapter and client interface definitions
 interface ClientAdapterDef {
     name: string
-    client: FunctionType
-    adapter: FunctionType
+    client: P.FunctionType
+    adapter: P.FunctionType
 }
 
-interface FunctionType extends Protocol.Type {
-    accepts?: FunctionType[]    
-    returns?: FunctionType
-}
-
-const destFilePath = `${__dirname}/../../src/crdi.ts`
-const moduleName = path.basename(destFilePath, ".ts")
-const protocolDomains = jsProtocol.domains.concat(browserProtocol.domains)
+type ParamOrFunction = P.ParameterType | P.FunctionType
 
 let numIndents = 0
 let emitStr = ""
@@ -58,7 +52,7 @@ const emitHeaderComments = () => {
     emitLine()
 }
 
-const emitModule = (moduleName:string, domains: Protocol.Domain[]) => {
+const emitModule = (moduleName:string, domains: P.Domain[]) => {
     moduleName = toTitleCase(moduleName)
     emitHeaderComments()
     emitOpenBlock(`export module ${moduleName}`)
@@ -77,7 +71,7 @@ const emitGlobalTypeDefs = () => {
     emitLine(`export type PromiseOrNot<T> = T | Promise<T>;`)
 }
 
-const emitDomain = (domain: Protocol.Domain) => {
+const emitDomain = (domain: P.Domain) => {
     const domainName = toTitleCase(domain.domain)
     emitLine()
     emitDescription(domain.description)
@@ -103,23 +97,23 @@ const emitDescription = (description: string) => {
     description ? emitLine(formatDescription(description)) : null
 }
 
-const getPropertyDef = (prop: Protocol.Type) => `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
+const getPropertyDef = (prop: P.ParameterType) => `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
 
-const getPropertyType = (prop: Protocol.Type): string  => {
+const getPropertyType = (prop: any): string  => {
     if (prop.$ref) return prop.$ref
     else if (prop.type == 'array') return `${getPropertyType(prop.items)}[]`
     else if (prop.type == 'object') return `any`
-    else if (prop.type == 'function') return `(${(<FunctionType>prop).accepts.map(getPropertyDef).join(', ')}) => ${(<FunctionType>prop).returns || 'void'}`
-    else if (prop.type == 'string' && prop.enum) return prop.enum.map(v => `'${v}'`).join(' | ')
+    else if (prop.type == 'function') return `(${prop.accepts.map(getPropertyDef).join(', ')}) => ${(prop).returns || 'void'}`
+    else if (prop.type == 'string' && prop.enum) return prop.enum.map((v: string) => `'${v}'`).join(' | ')
     return prop.type
 }
 
-const emitProperty = (prop: Protocol.Type) => {
+const emitProperty = (prop: P.ParameterType) => {
     emitDescription(prop.description)
     emitLine(`${getPropertyDef(prop)};`)
 }
 
-const emitInterface = (interfaceName: string, props: Protocol.Type[], emitNewLine = true): string => {
+const emitInterface = (interfaceName: string, props: ParamOrFunction[], emitNewLine = true): string => {
     emitNewLine ? emitLine() : null
     emitOpenBlock(`export interface ${interfaceName}`)
     props ? props.forEach(emitProperty) : emitLine('[key: string]: string;')
@@ -127,12 +121,12 @@ const emitInterface = (interfaceName: string, props: Protocol.Type[], emitNewLin
     return interfaceName
 }
 
-const emitType = (type: Protocol.Type) => {
+const emitType = (type: P.PropertyType) => {
     emitLine()
     emitDescription(type.description)
 
     if (type.type === "object") {
-        emitInterface(type.id, type.properties, false)
+        emitInterface(type.id, (<P.ObjectType & P.PropBaseType>type).properties, false)
     } else {
         emitLine(`export type ${type.id} = ${getPropertyType(type)};`)
     }
@@ -140,12 +134,12 @@ const emitType = (type: Protocol.Type) => {
 
 const toTitleCase = (str: string) => str[0].toUpperCase() + str.substr(1)
 
-const emitCommand = (command: Protocol.Command, domain: string): ClientAdapterDef => {
+const emitCommand = (command: P.Command, domain: string): ClientAdapterDef => {
     const titleCase = toTitleCase(command.name)
     const requestType = command.parameters ? `${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : null
     const responseType = command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : null
     const requestArgDef = requestType ? [{name: 'request', $ref: requestType}] : []
-    const clientDef: FunctionType = {
+    const clientDef: P.FunctionType = {
         type: 'function',
         description: command.description,
         name: command.name,
@@ -171,11 +165,11 @@ const emitCommand = (command: Protocol.Command, domain: string): ClientAdapterDe
     return commandDef
 }
 
-const emitEvent = (event: Protocol.Event, domain: string): ClientAdapterDef => {
+const emitEvent = (event: P.Event, domain: string): ClientAdapterDef => {
     const titleCase = toTitleCase(event.name)
     const eventType = event.parameters ? `${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
     const eventArgDef = eventType ? [{name: 'event', $ref: eventType}] : []
-    const clientDef: FunctionType = {
+    const clientDef: P.FunctionType = {
         type: 'function',
         description: event.description,
         name: `on${titleCase}`,
@@ -206,5 +200,9 @@ const emitNames = (names: ClientAdapterDef[], arrayName: string) => {
 }
 
 /// Main
+const destFilePath = `${__dirname}/../../src/crdi.ts`
+const moduleName = path.basename(destFilePath, ".ts")
+const protocolDomains: P.Domain[] = jsProtocol.domains.concat(browserProtocol.domains)
+
 emitModule(moduleName, protocolDomains)
 fs.writeFileSync(destFilePath, emitStr, 'utf-8')

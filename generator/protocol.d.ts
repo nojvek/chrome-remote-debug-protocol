@@ -19,8 +19,8 @@ export module Protocol {
         dependencies?: string[]
         /** Is domain for internal use ??? */
         hidden?: boolean
-        /** Types used by the domain. $ref properties map to a type */
-        types?: Type[]
+        /** Types used by the domain. */
+        types?: PropertyType[]
         /** Commands accepted by the domain */
         commands?: Command[]
         /** Events fired by domain */
@@ -28,7 +28,7 @@ export module Protocol {
     }
 
     export interface Command extends Event {
-        returns?: Type[]
+        returns?: ParameterType[]
         async?: boolean
         redirect?: string
     }
@@ -36,37 +36,87 @@ export module Protocol {
     export interface Event {
         name: string
         description?: string
-        parameters?: Type[]  
+        parameters?: ParameterType[]  
         hidden?: boolean
         handlers?: string[]
         deprecated?: boolean                                              
     }
 
-    export interface Type {
-        // This needs to be better typed
-        /** Name of type */
-        id?: string
-        /** Name of property */
-        name?: string
-        /** Type of object */
-        type?: "object" | "array" | "string" | "number" | "integer" | "boolean" | "any" | "function"
-        /** Description of the type */
-        description?: string
-        /** ??? */
-        hidden?: boolean
-        /** Properties of the type. Maps to an object interface. Only 'valid for type: 'object */
-        properties?: Type[]
-        /** Possible values of a string. Only valid for type: 'string' */
-        enum?: string[]
-        /** Maps to typed Array. Only valid for type: 'array' */
-        items?: Type
-        /** Reference to a domain defined type */
-        $ref?: string
-        /** Is the property optional ? */
-        optional?: boolean
+    type PropertyType = (
+        (StringType & PropBaseType) | 
+        (ObjectType & PropBaseType) | 
+        (ArrayType & PropBaseType) | 
+        (PrimitiveType & PropBaseType)
+    )
+
+    type ParameterType = (
+        (ObjectType & ParamBaseType) | 
+        (ArrayType & ParamBaseType) | 
+        (StringType & ParamBaseType) | 
+        (PrimitiveType & ParamBaseType) |
+        (AnyType & ParamBaseType) |
+        (RefType & ParamBaseType)        
+    )   
+
+    export interface ArrayType {
+        type: "array"
+        /** Maps to a typed array e.g string[] */
+        items: RefType | PrimitiveType | StringType | AnyType | ObjectType
         /** Cardinality of length of array type */
         minItems?: number
         maxItems?: number
+    }
+
+    export interface ObjectType {
+        type: "object"
+        /** Properties of the type. Maps to a typed object */
+        properties?: ParameterType[]        
+    }
+
+    export interface StringType {
+        type: "string"
+        /** Possible values of a string. */
+        enum?: string[]        
+    } 
+
+    export interface PrimitiveType {
+        type: "number" | "integer" | "boolean"
+    }
+
+    export interface AnyType {
+        type: "any"
+    }
+
+    export interface RefType {
+        /** Reference to a domain defined type */        
+        $ref: string
+    }
+
+    export interface ParamBaseType extends BaseType {
+        /** Name of param */
+        name: string        
+        /** Is the property optional ? */
+        optional?: boolean                        
+    }
+
+    export interface PropBaseType extends BaseType {
+        /** Name of property */
+        id: string        
+    }
+
+    export interface BaseType {
+        /** Description of the type */
+        description?: string
+        /** ?? */
+        hidden?: boolean
+        /** Is the api deprecated for future use ? */
         deprecated?: boolean
-    }     
+    }
+
+    /** Interface that aids in the generation of client and adapter interfaces */
+    export interface FunctionType extends ParamBaseType {
+        type: "function"
+        accepts?: FunctionType[] | (RefType & ParamBaseType)[]
+        returns?: FunctionType | string
+    }      
 }
