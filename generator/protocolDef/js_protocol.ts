@@ -1,5 +1,5 @@
 import {IProtocol} from '../protocol'
-export const protocol: IProtocol =
+export const protocol: IProtocol = 
 {
     "version": { "major": "1", "minor": "1" },
     "domains": [{
@@ -52,7 +52,7 @@ export const protocol: IProtocol =
                     { "name": "type", "type": "string", "enum": ["object", "function", "undefined", "string", "number", "boolean", "symbol"], "description": "Object type." },
                     { "name": "subtype", "type": "string", "optional": true, "enum": ["array", "null", "node", "regexp", "date", "map", "set", "iterator", "generator", "error"], "description": "Object subtype hint. Specified for <code>object</code> type values only." },
                     { "name": "description", "type": "string", "optional": true, "description": "String representation of the object." },
-                    { "name": "overflow", "type": "boolean", "description": "True if some of the properties or entries of the original object did not fit." },
+                    { "name": "overflow", "type": "boolean", "description": "True iff some of the properties or entries of the original object did not fit." },
                     { "name": "properties", "type": "array", "items": { "$ref": "PropertyPreview" }, "description": "List of the properties." },
                     { "name": "entries", "type": "array", "items": { "$ref": "EntryPreview" }, "optional": true, "description": "List of the entries. Specified for <code>map</code> and <code>set</code> subtype values only." }
                 ]

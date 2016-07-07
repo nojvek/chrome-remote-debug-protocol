@@ -94,9 +94,9 @@ export module Protocol {
 
     export interface ParamBaseType extends BaseType {
         /** Name of param */
-        name: string        
+        name: string
         /** Is the property optional ? */
-        optional?: boolean                        
+        optional?: boolean
     }
 
     export interface PropBaseType extends BaseType {

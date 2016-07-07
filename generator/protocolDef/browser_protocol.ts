@@ -1,5 +1,5 @@
 import {IProtocol} from '../protocol'
-export const protocol: IProtocol =
+export const protocol: IProtocol = 
 {
     "version": { "major": "1", "minor": "1" },
     "domains": [{
@@ -672,6 +672,16 @@ export const protocol: IProtocol =
                     { "name": "type",  "type": "string", "enum": ["portraitPrimary", "portraitSecondary", "landscapePrimary", "landscapeSecondary"], "description": "Orientation type." },
                     { "name": "angle",  "type": "integer", "description": "Orientation angle." }
                 ]
+            },
+            {
+                "id": "VirtualTimePolicy",
+                "type": "string",
+                "enum": [
+                    "advance",
+                    "pause",
+                    "pauseIfNetworkFetchesPending"
+                ],
+                "description": "advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to allow the next delayed task (if any) to run; pause: The virtual time base may not advance; pauseIfNetworkFetchesPending: The virtual time base may not advance if there are any pending resource fetches."
             }
         ],
         "commands": [
@@ -763,6 +773,14 @@ export const protocol: IProtocol =
                     { "name": "result", "type": "boolean", "description": "True if emulation is supported." }
                 ],
                 "handlers": ["browser"]
+            },
+            {
+                "name": "setVirtualTimePolicy",
+                "description": "Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.",
+                "parameters": [
+                    { "name": "policy", "$ref": "VirtualTimePolicy" }
+                ],
+                "hidden": true
             }
         ]
     },
@@ -4172,6 +4190,10 @@ export const protocol: IProtocol =
         "hidden": true,
         "types": [
             {
+                "id": "BrowserContextID",
+                "type": "string"
+            },
+            {
                 "id": "TargetID",
                 "type": "string"
             },
@@ -4187,6 +4209,50 @@ export const protocol: IProtocol =
             }
         ],
         "commands": [
+            {
+                "name": "createBrowserContext",
+                "description": "Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.",
+                "returns": [
+                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The id of the context created." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "disposeBrowserContext",
+                "description": "Deletes a BrowserContext, will fail of any open page uses it.",
+                "parameters": [
+                    { "name": "browserContextId", "$ref": "BrowserContextID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "createTarget",
+                "description": "Creates a new page.",
+                "parameters": [
+                    { "name": "initialUrl", "type": "string", "description": "The initial URL the page will be navigated to." },
+                    { "name": "width", "type": "integer", "description": "Window width (headless chrome only).", "optional": true },
+                    { "name": "height", "type": "integer", "description": "Window height (headless chrome only).", "optional": true },
+                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The browser context to create the page in (headless chrome only).", "optional": true }
+                ],
+                "returns": [
+                    { "name": "targetId", "$ref": "TargetID", "description": "The id of the page opened." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "closeTarget",
+                "description": "Closes the target. If the target is a page that gets closed too.",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
             {
                 "name": "getTargets",
                 "returns": [
@@ -4228,6 +4294,84 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" },
                     { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
+    },
+    {
+        "domain": "SystemInfo",
+        "description": "The SystemInfo domain defines methods and events for querying low-level system information.",
+        "hidden": true,
+        "types": [
+            {
+                "id": "GPUDevice",
+                "type": "object",
+                "properties": [
+                    { "name": "vendorId", "type": "number", "description": "PCI ID of the GPU vendor, if available; 0 otherwise." },
+                    { "name": "deviceId", "type": "number", "description": "PCI ID of the GPU device, if available; 0 otherwise." },
+                    { "name": "vendorString", "type": "string", "description": "String description of the GPU vendor, if the PCI ID is not available." },
+                    { "name": "deviceString", "type": "string", "description": "String description of the GPU device, if the PCI ID is not available." }
+                ],
+                "description": "Describes a single graphics processor (GPU)."
+            },
+            {
+                "id": "GPUInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "devices", "type": "array", "items": { "$ref": "GPUDevice" }, "description": "The graphics devices on the system. Element 0 is the primary GPU." },
+                    { "name": "auxAttributes", "type": "object", "optional": "true", "description": "An optional dictionary of additional GPU related attributes." },
+                    { "name": "featureStatus", "type": "object", "optional": "true", "description": "An optional dictionary of graphics features and their status." },
+                    { "name": "driverBugWorkarounds", "type": "array", "items": { "type": "string" }, "description": "An optional array of GPU driver bug workarounds." }
+                ],
+                "description": "Provides information about the GPU(s) on the system."
+            }
+        ],
+        "commands": [
+            {
+                "name": "getInfo",
+                "async": true,
+                "description": "Returns information about the system.",
+                "returns": [
+                    { "name": "gpu", "$ref": "GPUInfo", "description": "Information about the GPUs on the system." },
+                    { "name": "modelName", "type": "string", "description": "A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported." },
+                    { "name": "modelVersion", "type": "string", "description": "A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported." }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
+    },
+    {
+        "domain": "Tethering",
+        "description": "The Tethering domain defines methods and events for browser port binding.",
+        "hidden": true,
+        "commands": [
+            {
+                "name": "bind",
+                "async": true,
+                "description": "Request browser port binding.",
+                "parameters": [
+                    { "name": "port", "type": "integer", "description": "Port number to bind." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "unbind",
+                "async": true,
+                "description": "Request browser port unbinding.",
+                "parameters": [
+                    { "name": "port", "type": "integer", "description": "Port number to unbind." }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "accepted",
+                "description": "Informs that port was successfully bound and got a specified connection id.",
+                "parameters": [
+                    {"name": "port", "type": "integer", "description": "Port number that was successfully bound." },
+                    {"name": "connectionId", "type": "string", "description": "Connection id to be used." }
                 ],
                 "handlers": ["browser"]
             }

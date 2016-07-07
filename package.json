@@ -30,6 +30,9 @@
   },
   "homepage": "https://github.com/nojvek/chrome-remote-debug-interface#readme",
   "dependencies": {
+    "es6-simple-async": "git+https://github.com/Jamesernator/es6-simple-async.git",
+    "node-fetch": "^1.5.3",
+    "promisify-node": "^0.4.0",
     "ws": "^1.1.1"
   }
 }
