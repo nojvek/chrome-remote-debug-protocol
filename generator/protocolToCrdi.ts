@@ -179,7 +179,7 @@ const emitEvent = (event: P.Event, domain: string): ClientAdapterDef => {
             accepts: eventArgDef
         }],
     }
-    
+
     const eventDef: ClientAdapterDef = {
         name: event.name,
         client: clientDef,
@@ -205,4 +205,5 @@ const moduleName = path.basename(destFilePath, ".ts")
 const protocolDomains: P.Domain[] = jsProtocol.domains.concat(browserProtocol.domains)
 
 emitModule(moduleName, protocolDomains)
+console.log(`Writing to ${destFilePath}`)
 fs.writeFileSync(destFilePath, emitStr, 'utf-8')

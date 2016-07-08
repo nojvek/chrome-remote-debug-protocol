@@ -24,7 +24,7 @@ export module Protocol {
         /** Commands accepted by the domain */
         commands?: Command[]
         /** Events fired by domain */
-        events?: Event[]            
+        events?: Event[]
     }
 
     export interface Command extends Event {
@@ -36,27 +36,27 @@ export module Protocol {
     export interface Event {
         name: string
         description?: string
-        parameters?: ParameterType[]  
+        parameters?: ParameterType[]
         hidden?: boolean
         handlers?: string[]
-        deprecated?: boolean                                              
+        deprecated?: boolean
     }
 
     type PropertyType = (
-        (StringType & PropBaseType) | 
-        (ObjectType & PropBaseType) | 
-        (ArrayType & PropBaseType) | 
+        (StringType & PropBaseType) |
+        (ObjectType & PropBaseType) |
+        (ArrayType & PropBaseType) |
         (PrimitiveType & PropBaseType)
     )
 
     type ParameterType = (
-        (ObjectType & ParamBaseType) | 
-        (ArrayType & ParamBaseType) | 
-        (StringType & ParamBaseType) | 
+        (ObjectType & ParamBaseType) |
+        (ArrayType & ParamBaseType) |
+        (StringType & ParamBaseType) |
         (PrimitiveType & ParamBaseType) |
         (AnyType & ParamBaseType) |
-        (RefType & ParamBaseType)        
-    )   
+        (RefType & ParamBaseType)
+    )
 
     export interface ArrayType {
         type: "array"
@@ -70,14 +70,14 @@ export module Protocol {
     export interface ObjectType {
         type: "object"
         /** Properties of the type. Maps to a typed object */
-        properties?: ParameterType[]        
+        properties?: ParameterType[]
     }
 
     export interface StringType {
         type: "string"
         /** Possible values of a string. */
-        enum?: string[]        
-    } 
+        enum?: string[]
+    }
 
     export interface PrimitiveType {
         type: "number" | "integer" | "boolean"
@@ -88,7 +88,7 @@ export module Protocol {
     }
 
     export interface RefType {
-        /** Reference to a domain defined type */        
+        /** Reference to a domain defined type */
         $ref: string
     }
 
@@ -101,7 +101,7 @@ export module Protocol {
 
     export interface PropBaseType extends BaseType {
         /** Name of property */
-        id: string        
+        id: string
     }
 
     export interface BaseType {
@@ -118,5 +118,5 @@ export module Protocol {
         type: "function"
         accepts?: FunctionType[] | (RefType & ParamBaseType)[]
         returns?: FunctionType | string
-    }      
+    }
 }

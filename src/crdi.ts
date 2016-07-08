@@ -39,6 +39,8 @@ export module Crdi {
         Accessibility: AccessibilityClient;
         Storage: StorageClient;
         Browser: BrowserClient;
+        SystemInfo: SystemInfoClient;
+        Tethering: TetheringClient;
     }
     
     export interface CrdiAdapter {
@@ -73,6 +75,8 @@ export module Crdi {
         Accessibility: AccessibilityAdapter;
         Storage: StorageAdapter;
         Browser: BrowserAdapter;
+        SystemInfo: SystemInfoAdapter;
+        Tethering: TetheringAdapter;
     }
     
     /** Runtime domain exposes JavaScript runtime by means of remote evaluation and mirror objects. Evaluation results are returned as mirror object that expose object type, string representation and unique identifier that can be used for further object reference. Original objects are maintained in memory unless they are either explicitly released or are released along with the other objects in their object group. */
@@ -119,7 +123,7 @@ export module Crdi {
             subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
             /** String representation of the object. */
             description?: string;
-            /** True if some of the properties or entries of the original object did not fit. */
+            /** True iff some of the properties or entries of the original object did not fit. */
             overflow: boolean;
             /** List of the properties. */
             properties: PropertyPreview[];
@@ -506,18 +510,6 @@ export module Crdi {
             scopeChain?: Scope[];
         }
         
-        /** Information about the generator object. */
-        export interface GeneratorObjectDetails {
-            /** Generator function. */
-            function: Runtime.RemoteObject;
-            /** Name of the generator function. */
-            functionName: string;
-            /** Current generator object status. */
-            status: 'running' | 'suspended' | 'closed';
-            /** If suspended, location where generator function was suspended (e.g. location of the last 'yield'). Otherwise, location of the generator function. */
-            location?: Location;
-        }
-        
         /** JavaScript call frame. Array of call frames form the call stack. */
         export interface CallFrame {
             /** Call frame identifier. This identifier is only valid while the virtual machine is paused. */
@@ -695,16 +687,6 @@ export module Crdi {
             details: FunctionDetails;
         }
         
-        export interface GetGeneratorObjectDetailsRequest {
-            /** Id of the generator object to get details for. */
-            objectId: Runtime.RemoteObjectId;
-        }
-        
-        export interface GetGeneratorObjectDetailsResponse {
-            /** Information about the generator object. */
-            details: GeneratorObjectDetails;
-        }
-        
         export interface SetPauseOnExceptionsRequest {
             /** Pause on exceptions mode. */
             state: 'none' | 'uncaught' | 'all';
@@ -870,7 +852,6 @@ export module Crdi {
             'restartFrame',
             'getScriptSource',
             'getFunctionDetails',
-            'getGeneratorObjectDetails',
             'setPauseOnExceptions',
             'evaluateOnCallFrame',
             'setVariableValue',
@@ -928,8 +909,6 @@ export module Crdi {
         getScriptSource: (request: Debugger.GetScriptSourceRequest) => Promise<Debugger.GetScriptSourceResponse>;
         /** Returns detailed information on given function. */
         getFunctionDetails: (request: Debugger.GetFunctionDetailsRequest) => Promise<Debugger.GetFunctionDetailsResponse>;
-        /** Returns detailed information on given generator object. */
-        getGeneratorObjectDetails: (request: Debugger.GetGeneratorObjectDetailsRequest) => Promise<Debugger.GetGeneratorObjectDetailsResponse>;
         /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
         setPauseOnExceptions: (request: Debugger.SetPauseOnExceptionsRequest) => Promise<{}>;
         /** Evaluates expression on a given call frame. */
@@ -995,8 +974,6 @@ export module Crdi {
         onGetScriptSource: (handler: (request: Debugger.GetScriptSourceRequest) => PromiseOrNot<Debugger.GetScriptSourceResponse>) => void;
         /** Returns detailed information on given function. */
         onGetFunctionDetails: (handler: (request: Debugger.GetFunctionDetailsRequest) => PromiseOrNot<Debugger.GetFunctionDetailsResponse>) => void;
-        /** Returns detailed information on given generator object. */
-        onGetGeneratorObjectDetails: (handler: (request: Debugger.GetGeneratorObjectDetailsRequest) => PromiseOrNot<Debugger.GetGeneratorObjectDetailsResponse>) => void;
         /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
         onSetPauseOnExceptions: (handler: (request: Debugger.SetPauseOnExceptionsRequest) => PromiseOrNot<{}>) => void;
         /** Evaluates expression on a given call frame. */
@@ -2190,6 +2167,9 @@ export module Crdi {
             angle: integer;
         }
         
+        /** advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to allow the next delayed task (if any) to run; pause: The virtual time base may not advance; pauseIfNetworkFetchesPending: The virtual time base may not advance if there are any pending resource fetches. */
+        export type VirtualTimePolicy = 'advance' | 'pause' | 'pauseIfNetworkFetchesPending';
+        
         export interface SetDeviceMetricsOverrideRequest {
             /** Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override. */
             width: integer;
@@ -2260,6 +2240,10 @@ export module Crdi {
             result: boolean;
         }
         
+        export interface SetVirtualTimePolicyRequest {
+            policy: VirtualTimePolicy;
+        }
+        
         export const CommandNames: string[] = [
             'setDeviceMetricsOverride',
             'clearDeviceMetricsOverride',
@@ -2272,6 +2256,7 @@ export module Crdi {
             'setEmulatedMedia',
             'setCPUThrottlingRate',
             'canEmulate',
+            'setVirtualTimePolicy',
         ]
         
         export const EventNames: string[] = [
@@ -2301,6 +2286,8 @@ export module Crdi {
         setCPUThrottlingRate: (request: Emulation.SetCPUThrottlingRateRequest) => Promise<{}>;
         /** Tells whether emulation is supported. */
         canEmulate: () => Promise<Emulation.CanEmulateResponse>;
+        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
+        setVirtualTimePolicy: (request: Emulation.SetVirtualTimePolicyRequest) => Promise<{}>;
     }
     
     export interface EmulationAdapter {
@@ -2326,6 +2313,8 @@ export module Crdi {
         onSetCPUThrottlingRate: (handler: (request: Emulation.SetCPUThrottlingRateRequest) => PromiseOrNot<{}>) => void;
         /** Tells whether emulation is supported. */
         onCanEmulate: (handler: () => PromiseOrNot<Emulation.CanEmulateResponse>) => void;
+        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
+        onSetVirtualTimePolicy: (handler: (request: Emulation.SetVirtualTimePolicyRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** Security */
@@ -6550,6 +6539,8 @@ export module Crdi {
     /** The Browser domain allows listing, creating, activating and attaching to the targets. */
     export module Browser {
         
+        export type BrowserContextID = string;
+        
         export type TargetID = string;
         
         export interface TargetInfo {
@@ -6557,6 +6548,43 @@ export module Crdi {
             type: string;
             title: string;
             url: string;
+        }
+        
+        export interface CreateBrowserContextResponse {
+            /** The id of the context created. */
+            browserContextId: BrowserContextID;
+        }
+        
+        export interface DisposeBrowserContextRequest {
+            browserContextId: BrowserContextID;
+        }
+        
+        export interface DisposeBrowserContextResponse {
+            success: boolean;
+        }
+        
+        export interface CreateTargetRequest {
+            /** The initial URL the page will be navigated to. */
+            initialUrl: string;
+            /** Window width (headless chrome only). */
+            width?: integer;
+            /** Window height (headless chrome only). */
+            height?: integer;
+            /** The browser context to create the page in (headless chrome only). */
+            browserContextId?: BrowserContextID;
+        }
+        
+        export interface CreateTargetResponse {
+            /** The id of the page opened. */
+            targetId: TargetID;
+        }
+        
+        export interface CloseTargetRequest {
+            targetId: TargetID;
+        }
+        
+        export interface CloseTargetResponse {
+            success: boolean;
         }
         
         export interface GetTargetsResponse {
@@ -6583,6 +6611,10 @@ export module Crdi {
         }
         
         export const CommandNames: string[] = [
+            'createBrowserContext',
+            'disposeBrowserContext',
+            'createTarget',
+            'closeTarget',
             'getTargets',
             'attach',
             'detach',
@@ -6595,6 +6627,14 @@ export module Crdi {
     }
     
     export interface BrowserClient {
+        /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
+        createBrowserContext: () => Promise<Browser.CreateBrowserContextResponse>;
+        /** Deletes a BrowserContext, will fail of any open page uses it. */
+        disposeBrowserContext: (request: Browser.DisposeBrowserContextRequest) => Promise<Browser.DisposeBrowserContextResponse>;
+        /** Creates a new page. */
+        createTarget: (request: Browser.CreateTargetRequest) => Promise<Browser.CreateTargetResponse>;
+        /** Closes the target. If the target is a page that gets closed too. */
+        closeTarget: (request: Browser.CloseTargetRequest) => Promise<Browser.CloseTargetResponse>;
         /** Returns target information for all potential targets. */
         getTargets: () => Promise<Browser.GetTargetsResponse>;
         /** Attaches to the target with given id. */
@@ -6608,6 +6648,14 @@ export module Crdi {
     }
     
     export interface BrowserAdapter {
+        /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
+        onCreateBrowserContext: (handler: () => PromiseOrNot<Browser.CreateBrowserContextResponse>) => void;
+        /** Deletes a BrowserContext, will fail of any open page uses it. */
+        onDisposeBrowserContext: (handler: (request: Browser.DisposeBrowserContextRequest) => PromiseOrNot<Browser.DisposeBrowserContextResponse>) => void;
+        /** Creates a new page. */
+        onCreateTarget: (handler: (request: Browser.CreateTargetRequest) => PromiseOrNot<Browser.CreateTargetResponse>) => void;
+        /** Closes the target. If the target is a page that gets closed too. */
+        onCloseTarget: (handler: (request: Browser.CloseTargetRequest) => PromiseOrNot<Browser.CloseTargetResponse>) => void;
         /** Returns target information for all potential targets. */
         onGetTargets: (handler: () => PromiseOrNot<Browser.GetTargetsResponse>) => void;
         /** Attaches to the target with given id. */
@@ -6618,6 +6666,108 @@ export module Crdi {
         onSendMessage: (handler: (request: Browser.SendMessageRequest) => PromiseOrNot<{}>) => void;
         /** Dispatches protocol message from the target with given id. */
         fireDispatchMessage: (event: Browser.DispatchMessageEvent) => void;
+    }
+    
+    /** The SystemInfo domain defines methods and events for querying low-level system information. */
+    export module SystemInfo {
+        
+        /** Describes a single graphics processor (GPU). */
+        export interface GPUDevice {
+            /** PCI ID of the GPU vendor, if available; 0 otherwise. */
+            vendorId: number;
+            /** PCI ID of the GPU device, if available; 0 otherwise. */
+            deviceId: number;
+            /** String description of the GPU vendor, if the PCI ID is not available. */
+            vendorString: string;
+            /** String description of the GPU device, if the PCI ID is not available. */
+            deviceString: string;
+        }
+        
+        /** Provides information about the GPU(s) on the system. */
+        export interface GPUInfo {
+            /** The graphics devices on the system. Element 0 is the primary GPU. */
+            devices: GPUDevice[];
+            /** An optional dictionary of additional GPU related attributes. */
+            auxAttributes?: any;
+            /** An optional dictionary of graphics features and their status. */
+            featureStatus?: any;
+            /** An optional array of GPU driver bug workarounds. */
+            driverBugWorkarounds: string[];
+        }
+        
+        export interface GetInfoResponse {
+            /** Information about the GPUs on the system. */
+            gpu: GPUInfo;
+            /** A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported. */
+            modelName: string;
+            /** A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported. */
+            modelVersion: string;
+        }
+        
+        export const CommandNames: string[] = [
+            'getInfo',
+        ]
+        
+        export const EventNames: string[] = [
+        ]
+    }
+    
+    export interface SystemInfoClient {
+        /** Returns information about the system. */
+        getInfo: () => Promise<SystemInfo.GetInfoResponse>;
+    }
+    
+    export interface SystemInfoAdapter {
+        /** Returns information about the system. */
+        onGetInfo: (handler: () => PromiseOrNot<SystemInfo.GetInfoResponse>) => void;
+    }
+    
+    /** The Tethering domain defines methods and events for browser port binding. */
+    export module Tethering {
+        
+        export interface BindRequest {
+            /** Port number to bind. */
+            port: integer;
+        }
+        
+        export interface UnbindRequest {
+            /** Port number to unbind. */
+            port: integer;
+        }
+        
+        export interface AcceptedEvent {
+            /** Port number that was successfully bound. */
+            port: integer;
+            /** Connection id to be used. */
+            connectionId: string;
+        }
+        
+        export const CommandNames: string[] = [
+            'bind',
+            'unbind',
+        ]
+        
+        export const EventNames: string[] = [
+            'accepted',
+        ]
+    }
+    
+    export interface TetheringClient {
+        /** Request browser port binding. */
+        bind: (request: Tethering.BindRequest) => Promise<{}>;
+        /** Request browser port unbinding. */
+        unbind: (request: Tethering.UnbindRequest) => Promise<{}>;
+        /** Informs that port was successfully bound and got a specified connection id. */
+        onAccepted: (handler: (event: Tethering.AcceptedEvent) => void) => void;
+    }
+    
+    export interface TetheringAdapter {
+        /** Request browser port binding. */
+        onBind: (handler: (request: Tethering.BindRequest) => PromiseOrNot<{}>) => void;
+        /** Request browser port unbinding. */
+        onUnbind: (handler: (request: Tethering.UnbindRequest) => PromiseOrNot<{}>) => void;
+        /** Informs that port was successfully bound and got a specified connection id. */
+        fireAccepted: (event: Tethering.AcceptedEvent) => void;
     }
 }
 

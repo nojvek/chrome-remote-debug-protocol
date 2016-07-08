@@ -1,3 +1,4 @@
+// Auto-generated from https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json
 import {IProtocol} from '../protocol'
 export const protocol: IProtocol = 
 {
@@ -367,18 +368,6 @@ export const protocol: IProtocol =
                 "description": "Information about the function."
             },
             {
-                "id": "GeneratorObjectDetails",
-                "hidden": true,
-                "type": "object",
-                "properties": [
-                    { "name": "function", "$ref": "Runtime.RemoteObject", "description": "Generator function." },
-                    { "name": "functionName", "type": "string", "description": "Name of the generator function." },
-                    { "name": "status", "type": "string", "enum": ["running", "suspended", "closed"], "description": "Current generator object status." },
-                    { "name": "location", "$ref": "Location", "optional": true, "description": "If suspended, location where generator function was suspended (e.g. location of the last 'yield'). Otherwise, location of the generator function." }
-                ],
-                "description": "Information about the generator object."
-            },
-            {
                 "id": "CallFrame",
                 "type": "object",
                 "properties": [
@@ -579,17 +568,6 @@ export const protocol: IProtocol =
                     { "name": "details", "$ref": "FunctionDetails", "description": "Information about the function." }
                 ],
                 "description": "Returns detailed information on given function."
-            },
-            {
-                "name": "getGeneratorObjectDetails",
-                "hidden": true,
-                "parameters": [
-                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Id of the generator object to get details for." }
-                ],
-                "returns": [
-                    { "name": "details", "$ref": "GeneratorObjectDetails", "description": "Information about the generator object." }
-                ],
-                "description": "Returns detailed information on given generator object."
             },
             {
                 "name": "setPauseOnExceptions",

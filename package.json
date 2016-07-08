@@ -4,6 +4,8 @@
   "description": "Genrate ts.d files from protocol.json files used by Chrome Remote Debugging Protocol",
   "main": "protocolJson2Tsd.js",
   "scripts": {
+    "download-protocols": "jake download-protocols",
+    "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

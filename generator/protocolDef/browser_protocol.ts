@@ -1,5 +1,6 @@
+// Auto-generated from https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/inspector/browser_protocol.json
 import {IProtocol} from '../protocol'
-export const protocol: IProtocol = 
+export const protocol: IProtocol =
 {
     "version": { "major": "1", "minor": "1" },
     "domains": [{
@@ -4320,8 +4321,8 @@ export const protocol: IProtocol =
                 "type": "object",
                 "properties": [
                     { "name": "devices", "type": "array", "items": { "$ref": "GPUDevice" }, "description": "The graphics devices on the system. Element 0 is the primary GPU." },
-                    { "name": "auxAttributes", "type": "object", "optional": "true", "description": "An optional dictionary of additional GPU related attributes." },
-                    { "name": "featureStatus", "type": "object", "optional": "true", "description": "An optional dictionary of graphics features and their status." },
+                    { "name": "auxAttributes", "type": "object", "optional": true, "description": "An optional dictionary of additional GPU related attributes." },
+                    { "name": "featureStatus", "type": "object", "optional": true, "description": "An optional dictionary of graphics features and their status." },
                     { "name": "driverBugWorkarounds", "type": "array", "items": { "type": "string" }, "description": "An optional array of GPU driver bug workarounds." }
                 ],
                 "description": "Provides information about the GPU(s) on the system."
