@@ -494,8 +494,8 @@ export module Crdi {
         
         /** Location in the source code. */
         export interface ScriptPosition {
-            line: integer;
-            column: integer;
+            lineNumber: integer;
+            columnNumber: integer;
         }
         
         /** Information about the function. */
