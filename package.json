@@ -1,8 +1,8 @@
 {
-  "name": "chrome-debug-protocol-tsdgen",
+  "name": "chrome-remote-debug-interface",
   "version": "1.0.0",
-  "description": "Genrate ts.d files from protocol.json files used by Chrome Remote Debugging Protocol",
-  "main": "protocolJson2Tsd.js",
+  "description": "Auto generate crdi interface from protocol.json files used by Chrome Remote Debugging Protocol",
+  "main": "out/example.js",
   "scripts": {
     "download-protocols": "jake download-protocols",
     "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js",
