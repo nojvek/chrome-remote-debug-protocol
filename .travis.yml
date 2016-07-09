@@ -3,10 +3,9 @@ language: node_js
 node_js:
     - "node"
 
-before_script:
+install:
     - npm install -g jake
     - npm install -g typings
 
 script:
-    - npm run download-protocols
     - npm run generate-crdi

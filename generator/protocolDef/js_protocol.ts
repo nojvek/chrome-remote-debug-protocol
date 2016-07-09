@@ -1,6 +1,6 @@
 // Auto-generated from https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json
 import {IProtocol} from '../protocol'
-export const protocol: IProtocol = 
+export const protocol: IProtocol =
 {
     "version": { "major": "1", "minor": "1" },
     "domains": [{
@@ -350,8 +350,8 @@ export const protocol: IProtocol =
                 "hidden": true,
                 "type": "object",
                 "properties": [
-                    { "name": "line", "type": "integer" },
-                    { "name": "column", "type": "integer" }
+                    { "name": "lineNumber", "type": true },
+                    { "name": "columnNumber", "type": "integer" }
                 ],
                 "description": "Location in the source code."
             },
