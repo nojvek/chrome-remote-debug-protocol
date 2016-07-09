@@ -218,10 +218,10 @@ export module Crdi {
             url?: string;
             /** Script ID of the message origin. */
             scriptId?: string;
-            /** Line number in the resource that generated this message. */
-            line?: integer;
-            /** Column number in the resource that generated this message. */
-            column?: integer;
+            /** Line number in the resource that generated this message. (0-based). */
+            lineNumber?: integer;
+            /** Column number in the resource that generated this message. (0-based). */
+            columnNumber?: integer;
             /** JavaScript stack trace for assertions and error messages. */
             stack?: StackTrace;
         }

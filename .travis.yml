@@ -4,9 +4,10 @@ node_js:
     - "node"
 
 install:
-    - npm install -g typescript
+    - npm install -g typescript@next
     - npm install -g jake
     - npm install -g typings
+    - typings install
 
 before_script:
     - cd $TRAVIS_BUILD_DIR
