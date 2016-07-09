@@ -10,6 +10,8 @@ install:
 
 before_script:
     - cd $TRAVIS_BUILD_DIR
+    - pwd
+    - ls -a
 
 script:
     - npm run generate-crdi
