@@ -3,6 +3,9 @@ language: node_js
 node_js:
     - "node"
 
+before_install:
+    - cd $TRAVIS_BUILD_DIR
+
 install:
     - npm install -g tsc
     - npm install -g jake
