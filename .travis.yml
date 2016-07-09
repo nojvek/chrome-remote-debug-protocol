@@ -4,14 +4,12 @@ node_js:
     - "node"
 
 install:
-    - npm install -g tsc
+    - npm install -g typescript
     - npm install -g jake
     - npm install -g typings
 
 before_script:
     - cd $TRAVIS_BUILD_DIR
-    - pwd
-    - ls -a
 
 script:
     - npm run generate-crdi
