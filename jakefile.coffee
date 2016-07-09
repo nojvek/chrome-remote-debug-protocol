@@ -31,7 +31,7 @@ task 'download-protocols', async: true, async ->
 getProtocolDefHeader = (url) ->
     "// Auto-generated from #{url}\n" +
     "import {IProtocol} from '../protocol'\n" +
-    'export const protocol: IProtocol = \n'
+    'export const protocol: IProtocol =\n'
 
 fetchProtocolJson = async (url) ->
     log("Downloading #{url}")
