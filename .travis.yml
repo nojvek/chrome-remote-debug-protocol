@@ -4,8 +4,10 @@ node_js:
     - "node"
 
 install:
+    - npm install -g tsc
     - npm install -g jake
     - npm install -g typings
+
 
 script:
     - npm run generate-crdi
