@@ -6,23 +6,6 @@ import * as WebSocket from 'ws'
 import {EventEmitter} from 'events'
 
 
-// // TODO: build real example of simple client and adapter that works with chrome devtools
-
-// adapter.onEnable(() => new Promise((resolve, reject) => {
-//     resolve()
-// }))
-
-// export async function hello() {
-//     return new Promise<any>(() => {})
-// }
-
-// async function takeHeapTrace() {
-//     await client.enable()
-//     await client.disable()
-//     await Promise.all([client.enable(), client.enable()])
-// }
-// takeHeapTrace()
-
 interface WsRpcRequest {
     id: number,
     method: string,
@@ -84,8 +67,19 @@ class WsRpcClient extends EventEmitter {
             })
 
             webSocket.on('message', messageStr => {
-                console.log("Response", messageStr)
-                const message: WsRpcResponse & WsRpcEvent = JSON.parse(messageStr)
+                console.log("<", messageStr)
+                let message: WsRpcResponse & WsRpcEvent
+
+                // Ensure JSON is not malformed
+                try {
+                    message = JSON.parse(messageStr)
+                } catch (e) {
+                    this.emit('error', e)
+                    return
+                }
+
+                // Emit message events so host can log if needed
+                this.emit('message', message)
 
                 if (message.id) {
                     // TODO fix parseInt definition in typescript lib.d.ts
@@ -98,10 +92,10 @@ class WsRpcClient extends EventEmitter {
                         } else if (message.error) {
                             promise.reject(message.error)
                         } else {
-                            console.error(`Invalid message: ${messageStr}`)
+                            this.emit('error', new Error(`Invalid message: ${messageStr}`))
                         }
                     } else {
-                        console.error(`Got a response with id ${message.id} for which there is no pending request.`)
+                        this.emit('error', new Error(`Response with id ${message.id} has no pending request.`))
                     }
                 } else if (message.method) {
                     this.emit(message.method, message.params)
@@ -110,19 +104,18 @@ class WsRpcClient extends EventEmitter {
         })
     }
 
-    public sendMessage(method: string, params?: any): Promise<any> {
+    public send(method: string, params?: any): Promise<any> {
         const message: WsRpcRequest = {
             id: ++this._nextMessageId,
-            method
+            method,
+            params
         }
-
-
-        if (params) message.params = params;
 
         const promise = new Promise((resolve, reject) => {
             this._pendingMessageMap.set(message.id, {resolve, reject})
             this._connectedPromise.then(() => {
-                console.log("Request", message)
+                console.log(">", JSON.stringify(message))
+                this.emit('send', message);
                 this._webSocket.send(JSON.stringify(message))
             })
         })
@@ -139,14 +132,22 @@ class WsRpcClient extends EventEmitter {
 
 async function main() {
     try {
-        const client = await WsRpcClient.connect("ws://localhost:9222/devtools/page/758107cd-dc4a-4263-b089-e2ef82260125")
-        //const client = await WsRpcClient.connect("ws://localhost:9229/node")
+        //const client = await WsRpcClient.connect("ws://localhost:9222/devtools/page/758107cd-dc4a-4263-b089-e2ef82260125")
+        const client = await WsRpcClient.connect("ws://localhost:9229/node")
+        client.on('error', (e: Error) => console.log(e));
 
-        client.sendMessage("Runtime.enable")
-        client.sendMessage("Debugger.enable")
-        client.sendMessage("Console.enable")
-        await client.sendMessage("Profiler.enable")
+        await Promise.all([
+            client.send("Runtime.enable"),
+            client.send("Debugger.enable"),
+            //client.send("Console.enable"),
+            client.send("Profiler.enable"),
+            client.send("Runtime.run")
+        ])
 
+        await client.send("Profiler.start")
+        setTimeout(() => {
+            client.send("Profiler.stop")
+        }, 1000)
     } catch (e) {
         console.error(e)
     }
