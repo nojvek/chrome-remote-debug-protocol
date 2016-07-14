@@ -1,7 +1,4 @@
 /// <reference path="../typings/index.d.ts" />
-
-import Crdi from './crdi'
-import * as fs from 'fs'
 import * as WebSocket from 'ws'
 import {EventEmitter} from 'events'
 
@@ -36,6 +33,8 @@ class WsRpcClient extends EventEmitter {
     private _pendingMessageMap: Map<number, {resolve: Function, reject: Function}> = new Map()
     private _nextMessageId: number = 0
 
+    // We return promise so usage can be something like:
+    // client = await WsRpcClient.connect("ws://localhost:9229/node")
     public static connect(address: string): Promise<WsRpcClient> {
         const client = new WsRpcClient(address)
         return client._connectedPromise
@@ -78,14 +77,13 @@ class WsRpcClient extends EventEmitter {
                     return
                 }
 
-                // Emit message events so host can log if needed
+                // All messages will be emitted so host can have a global message handler
                 this.emit('message', message)
 
                 if (message.id) {
-                    // TODO fix parseInt definition in typescript lib.d.ts
-                    const id = parseInt(<any>message.id)
+                    const id = message.id
                     if (this._pendingMessageMap.has(id)) {
-                        // Resolve promise from message
+                        // Resolve promise from pending message
                         const promise = this._pendingMessageMap.get(id)
                         if (message.result) {
                             promise.resolve(message.result)
@@ -111,17 +109,15 @@ class WsRpcClient extends EventEmitter {
             params
         }
 
-        const promise = new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             this._pendingMessageMap.set(message.id, {resolve, reject})
             this._connectedPromise.then(() => {
+                //TODO: Only log if logging is enabled
                 console.log(">", JSON.stringify(message))
                 this.emit('send', message);
                 this._webSocket.send(JSON.stringify(message))
             })
         })
-
-
-        return promise
     }
 
     public get address(): string {
