@@ -53,14 +53,14 @@ export class Client extends EventEmitter implements JsonRpc.Client{
                     return
                 }
 
-                // Emit message events so host can log if needed
+                // All messages will be emitted so host can have a global message handler
                 this.emit('message', message)
 
                 if (message.id) {
                     // TODO fix parseInt definition in typescript lib.d.ts
                     const id = parseInt(<any>message.id)
                     if (this._pendingMessageMap.has(id)) {
-                        // Resolve promise from message
+                        // Resolve promise from pending message
                         const promise = this._pendingMessageMap.get(id)
                         if (message.result) {
                             promise.resolve(message.result)
@@ -86,6 +86,7 @@ export class Client extends EventEmitter implements JsonRpc.Client{
         return new Promise((resolve, reject) => {
             this._pendingMessageMap.set(id, {resolve, reject})
             this._connectedPromise.then(() => {
+                //TODO: Only log if logging is enabled
                 console.log(">", JSON.stringify(message))
                 this.emit('send', message);
                 this._webSocket.send(JSON.stringify(message))

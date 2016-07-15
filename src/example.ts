@@ -1,5 +1,4 @@
 /// <reference path="../typings/index.d.ts" />
-
 import * as fs from 'fs'
 import Crdi from './crdi'
 import * as rpc from './websocket-json-rpc'
