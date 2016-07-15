@@ -7,7 +7,7 @@ async function main() {
     try {
         //const client = await WsRpcClient.connect("ws://localhost:9222/devtools/page/758107cd-dc4a-4263-b089-e2ef82260125")
         const client = await rpc.Client.connect("ws://localhost:9229/node")
-        client.on('error', (e: Error) => console.log(e));
+        //client.on('error', (e: Error) => console.log(e));
 
         await Promise.all([
             client.send("Runtime.enable"),
@@ -18,9 +18,9 @@ async function main() {
         ])
 
         await client.send("Profiler.start")
-        setTimeout(() => {
-            client.send("Profiler.stop")
-        }, 1000)
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1000 ms
+        await client.send("Profiler.stop")
+
     } catch (e) {
         console.error(e)
     }

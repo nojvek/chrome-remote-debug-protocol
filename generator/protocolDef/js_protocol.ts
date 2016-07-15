@@ -155,8 +155,8 @@ export const protocol: IProtocol =
                     { "name": "functionName", "type": "string", "description": "JavaScript function name." },
                     { "name": "scriptId", "$ref": "ScriptId", "description": "JavaScript script id." },
                     { "name": "url", "type": "string", "description": "JavaScript script name or url." },
-                    { "name": "lineNumber", "type": "integer", "description": "JavaScript script line number." },
-                    { "name": "columnNumber", "type": "integer", "description": "JavaScript script column number." }
+                    { "name": "lineNumber", "type": "integer", "description": "JavaScript script line number (0-based)." },
+                    { "name": "columnNumber", "type": "integer", "description": "JavaScript script column number (0-based)." }
                 ]
             },
             {
@@ -312,6 +312,40 @@ export const protocol: IProtocol =
                 "description": "Issued when all executionContexts were cleared in browser"
             },
             {
+                "name": "exceptionThrown",
+                "description": "Issued when exception was thrown and unhandled.",
+                "parameters": [
+                    { "name": "exceptionId", "type": "integer", "description": "Exception id." },
+                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "details", "$ref": "ExceptionDetails" },
+                    { "name": "exception", "$ref": "RemoteObject", "optional": true, "description": "Exception object." },
+                    { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Identifier of the context where exception happened." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "exceptionRevoked",
+                "description": "Issued when unhandled exception was revoked.",
+                "parameters": [
+                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "message", "type": "string", "description": "Message describing why exception was revoked." },
+                    { "name": "exceptionId", "type": "integer", "description": "The id of revoked exception, as reported in <code>exceptionUnhandled</code>." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "consoleAPICalled",
+                "description": "Issued when console API was called.",
+                "parameters": [
+                    { "name": "type", "type": "string", "enum": ["log", "debug", "info", "error", "warning", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Type of the call." },
+                    { "name": "args", "type": "array", "items": { "$ref": "RemoteObject" }, "description": "Call arguments." },
+                    { "name": "executionContextId", "$ref": "ExecutionContextId", "description": "Identifier of the context where the call was made." },
+                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "stackTrace", "$ref": "StackTrace", "optional": true, "description": "Stack trace captured when the call was made." }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "inspectRequested",
                 "parameters": [
                     { "name": "object", "$ref": "RemoteObject" },
@@ -355,18 +389,6 @@ export const protocol: IProtocol =
                     { "name": "columnNumber", "type": "integer" }
                 ],
                 "description": "Location in the source code."
-            },
-            {
-                "id": "FunctionDetails",
-                "hidden": true,
-                "type": "object",
-                "properties": [
-                    { "name": "location", "$ref": "Location", "optional": true, "description": "Location of the function, none for native functions." },
-                    { "name": "functionName", "type": "string", "description": "Name of the function." },
-                    { "name": "isGenerator", "type": "boolean", "description": "Whether this is a generator function." },
-                    { "name": "scopeChain", "type": "array", "optional": true, "items": { "$ref": "Scope" }, "description": "Scope chain for this closure." }
-                ],
-                "description": "Information about the function."
             },
             {
                 "id": "CallFrame",
@@ -560,17 +582,6 @@ export const protocol: IProtocol =
                 "description": "Returns source for the script with given id."
             },
             {
-                "name": "getFunctionDetails",
-                "hidden": true,
-                "parameters": [
-                    { "name": "functionId", "$ref": "Runtime.RemoteObjectId", "description": "Id of the function to get details for." }
-                ],
-                "returns": [
-                    { "name": "details", "$ref": "FunctionDetails", "description": "Information about the function." }
-                ],
-                "description": "Returns detailed information on given function."
-            },
-            {
                 "name": "setPauseOnExceptions",
                 "parameters": [
                     { "name": "state", "type": "string", "enum": ["none", "uncaught", "all"], "description": "Pause on exceptions mode." }
@@ -693,7 +704,7 @@ export const protocol: IProtocol =
                 "name": "paused",
                 "parameters": [
                     { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "Call stack the virtual machine stopped on." },
-                    { "name": "reason", "type": "string", "enum": [ "XHR", "DOM", "EventListener", "exception", "assert", "CSPViolation", "debugCommand", "promiseRejection", "other" ], "description": "Pause reason." },
+                    { "name": "reason", "type": "string", "enum": [ "XHR", "DOM", "EventListener", "exception", "assert", "debugCommand", "promiseRejection", "other" ], "description": "Pause reason." },
                     { "name": "data", "type": "object", "optional": true, "description": "Object containing break-specific auxiliary properties." },
                     { "name": "hitBreakpoints", "type": "array", "optional": true, "items": { "type": "string" }, "description": "Hit breakpoints IDs", "hidden": true },
                     { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true }
@@ -722,22 +733,21 @@ export const protocol: IProtocol =
                 "type": "object",
                 "description": "Console message.",
                 "properties": [
-                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "security", "other", "deprecation"], "description": "Message source." },
-                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info", "revokedError"], "description": "Message severity." },
+                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "security", "other", "deprecation", "worker"], "description": "Message source." },
+                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
-                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Console message type." },
+                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Never present. Use Runtime.consoleAPICalled instead." },
                     { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
                     { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
                     { "name": "column", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message." },
                     { "name": "repeatCount", "type": "integer", "optional": true, "description": "Repeat count for repeated messages." },
-                    { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Message parameters in case of the formatted message." },
+                    { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Never present. Use Runtime.consoleAPICalled instead." },
                     { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
                     { "name": "networkRequestId", "type": "string", "optional": true, "description": "Identifier of the network request associated with this message." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true },
-                    { "name": "messageId", "type": "integer", "hidden": true, "optional": true, "description": "Message id." },
-                    { "name": "relatedMessageId", "type": "integer", "hidden": true, "optional": true, "description": "Related message id." }
+                    { "name": "workerId", "type": "string", "optional": true, "description": "Identifier of the worker this message came from.", "hidden": true }
                 ]
             }
         ],
@@ -774,7 +784,8 @@ export const protocol: IProtocol =
             },
             {
                 "name": "messagesCleared",
-                "description": "Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation."
+                "description": "Not issued.",
+                "deprecated": true
             }
         ]
     },
@@ -788,13 +799,8 @@ export const protocol: IProtocol =
                 "type": "object",
                 "description": "CPU Profile node. Holds callsite information, execution statistics and child nodes.",
                 "properties": [
-                    { "name": "functionName", "type": "string", "description": "Function name." },
-                    { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Script identifier." },
-                    { "name": "url", "type": "string", "description": "URL." },
-                    { "name": "lineNumber", "type": "integer", "description": "1-based line number of the function start position." },
-                    { "name": "columnNumber", "type": "integer", "description": "1-based column number of the function start position." },
+                    { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
                     { "name": "hitCount", "type": "integer", "description": "Number of samples where this node was on top of the call stack." },
-                    { "name": "callUID", "type": "number", "description": "Call UID." },
                     { "name": "children", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "Child nodes." },
                     { "name": "deoptReason", "type": "string", "description": "The reason of being not optimized. The function may be deoptimized or marked as don't optimize."},
                     { "name": "id", "type": "integer", "description": "Unique id of the node." },
@@ -883,11 +889,7 @@ export const protocol: IProtocol =
                 "type": "object",
                 "description": "Sampling Heap Profile node. Holds callsite information, allocation statistics and child nodes.",
                 "properties": [
-                    { "name": "functionName", "type": "string", "description": "Function name." },
-                    { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Script identifier." },
-                    { "name": "url", "type": "string", "description": "URL." },
-                    { "name": "lineNumber", "type": "integer", "description": "1-based line number of the function start position." },
-                    { "name": "columnNumber", "type": "integer", "description": "1-based column number of the function start position." },
+                    { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
                     { "name": "selfSize", "type": "number", "description": "Allocations size in bytes for the node excluding children." },
                     { "name": "children", "type": "array", "items": { "$ref": "SamplingHeapProfileNode" }, "description": "Child nodes." }
                 ]

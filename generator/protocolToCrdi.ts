@@ -80,8 +80,6 @@ const emitDomain = (domain: P.Domain) => {
     const commandDefs = domain.commands ? domain.commands.map(c => emitCommand(c, domainName)) : []
     const eventDefs = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
     const functionDefs = commandDefs.concat(eventDefs)
-    emitNames(commandDefs, "CommandNames")
-    emitNames(eventDefs, "EventNames")
     emitCloseBlock()
     emitInterface(`${domainName}Client`, functionDefs.map(s => s.client))
     emitInterface(`${domainName}Adapter`, functionDefs.map(s => s.adapter))
@@ -200,8 +198,8 @@ const emitNames = (names: ClientAdapterDef[], arrayName: string) => {
 }
 
 /// Main
-const destFilePath = `${__dirname}/../../src/crdi.ts`
-const moduleName = path.basename(destFilePath, ".ts")
+const destFilePath = `${__dirname}/../../src/crdi.d.ts`
+const moduleName = path.basename(destFilePath, ".d.ts")
 const protocolDomains: P.Domain[] = jsProtocol.domains.concat(browserProtocol.domains)
 
 emitModule(moduleName, protocolDomains)

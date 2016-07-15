@@ -13,4 +13,5 @@ before_script:
     - cd $TRAVIS_BUILD_DIR
 
 script:
+    - npm run download-protocols
     - npm run generate-crdi
