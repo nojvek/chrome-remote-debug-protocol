@@ -3,9 +3,9 @@ import * as http from 'http'
 import WebSocketServer = WebSocket.Server
 
 import {EventEmitter} from 'events'
-import * as JsonRpc from './jsonRpc'
+import * as JsonRpc2 from './jsonRpc'
 
-export class Client extends EventEmitter implements JsonRpc.Client{
+export class Client extends EventEmitter implements JsonRpc2.Client{
     private static ConnectTimeout = 5000
 
     private _connectedPromise: Promise<Client>
@@ -47,7 +47,7 @@ export class Client extends EventEmitter implements JsonRpc.Client{
     }
 
     private _handleMessage(messageStr: string) {
-        let message: JsonRpc.Response & JsonRpc.Notification
+        let message: JsonRpc2.Response & JsonRpc2.Notification
 
         // Ensure JSON is not malformed
         try {
@@ -82,7 +82,7 @@ export class Client extends EventEmitter implements JsonRpc.Client{
         }
     }
 
-    private _send(message: JsonRpc.Notification | JsonRpc.Request) {
+    private _send(message: JsonRpc2.Notification | JsonRpc2.Request) {
         console.log("Client >", JSON.stringify(message))
         this.emit('send', message);
         this._webSocket.send(JSON.stringify(message))
@@ -90,7 +90,7 @@ export class Client extends EventEmitter implements JsonRpc.Client{
 
     send(method: string, params?: any): Promise<any> {
         const id = ++this._nextMessageId;
-        const message: JsonRpc.Request = {id, method, params}
+        const message: JsonRpc2.Request = {id, method, params}
 
         return new Promise((resolve, reject) => {
             this._pendingMessageMap.set(id, {resolve, reject})
@@ -103,8 +103,8 @@ export class Client extends EventEmitter implements JsonRpc.Client{
     }
 }
 
-export class Server extends EventEmitter implements JsonRpc.Server {
-    private _replyHandlerMap: Map<string, (params: any) => JsonRpc.PromiseOrNot<any>> = new Map()
+export class Server extends EventEmitter implements JsonRpc2.Server {
+    private _replyHandlerMap: Map<string, (params: any) => JsonRpc2.PromiseOrNot<any>> = new Map()
     private _webSocketServer: WebSocketServer
 
     constructor (httpServer: http.Server) {
@@ -119,13 +119,13 @@ export class Server extends EventEmitter implements JsonRpc.Server {
     }
 
     private _handleMessage(messageStr: string, ws: WebSocket): void {
-        let message: JsonRpc.Request
+        let message: JsonRpc2.Request
 
         // Ensure JSON is not malformed
         try {
             message = JSON.parse(messageStr)
         } catch (e) {
-            return this._sendError(ws, message, JsonRpc.ErrorCode.ParseError)
+            return this._sendError(ws, message, JsonRpc2.ErrorCode.ParseError)
         }
 
         // Emit message so caller can log if needed
@@ -139,23 +139,23 @@ export class Server extends EventEmitter implements JsonRpc.Server {
                 // Handler is defined so lets call it
                 if (handler) {
                     try {
-                        const result: JsonRpc.PromiseOrNot<any> = handler.call(null, message.params)
+                        const result: JsonRpc2.PromiseOrNot<any> = handler.call(null, message.params)
                         if (result instanceof Promise) {
                             // Result is a promise, so lets wait for the result and handle accordingly
                             result.then((actualResult: any) => {
                                 this._send(ws, {id: message.id, result: result || {}})
                             }).catch((error: Error) => {
-                                this._sendError(ws, message, JsonRpc.ErrorCode.InternalError, error);
+                                this._sendError(ws, message, JsonRpc2.ErrorCode.InternalError, error);
                             })
                         } else {
                             // Result is not a promise so send immediately
                             this._send(ws, {id: message.id, result: result || {}})
                         }
                     } catch (error) {
-                        this._sendError(ws, message, JsonRpc.ErrorCode.InternalError, error);
+                        this._sendError(ws, message, JsonRpc2.ErrorCode.InternalError, error);
                     }
                 } else {
-                    this._sendError(ws, message, JsonRpc.ErrorCode.MethodNotFound)
+                    this._sendError(ws, message, JsonRpc2.ErrorCode.MethodNotFound)
                 }
             } else {
                 // Message is a notification, so just emit
@@ -163,37 +163,37 @@ export class Server extends EventEmitter implements JsonRpc.Server {
             }
         } else {
             // No method property, send InvalidRequest error
-            this._sendError(ws, message, JsonRpc.ErrorCode.InvalidRequest)
+            this._sendError(ws, message, JsonRpc2.ErrorCode.InvalidRequest)
         }
     }
 
-    private _send(ws: WebSocket, message: JsonRpc.Response | JsonRpc.Notification ) {
+    private _send(ws: WebSocket, message: JsonRpc2.Response | JsonRpc2.Notification ) {
         console.log("Server >", JSON.stringify(message))
         this.emit('send', message);
         ws.send(JSON.stringify(message))
     }
 
-    private _sendError(ws: WebSocket, request: JsonRpc.Request, errorCode: JsonRpc.ErrorCode, errorData?: any) {
+    private _sendError(ws: WebSocket, request: JsonRpc2.Request, errorCode: JsonRpc2.ErrorCode, errorData?: any) {
         this._send(ws, {
             id: request && request.id || -1,
             error: this._errorFromCode(errorCode, errorData, request.method)
         })
     }
 
-    private _errorFromCode(code: JsonRpc.ErrorCode, data?: any, method?: string): JsonRpc.Error {
+    private _errorFromCode(code: JsonRpc2.ErrorCode, data?: any, method?: string): JsonRpc2.Error {
         let message = ""
 
         switch (code) {
-            case JsonRpc.ErrorCode.InternalError:
+            case JsonRpc2.ErrorCode.InternalError:
                 message =  `InternalError: Internal Error when calling '${method}'`
                 break
-            case JsonRpc.ErrorCode.MethodNotFound:
+            case JsonRpc2.ErrorCode.MethodNotFound:
                 message =  `MethodNotFound: '${method}' wasn't found`
                 break
-            case JsonRpc.ErrorCode.InvalidRequest:
+            case JsonRpc2.ErrorCode.InvalidRequest:
                 message =  "InvalidRequest: JSON sent is not a valid request object"
                 break
-            case JsonRpc.ErrorCode.ParseError:
+            case JsonRpc2.ErrorCode.ParseError:
                 message =  "ParseError: invalid JSON received"
                 break
         }
@@ -201,7 +201,7 @@ export class Server extends EventEmitter implements JsonRpc.Server {
         return {code, message, data}
     }
 
-    reply(method: string, handler: (params: any) => JsonRpc.PromiseOrNot<any>): void {
+    reply(method: string, handler: (params: any) => JsonRpc2.PromiseOrNot<any>): void {
         this._replyHandlerMap.set(method, handler)
     }
 
