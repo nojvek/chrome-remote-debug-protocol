@@ -9,6 +9,8 @@ install:
     - npm install -g jake
     - npm install -g typings
     - typings install
+    - pwd
+    - ls -la
 
 before_script:
     - cd $TRAVIS_BUILD_DIR
