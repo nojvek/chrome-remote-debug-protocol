@@ -94,15 +94,12 @@ export class Client extends EventEmitter implements JsonRpc.Client{
 
         return new Promise((resolve, reject) => {
             this._pendingMessageMap.set(id, {resolve, reject})
-            this._connectedPromise.then(() => {
-                this._send(message)
-            })
+            this._connectedPromise.then(() => this._send(message))
         })
     }
 
     notify(method: string, params?: any): void {
-        const message: JsonRpc.Notification = {method, params}
-        this._send(message)
+        this._send({method, params})
     }
 }
 
@@ -177,7 +174,7 @@ export class Server extends EventEmitter implements JsonRpc.Server {
     }
 
     private _sendError(ws: WebSocket, request: JsonRpc.Request, errorCode: JsonRpc.ErrorCode, errorData?: any) {
-        this._send(ws, <JsonRpc.Response>{
+        this._send(ws, {
             id: request && request.id || -1,
             error: this._errorFromCode(errorCode, errorData, request.method)
         })
@@ -211,8 +208,7 @@ export class Server extends EventEmitter implements JsonRpc.Server {
     notify (method: string, params?: any): void {
         // Broadcast message to all clients
         this._webSocketServer.clients.forEach(ws => {
-            const message: JsonRpc.Notification = {method, params}
-            this._send(ws, message)
+            this._send(ws, {method, params})
         })
     }
 }
