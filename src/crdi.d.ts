@@ -7,78 +7,6 @@ export module Crdi {
     export type integer = number
     export type PromiseOrNot<T> = T | Promise<T>;
     
-    export interface CrdiClient {
-        Runtime: RuntimeClient;
-        Debugger: DebuggerClient;
-        Console: ConsoleClient;
-        Profiler: ProfilerClient;
-        HeapProfiler: HeapProfilerClient;
-        Inspector: InspectorClient;
-        Memory: MemoryClient;
-        Page: PageClient;
-        Rendering: RenderingClient;
-        Emulation: EmulationClient;
-        Security: SecurityClient;
-        Network: NetworkClient;
-        Database: DatabaseClient;
-        IndexedDB: IndexedDBClient;
-        CacheStorage: CacheStorageClient;
-        DOMStorage: DOMStorageClient;
-        ApplicationCache: ApplicationCacheClient;
-        DOM: DOMClient;
-        CSS: CSSClient;
-        IO: IOClient;
-        DOMDebugger: DOMDebuggerClient;
-        Worker: WorkerClient;
-        ServiceWorker: ServiceWorkerClient;
-        Input: InputClient;
-        LayerTree: LayerTreeClient;
-        DeviceOrientation: DeviceOrientationClient;
-        Tracing: TracingClient;
-        Animation: AnimationClient;
-        Accessibility: AccessibilityClient;
-        Storage: StorageClient;
-        Browser: BrowserClient;
-        SystemInfo: SystemInfoClient;
-        Tethering: TetheringClient;
-    }
-    
-    export interface CrdiAdapter {
-        Runtime: RuntimeAdapter;
-        Debugger: DebuggerAdapter;
-        Console: ConsoleAdapter;
-        Profiler: ProfilerAdapter;
-        HeapProfiler: HeapProfilerAdapter;
-        Inspector: InspectorAdapter;
-        Memory: MemoryAdapter;
-        Page: PageAdapter;
-        Rendering: RenderingAdapter;
-        Emulation: EmulationAdapter;
-        Security: SecurityAdapter;
-        Network: NetworkAdapter;
-        Database: DatabaseAdapter;
-        IndexedDB: IndexedDBAdapter;
-        CacheStorage: CacheStorageAdapter;
-        DOMStorage: DOMStorageAdapter;
-        ApplicationCache: ApplicationCacheAdapter;
-        DOM: DOMAdapter;
-        CSS: CSSAdapter;
-        IO: IOAdapter;
-        DOMDebugger: DOMDebuggerAdapter;
-        Worker: WorkerAdapter;
-        ServiceWorker: ServiceWorkerAdapter;
-        Input: InputAdapter;
-        LayerTree: LayerTreeAdapter;
-        DeviceOrientation: DeviceOrientationAdapter;
-        Tracing: TracingAdapter;
-        Animation: AnimationAdapter;
-        Accessibility: AccessibilityAdapter;
-        Storage: StorageAdapter;
-        Browser: BrowserAdapter;
-        SystemInfo: SystemInfoAdapter;
-        Tethering: TetheringAdapter;
-    }
-    
     /** Runtime domain exposes JavaScript runtime by means of remote evaluation and mirror objects. Evaluation results are returned as mirror object that expose object type, string representation and unique identifier that can be used for further object reference. Original objects are maintained in memory unless they are either explicitly released or are released along with the other objects in their object group. */
     export module Runtime {
         
@@ -92,105 +20,146 @@ export module Crdi {
         export interface RemoteObject {
             /** Object type. */
             type: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol';
+            
             /** Object subtype hint. Specified for 'object' type values only. */
             subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
+            
             /** Object class (constructor) name. Specified for 'object' type values only. */
             className?: string;
+            
             /** Remote object value in case of primitive values or JSON values (if it was requested), or description string if the value can not be JSON-stringified (like NaN, Infinity, -Infinity, -0). */
             value?: any;
+            
             /** String representation of the object. */
             description?: string;
+            
             /** Unique object identifier (for non-primitive values). */
             objectId?: RemoteObjectId;
+            
             /** Preview containing abbreviated property values. Specified for 'object' type values only. */
             preview?: ObjectPreview;
+            
             customPreview?: CustomPreview;
+            
         }
         
         export interface CustomPreview {
             header: string;
+            
             hasBody: boolean;
+            
             formatterObjectId: RemoteObjectId;
+            
             bindRemoteObjectFunctionId: RemoteObjectId;
+            
             configObjectId?: RemoteObjectId;
+            
         }
         
         /** Object containing abbreviated remote object value. */
         export interface ObjectPreview {
             /** Object type. */
             type: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol';
+            
             /** Object subtype hint. Specified for 'object' type values only. */
             subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
+            
             /** String representation of the object. */
             description?: string;
+            
             /** True iff some of the properties or entries of the original object did not fit. */
             overflow: boolean;
+            
             /** List of the properties. */
             properties: PropertyPreview[];
+            
             /** List of the entries. Specified for 'map</code> and <code>set' subtype values only. */
             entries?: EntryPreview[];
+            
         }
         
         export interface PropertyPreview {
             /** Property name. */
             name: string;
+            
             /** Object type. Accessor means that the property itself is an accessor property. */
             type: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol' | 'accessor';
+            
             /** User-friendly property value string. */
             value?: string;
+            
             /** Nested value preview. */
             valuePreview?: ObjectPreview;
+            
             /** Object subtype hint. Specified for 'object' type values only. */
             subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
+            
         }
         
         export interface EntryPreview {
             /** Preview of the key. Specified for map-like collection entries. */
             key?: ObjectPreview;
+            
             /** Preview of the value. */
             value: ObjectPreview;
+            
         }
         
         /** Object property descriptor. */
         export interface PropertyDescriptor {
             /** Property name or symbol description. */
             name: string;
+            
             /** The value associated with the property. */
             value?: RemoteObject;
+            
             /** True if the value associated with the property may be changed (data descriptors only). */
             writable?: boolean;
+            
             /** A function which serves as a getter for the property, or 'undefined' if there is no getter (accessor descriptors only). */
             get?: RemoteObject;
+            
             /** A function which serves as a setter for the property, or 'undefined' if there is no setter (accessor descriptors only). */
             set?: RemoteObject;
+            
             /** True if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object. */
             configurable: boolean;
+            
             /** True if this property shows up during enumeration of the properties on the corresponding object. */
             enumerable: boolean;
+            
             /** True if the result was thrown during the evaluation. */
             wasThrown?: boolean;
+            
             /** True if the property is owned for the object. */
             isOwn?: boolean;
+            
             /** Property symbol object, if the property is of the 'symbol' type. */
             symbol?: RemoteObject;
+            
         }
         
         /** Object internal property descriptor. This property isn't normally visible in JavaScript code. */
         export interface InternalPropertyDescriptor {
             /** Conventional property name. */
             name: string;
+            
             /** The value associated with the property. */
             value?: RemoteObject;
+            
         }
         
         /** Represents function call argument. Either remote object id 'objectId</code> or primitive <code>value' or neither of (for undefined) them should be specified. */
         export interface CallArgument {
             /** Primitive value, or description string if the value can not be JSON-stringified (like NaN, Infinity, -Infinity, -0). */
             value?: any;
+            
             /** Remote object handle. */
             objectId?: RemoteObjectId;
+            
             /** Object type. */
             type?: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol';
+            
         }
         
         /** Id of an execution context. */
@@ -200,302 +169,307 @@ export module Crdi {
         export interface ExecutionContextDescription {
             /** Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed. */
             id: ExecutionContextId;
+            
             /** Whether context is the default page context (as opposite to e.g. context of content script). */
             isDefault: boolean;
+            
             /** Execution context origin. */
             origin: string;
+            
             /** Human readable name describing given context. */
             name: string;
+            
             /** Id of the owning frame. May be an empty string if the context is not associated with a frame. */
             frameId: string;
+            
         }
         
-        /** Detailed information on exception (or error) that was thrown during script compilation or execution. */
+        /** Detailed information about exception (or error) that was thrown during script compilation or execution. */
         export interface ExceptionDetails {
             /** Exception text. */
             text: string;
-            /** URL of the message origin. */
+            
+            /** Script ID of the exception location. */
+            scriptId: ScriptId;
+            
+            /** Line number of the exception location (0-based). */
+            lineNumber: integer;
+            
+            /** Column number of the exception location (0-based). */
+            columnNumber: integer;
+            
+            /** URL of the exception location, to be used when the script was not reported. */
             url?: string;
-            /** Script ID of the message origin. */
-            scriptId?: string;
-            /** Line number in the resource that generated this message. (0-based). */
-            lineNumber?: integer;
-            /** Column number in the resource that generated this message. (0-based). */
-            columnNumber?: integer;
-            /** JavaScript stack trace for assertions and error messages. */
-            stack?: StackTrace;
+            
+            /** JavaScript stack trace if available. */
+            stackTrace?: StackTrace;
+            
         }
+        
+        /** Number of milliseconds since epoch. */
+        export type Timestamp = number;
         
         /** Stack entry for runtime errors and assertions. */
         export interface CallFrame {
             /** JavaScript function name. */
             functionName: string;
+            
             /** JavaScript script id. */
             scriptId: ScriptId;
+            
             /** JavaScript script name or url. */
             url: string;
+            
             /** JavaScript script line number (0-based). */
             lineNumber: integer;
+            
             /** JavaScript script column number (0-based). */
             columnNumber: integer;
+            
         }
         
         /** Call frames for assertions or error messages. */
         export interface StackTrace {
             /** String label of this stack trace. For async traces this may be a name of the function that initiated the async call. */
             description?: string;
+            
             /** JavaScript function name. */
             callFrames: CallFrame[];
+            
             /** Asynchronous JavaScript stack trace that preceded this stack, if available. */
             parent?: StackTrace;
+            
         }
         
         export interface EvaluateRequest {
             /** Expression to evaluate. */
             expression: string;
+            
             /** Symbolic group name that can be used to release multiple objects. */
             objectGroup?: string;
+            
             /** Determines whether Command Line API should be available during the evaluation. */
             includeCommandLineAPI?: boolean;
+            
             /** Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. */
             doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            
             /** Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page. */
             contextId?: ExecutionContextId;
+            
             /** Whether the result is expected to be a JSON object that should be sent by value. */
             returnByValue?: boolean;
+            
             /** Whether preview should be generated for the result. */
             generatePreview?: boolean;
+            
             /** Whether execution should be treated as initiated by user in the UI. */
             userGesture?: boolean;
+            
         }
         
         export interface EvaluateResponse {
             /** Evaluation result. */
             result: RemoteObject;
+            
             /** True if the result was thrown during the evaluation. */
             wasThrown?: boolean;
+            
             /** Exception details. */
             exceptionDetails?: ExceptionDetails;
+            
         }
         
         export interface CallFunctionOnRequest {
             /** Identifier of the object to call function on. */
             objectId: RemoteObjectId;
+            
             /** Declaration of the function to call. */
             functionDeclaration: string;
+            
             /** Call arguments. All call arguments must belong to the same JavaScript world as the target object. */
             arguments?: CallArgument[];
+            
             /** Specifies whether function call should stop on exceptions and mute console. Overrides setPauseOnException state. */
             doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            
             /** Whether the result is expected to be a JSON object which should be sent by value. */
             returnByValue?: boolean;
+            
             /** Whether preview should be generated for the result. */
             generatePreview?: boolean;
+            
             /** Whether execution should be treated as initiated by user in the UI. */
             userGesture?: boolean;
+            
         }
         
         export interface CallFunctionOnResponse {
             /** Call result. */
             result: RemoteObject;
+            
             /** True if the result was thrown during the evaluation. */
             wasThrown?: boolean;
+            
         }
         
         export interface GetPropertiesRequest {
             /** Identifier of the object to return properties for. */
             objectId: RemoteObjectId;
+            
             /** If true, returns properties belonging only to the element itself, not to its prototype chain. */
             ownProperties?: boolean;
+            
             /** If true, returns accessor properties (with getter/setter) only; internal properties are not returned either. */
             accessorPropertiesOnly?: boolean;
+            
             /** Whether preview should be generated for the results. */
             generatePreview?: boolean;
+            
         }
         
         export interface GetPropertiesResponse {
             /** Object properties. */
             result: PropertyDescriptor[];
+            
             /** Internal object properties (only of the element itself). */
             internalProperties?: InternalPropertyDescriptor[];
+            
             /** Exception details. */
             exceptionDetails?: ExceptionDetails;
+            
         }
         
         export interface ReleaseObjectRequest {
             /** Identifier of the object to release. */
             objectId: RemoteObjectId;
+            
         }
         
         export interface ReleaseObjectGroupRequest {
             /** Symbolic object group name. */
             objectGroup: string;
+            
         }
         
         export interface SetCustomObjectFormatterEnabledRequest {
             enabled: boolean;
+            
         }
         
         export interface CompileScriptRequest {
             /** Expression to compile. */
             expression: string;
+            
             /** Source url to be set for the script. */
             sourceURL: string;
+            
             /** Specifies whether the compiled script should be persisted. */
             persistScript: boolean;
+            
             /** Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter is used to specify one of those contexts. */
             executionContextId: ExecutionContextId;
+            
         }
         
         export interface CompileScriptResponse {
             /** Id of the script. */
             scriptId?: ScriptId;
+            
             /** Exception details. */
             exceptionDetails?: ExceptionDetails;
+            
         }
         
         export interface RunScriptRequest {
             /** Id of the script to run. */
             scriptId: ScriptId;
+            
             /** Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter is used to specify one of those contexts. */
             executionContextId: ExecutionContextId;
+            
             /** Symbolic group name that can be used to release multiple objects. */
             objectGroup?: string;
+            
             /** Specifies whether script run should stop on exceptions and mute console. Overrides setPauseOnException state. */
             doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            
             /** Determines whether Command Line API should be available during the evaluation. */
             includeCommandLineAPI?: boolean;
+            
         }
         
         export interface RunScriptResponse {
             /** Run result. */
             result: RemoteObject;
+            
             /** Exception details. */
             exceptionDetails?: ExceptionDetails;
+            
         }
         
         export interface ExecutionContextCreatedEvent {
             /** A newly created execution contex. */
             context: ExecutionContextDescription;
+            
         }
         
         export interface ExecutionContextDestroyedEvent {
             /** Id of the destroyed context */
             executionContextId: ExecutionContextId;
+            
         }
         
         export interface ExceptionThrownEvent {
             /** Exception id. */
             exceptionId: integer;
-            /** Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp */
-            timestamp: number;
+            
+            /** Timestamp of the exception. */
+            timestamp: Timestamp;
+            
             details: ExceptionDetails;
+            
             /** Exception object. */
             exception?: RemoteObject;
+            
             /** Identifier of the context where exception happened. */
             executionContextId?: ExecutionContextId;
+            
         }
         
         export interface ExceptionRevokedEvent {
-            /** Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp */
-            timestamp: number;
             /** Message describing why exception was revoked. */
             message: string;
+            
             /** The id of revoked exception, as reported in 'exceptionUnhandled'. */
             exceptionId: integer;
+            
         }
         
         export interface ConsoleAPICalledEvent {
             /** Type of the call. */
             type: 'log' | 'debug' | 'info' | 'error' | 'warning' | 'dir' | 'dirxml' | 'table' | 'trace' | 'clear' | 'startGroup' | 'startGroupCollapsed' | 'endGroup' | 'assert' | 'profile' | 'profileEnd';
+            
             /** Call arguments. */
             args: RemoteObject[];
+            
             /** Identifier of the context where the call was made. */
             executionContextId: ExecutionContextId;
-            /** Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp */
-            timestamp: number;
+            
+            /** Call timestamp. */
+            timestamp: Timestamp;
+            
             /** Stack trace captured when the call was made. */
             stackTrace?: StackTrace;
+            
         }
         
         export interface InspectRequestedEvent {
             object: RemoteObject;
+            
             hints: any;
+            
         }
-    }
-    
-    export interface RuntimeClient {
-        /** Evaluates expression on global object. */
-        evaluate: (request: Runtime.EvaluateRequest) => Promise<Runtime.EvaluateResponse>;
-        /** Calls function with given declaration on the given object. Object group of the result is inherited from the target object. */
-        callFunctionOn: (request: Runtime.CallFunctionOnRequest) => Promise<Runtime.CallFunctionOnResponse>;
-        /** Returns properties of a given object. Object group of the result is inherited from the target object. */
-        getProperties: (request: Runtime.GetPropertiesRequest) => Promise<Runtime.GetPropertiesResponse>;
-        /** Releases remote object with given id. */
-        releaseObject: (request: Runtime.ReleaseObjectRequest) => Promise<{}>;
-        /** Releases all remote objects that belong to a given group. */
-        releaseObjectGroup: (request: Runtime.ReleaseObjectGroupRequest) => Promise<{}>;
-        /** Tells inspected instance(worker or page) that it can run in case it was started paused. */
-        run: () => Promise<{}>;
-        /** Enables reporting of execution contexts creation by means of 'executionContextCreated' event. When the reporting gets enabled the event will be sent immediately for each existing execution context. */
-        enable: () => Promise<{}>;
-        /** Disables reporting of execution contexts creation. */
-        disable: () => Promise<{}>;
-        setCustomObjectFormatterEnabled: (request: Runtime.SetCustomObjectFormatterEnabledRequest) => Promise<{}>;
-        /** Compiles expression. */
-        compileScript: (request: Runtime.CompileScriptRequest) => Promise<Runtime.CompileScriptResponse>;
-        /** Runs script with given id in a given context. */
-        runScript: (request: Runtime.RunScriptRequest) => Promise<Runtime.RunScriptResponse>;
-        /** Issued when new execution context is created. */
-        onExecutionContextCreated: (handler: (event: Runtime.ExecutionContextCreatedEvent) => void) => void;
-        /** Issued when execution context is destroyed. */
-        onExecutionContextDestroyed: (handler: (event: Runtime.ExecutionContextDestroyedEvent) => void) => void;
-        /** Issued when all executionContexts were cleared in browser */
-        onExecutionContextsCleared: (handler: () => void) => void;
-        /** Issued when exception was thrown and unhandled. */
-        onExceptionThrown: (handler: (event: Runtime.ExceptionThrownEvent) => void) => void;
-        /** Issued when unhandled exception was revoked. */
-        onExceptionRevoked: (handler: (event: Runtime.ExceptionRevokedEvent) => void) => void;
-        /** Issued when console API was called. */
-        onConsoleAPICalled: (handler: (event: Runtime.ConsoleAPICalledEvent) => void) => void;
-        onInspectRequested: (handler: (event: Runtime.InspectRequestedEvent) => void) => void;
-    }
-    
-    export interface RuntimeAdapter {
-        /** Evaluates expression on global object. */
-        onEvaluate: (handler: (request: Runtime.EvaluateRequest) => PromiseOrNot<Runtime.EvaluateResponse>) => void;
-        /** Calls function with given declaration on the given object. Object group of the result is inherited from the target object. */
-        onCallFunctionOn: (handler: (request: Runtime.CallFunctionOnRequest) => PromiseOrNot<Runtime.CallFunctionOnResponse>) => void;
-        /** Returns properties of a given object. Object group of the result is inherited from the target object. */
-        onGetProperties: (handler: (request: Runtime.GetPropertiesRequest) => PromiseOrNot<Runtime.GetPropertiesResponse>) => void;
-        /** Releases remote object with given id. */
-        onReleaseObject: (handler: (request: Runtime.ReleaseObjectRequest) => PromiseOrNot<{}>) => void;
-        /** Releases all remote objects that belong to a given group. */
-        onReleaseObjectGroup: (handler: (request: Runtime.ReleaseObjectGroupRequest) => PromiseOrNot<{}>) => void;
-        /** Tells inspected instance(worker or page) that it can run in case it was started paused. */
-        onRun: (handler: () => PromiseOrNot<{}>) => void;
-        /** Enables reporting of execution contexts creation by means of 'executionContextCreated' event. When the reporting gets enabled the event will be sent immediately for each existing execution context. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables reporting of execution contexts creation. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onSetCustomObjectFormatterEnabled: (handler: (request: Runtime.SetCustomObjectFormatterEnabledRequest) => PromiseOrNot<{}>) => void;
-        /** Compiles expression. */
-        onCompileScript: (handler: (request: Runtime.CompileScriptRequest) => PromiseOrNot<Runtime.CompileScriptResponse>) => void;
-        /** Runs script with given id in a given context. */
-        onRunScript: (handler: (request: Runtime.RunScriptRequest) => PromiseOrNot<Runtime.RunScriptResponse>) => void;
-        /** Issued when new execution context is created. */
-        fireExecutionContextCreated: (event: Runtime.ExecutionContextCreatedEvent) => void;
-        /** Issued when execution context is destroyed. */
-        fireExecutionContextDestroyed: (event: Runtime.ExecutionContextDestroyedEvent) => void;
-        /** Issued when all executionContexts were cleared in browser */
-        fireExecutionContextsCleared: () => void;
-        /** Issued when exception was thrown and unhandled. */
-        fireExceptionThrown: (event: Runtime.ExceptionThrownEvent) => void;
-        /** Issued when unhandled exception was revoked. */
-        fireExceptionRevoked: (event: Runtime.ExceptionRevokedEvent) => void;
-        /** Issued when console API was called. */
-        fireConsoleAPICalled: (event: Runtime.ConsoleAPICalledEvent) => void;
-        fireInspectRequested: (event: Runtime.InspectRequestedEvent) => void;
     }
     
     /** Debugger domain exposes JavaScript debugging capabilities. It allows setting and removing breakpoints, stepping through execution, exploring stack traces, etc. */
@@ -511,538 +485,495 @@ export module Crdi {
         export interface Location {
             /** Script identifier as reported in the 'Debugger.scriptParsed'. */
             scriptId: Runtime.ScriptId;
+            
             /** Line number in the script (0-based). */
             lineNumber: integer;
+            
             /** Column number in the script (0-based). */
             columnNumber?: integer;
+            
         }
         
         /** Location in the source code. */
         export interface ScriptPosition {
             lineNumber: integer;
+            
             columnNumber: integer;
+            
         }
         
         /** JavaScript call frame. Array of call frames form the call stack. */
         export interface CallFrame {
             /** Call frame identifier. This identifier is only valid while the virtual machine is paused. */
             callFrameId: CallFrameId;
+            
             /** Name of the JavaScript function called on this call frame. */
             functionName: string;
+            
             /** Location in the source code. */
             functionLocation?: Location;
+            
             /** Location in the source code. */
             location: Location;
+            
             /** Scope chain for this call frame. */
             scopeChain: Scope[];
+            
             /** 'this' object for this call frame. */
             this: Runtime.RemoteObject;
+            
             /** The value being returned, if the function is at return point. */
             returnValue?: Runtime.RemoteObject;
+            
         }
         
         /** Scope description. */
         export interface Scope {
             /** Scope type. */
             type: 'global' | 'local' | 'with' | 'closure' | 'catch' | 'block' | 'script';
+            
             /** Object representing the scope. For 'global</code> and <code>with' scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties. */
             object: Runtime.RemoteObject;
+            
             name?: string;
+            
             /** Location in the source code where scope starts */
             startLocation?: Location;
+            
             /** Location in the source code where scope ends */
             endLocation?: Location;
-        }
-        
-        /** Error data for setScriptSource command. Contains uncompilable script source error. */
-        export interface SetScriptSourceError {
-            /** Compiler error message */
-            message: string;
-            /** Compile error line number (1-based) */
-            lineNumber: integer;
-            /** Compile error column number (1-based) */
-            columnNumber: integer;
+            
         }
         
         /** Search match for resource. */
         export interface SearchMatch {
             /** Line number in resource content. */
             lineNumber: number;
+            
             /** Line with match content. */
             lineContent: string;
+            
         }
         
         export interface SetBreakpointsActiveRequest {
             /** New value for breakpoints active state. */
             active: boolean;
+            
         }
         
         export interface SetSkipAllPausesRequest {
             /** New value for skip pauses state. */
             skipped: boolean;
+            
         }
         
         export interface SetBreakpointByUrlRequest {
             /** Line number to set breakpoint at. */
             lineNumber: integer;
+            
             /** URL of the resources to set breakpoint on. */
             url?: string;
+            
             /** Regex pattern for the URLs of the resources to set breakpoints on. Either 'url</code> or <code>urlRegex' must be specified. */
             urlRegex?: string;
+            
             /** Offset in the line to set breakpoint at. */
             columnNumber?: integer;
+            
             /** Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true. */
             condition?: string;
+            
         }
         
         export interface SetBreakpointByUrlResponse {
             /** Id of the created breakpoint for further reference. */
             breakpointId: BreakpointId;
+            
             /** List of the locations this breakpoint resolved into upon addition. */
             locations: Location[];
+            
         }
         
         export interface SetBreakpointRequest {
             /** Location to set breakpoint in. */
             location: Location;
+            
             /** Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true. */
             condition?: string;
+            
         }
         
         export interface SetBreakpointResponse {
             /** Id of the created breakpoint for further reference. */
             breakpointId: BreakpointId;
+            
             /** Location this breakpoint resolved into. */
             actualLocation: Location;
+            
         }
         
         export interface RemoveBreakpointRequest {
             breakpointId: BreakpointId;
+            
         }
         
         export interface ContinueToLocationRequest {
             /** Location to continue to. */
             location: Location;
+            
             /** Allows breakpoints at the intemediate positions inside statements. */
             interstatementLocation?: boolean;
+            
         }
         
         export interface SearchInContentRequest {
             /** Id of the script to search in. */
             scriptId: Runtime.ScriptId;
+            
             /** String to search for. */
             query: string;
+            
             /** If true, search is case sensitive. */
             caseSensitive?: boolean;
+            
             /** If true, treats string parameter as regex. */
             isRegex?: boolean;
+            
         }
         
         export interface SearchInContentResponse {
             /** List of search matches. */
             result: SearchMatch[];
+            
         }
         
         export interface CanSetScriptSourceResponse {
             /** True if 'setScriptSource' is supported. */
             result: boolean;
+            
         }
         
         export interface SetScriptSourceRequest {
             /** Id of the script to edit. */
             scriptId: Runtime.ScriptId;
+            
             /** New content of the script. */
             scriptSource: string;
+            
             /**  If true the change will not actually be applied. Preview mode may be used to get result description without actually modifying the code. */
             preview?: boolean;
+            
         }
         
         export interface SetScriptSourceResponse {
             /** New stack trace in case editing has happened while VM was stopped. */
             callFrames?: CallFrame[];
+            
             /** Whether current call stack  was modified after applying the changes. */
             stackChanged?: boolean;
+            
             /** Async stack trace, if any. */
             asyncStackTrace?: Runtime.StackTrace;
+            
             /** Error data if any. */
-            compileError?: SetScriptSourceError;
+            compileError?: Runtime.ExceptionDetails;
+            
         }
         
         export interface RestartFrameRequest {
             /** Call frame identifier to evaluate on. */
             callFrameId: CallFrameId;
+            
         }
         
         export interface RestartFrameResponse {
             /** New stack trace. */
             callFrames: CallFrame[];
+            
             /** Async stack trace, if any. */
             asyncStackTrace?: Runtime.StackTrace;
+            
         }
         
         export interface GetScriptSourceRequest {
             /** Id of the script to get source for. */
             scriptId: Runtime.ScriptId;
+            
         }
         
         export interface GetScriptSourceResponse {
             /** Script source. */
             scriptSource: string;
+            
         }
         
         export interface SetPauseOnExceptionsRequest {
             /** Pause on exceptions mode. */
             state: 'none' | 'uncaught' | 'all';
+            
         }
         
         export interface EvaluateOnCallFrameRequest {
             /** Call frame identifier to evaluate on. */
             callFrameId: CallFrameId;
+            
             /** Expression to evaluate. */
             expression: string;
+            
             /** String object group name to put result into (allows rapid releasing resulting object handles using 'releaseObjectGroup'). */
             objectGroup?: string;
+            
             /** Specifies whether command line API should be available to the evaluated expression, defaults to false. */
             includeCommandLineAPI?: boolean;
+            
             /** Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. */
             doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            
             /** Whether the result is expected to be a JSON object that should be sent by value. */
             returnByValue?: boolean;
+            
             /** Whether preview should be generated for the result. */
             generatePreview?: boolean;
+            
         }
         
         export interface EvaluateOnCallFrameResponse {
             /** Object wrapper for the evaluation result. */
             result: Runtime.RemoteObject;
+            
             /** True if the result was thrown during the evaluation. */
             wasThrown?: boolean;
+            
             /** Exception details. */
             exceptionDetails?: Runtime.ExceptionDetails;
+            
         }
         
         export interface SetVariableValueRequest {
             /** 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually. */
             scopeNumber: integer;
+            
             /** Variable name. */
             variableName: string;
+            
             /** New variable value. */
             newValue: Runtime.CallArgument;
+            
             /** Id of callframe that holds variable. */
             callFrameId: CallFrameId;
+            
         }
         
         export interface GetBacktraceResponse {
             /** Call stack the virtual machine stopped on. */
             callFrames: CallFrame[];
+            
             /** Async stack trace, if any. */
             asyncStackTrace?: Runtime.StackTrace;
+            
         }
         
         export interface SetAsyncCallStackDepthRequest {
             /** Maximum depth of async call stacks. Setting to '0' will effectively disable collecting async call stacks (default). */
             maxDepth: integer;
+            
         }
         
         export interface SetBlackboxPatternsRequest {
             /** Array of regexps that will be used to check script url for blackbox state. */
             patterns: string[];
+            
         }
         
         export interface SetBlackboxedRangesRequest {
             /** Id of the script. */
             scriptId: Runtime.ScriptId;
+            
             positions: ScriptPosition[];
+            
         }
         
         export interface ScriptParsedEvent {
             /** Identifier of the script parsed. */
             scriptId: Runtime.ScriptId;
+            
             /** URL or name of the script parsed (if any). */
             url: string;
+            
             /** Line offset of the script within the resource with given URL (for script tags). */
             startLine: integer;
+            
             /** Column offset of the script within the resource with given URL. */
             startColumn: integer;
+            
             /** Last line of the script. */
             endLine: integer;
+            
             /** Length of the last line of the script. */
             endColumn: integer;
+            
             /** Specifies script creation context. */
             executionContextId: Runtime.ExecutionContextId;
+            
             /** Content hash of the script. */
             hash: string;
+            
             /** Determines whether this script is a user extension script. */
             isContentScript?: boolean;
+            
             /** Determines whether this script is an internal script. */
             isInternalScript?: boolean;
+            
             /** True, if this script is generated as a result of the live edit operation. */
             isLiveEdit?: boolean;
+            
             /** URL of source map associated with script (if any). */
             sourceMapURL?: string;
+            
             /** True, if this script has sourceURL. */
             hasSourceURL?: boolean;
+            
             /** True, if '//@ sourceURL' or '//@ sourceMappingURL' was used. */
             deprecatedCommentWasUsed?: boolean;
+            
         }
         
         export interface ScriptFailedToParseEvent {
             /** Identifier of the script parsed. */
             scriptId: Runtime.ScriptId;
+            
             /** URL or name of the script parsed (if any). */
             url: string;
+            
             /** Line offset of the script within the resource with given URL (for script tags). */
             startLine: integer;
+            
             /** Column offset of the script within the resource with given URL. */
             startColumn: integer;
+            
             /** Last line of the script. */
             endLine: integer;
+            
             /** Length of the last line of the script. */
             endColumn: integer;
+            
             /** Specifies script creation context. */
             executionContextId: Runtime.ExecutionContextId;
+            
             /** Content hash of the script. */
             hash: string;
+            
             /** Determines whether this script is a user extension script. */
             isContentScript?: boolean;
+            
             /** Determines whether this script is an internal script. */
             isInternalScript?: boolean;
+            
             /** URL of source map associated with script (if any). */
             sourceMapURL?: string;
+            
             /** True, if this script has sourceURL. */
             hasSourceURL?: boolean;
+            
             /** True, if '//@ sourceURL' or '//@ sourceMappingURL' was used. */
             deprecatedCommentWasUsed?: boolean;
+            
         }
         
         export interface BreakpointResolvedEvent {
             /** Breakpoint unique identifier. */
             breakpointId: BreakpointId;
+            
             /** Actual breakpoint location. */
             location: Location;
+            
         }
         
         export interface PausedEvent {
             /** Call stack the virtual machine stopped on. */
             callFrames: CallFrame[];
+            
             /** Pause reason. */
             reason: 'XHR' | 'DOM' | 'EventListener' | 'exception' | 'assert' | 'debugCommand' | 'promiseRejection' | 'other';
+            
             /** Object containing break-specific auxiliary properties. */
             data?: any;
+            
             /** Hit breakpoints IDs */
             hitBreakpoints?: string[];
+            
             /** Async stack trace, if any. */
             asyncStackTrace?: Runtime.StackTrace;
+            
         }
-    }
-    
-    export interface DebuggerClient {
-        /** Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received. */
-        enable: () => Promise<{}>;
-        /** Disables debugger for given page. */
-        disable: () => Promise<{}>;
-        /** Activates / deactivates all breakpoints on the page. */
-        setBreakpointsActive: (request: Debugger.SetBreakpointsActiveRequest) => Promise<{}>;
-        /** Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc). */
-        setSkipAllPauses: (request: Debugger.SetSkipAllPausesRequest) => Promise<{}>;
-        /** Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in 'locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved' events issued. This logical breakpoint will survive page reloads. */
-        setBreakpointByUrl: (request: Debugger.SetBreakpointByUrlRequest) => Promise<Debugger.SetBreakpointByUrlResponse>;
-        /** Sets JavaScript breakpoint at a given location. */
-        setBreakpoint: (request: Debugger.SetBreakpointRequest) => Promise<Debugger.SetBreakpointResponse>;
-        /** Removes JavaScript breakpoint. */
-        removeBreakpoint: (request: Debugger.RemoveBreakpointRequest) => Promise<{}>;
-        /** Continues execution until specific location is reached. */
-        continueToLocation: (request: Debugger.ContinueToLocationRequest) => Promise<{}>;
-        /** Steps over the statement. */
-        stepOver: () => Promise<{}>;
-        /** Steps into the function call. */
-        stepInto: () => Promise<{}>;
-        /** Steps out of the function call. */
-        stepOut: () => Promise<{}>;
-        /** Stops on the next JavaScript statement. */
-        pause: () => Promise<{}>;
-        /** Resumes JavaScript execution. */
-        resume: () => Promise<{}>;
-        /** Searches for given string in script content. */
-        searchInContent: (request: Debugger.SearchInContentRequest) => Promise<Debugger.SearchInContentResponse>;
-        /** Always returns true. */
-        canSetScriptSource: () => Promise<Debugger.CanSetScriptSourceResponse>;
-        /** Edits JavaScript source live. */
-        setScriptSource: (request: Debugger.SetScriptSourceRequest) => Promise<Debugger.SetScriptSourceResponse>;
-        /** Restarts particular call frame from the beginning. */
-        restartFrame: (request: Debugger.RestartFrameRequest) => Promise<Debugger.RestartFrameResponse>;
-        /** Returns source for the script with given id. */
-        getScriptSource: (request: Debugger.GetScriptSourceRequest) => Promise<Debugger.GetScriptSourceResponse>;
-        /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
-        setPauseOnExceptions: (request: Debugger.SetPauseOnExceptionsRequest) => Promise<{}>;
-        /** Evaluates expression on a given call frame. */
-        evaluateOnCallFrame: (request: Debugger.EvaluateOnCallFrameRequest) => Promise<Debugger.EvaluateOnCallFrameResponse>;
-        /** Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually. */
-        setVariableValue: (request: Debugger.SetVariableValueRequest) => Promise<{}>;
-        /** Returns call stack including variables changed since VM was paused. VM must be paused. */
-        getBacktrace: () => Promise<Debugger.GetBacktraceResponse>;
-        /** Enables or disables async call stacks tracking. */
-        setAsyncCallStackDepth: (request: Debugger.SetAsyncCallStackDepthRequest) => Promise<{}>;
-        /** Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. */
-        setBlackboxPatterns: (request: Debugger.SetBlackboxPatternsRequest) => Promise<{}>;
-        /** Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted. */
-        setBlackboxedRanges: (request: Debugger.SetBlackboxedRangesRequest) => Promise<{}>;
-        /** Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger. */
-        onScriptParsed: (handler: (event: Debugger.ScriptParsedEvent) => void) => void;
-        /** Fired when virtual machine fails to parse the script. */
-        onScriptFailedToParse: (handler: (event: Debugger.ScriptFailedToParseEvent) => void) => void;
-        /** Fired when breakpoint is resolved to an actual script and location. */
-        onBreakpointResolved: (handler: (event: Debugger.BreakpointResolvedEvent) => void) => void;
-        /** Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria. */
-        onPaused: (handler: (event: Debugger.PausedEvent) => void) => void;
-        /** Fired when the virtual machine resumed execution. */
-        onResumed: (handler: () => void) => void;
-    }
-    
-    export interface DebuggerAdapter {
-        /** Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables debugger for given page. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Activates / deactivates all breakpoints on the page. */
-        onSetBreakpointsActive: (handler: (request: Debugger.SetBreakpointsActiveRequest) => PromiseOrNot<{}>) => void;
-        /** Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc). */
-        onSetSkipAllPauses: (handler: (request: Debugger.SetSkipAllPausesRequest) => PromiseOrNot<{}>) => void;
-        /** Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in 'locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved' events issued. This logical breakpoint will survive page reloads. */
-        onSetBreakpointByUrl: (handler: (request: Debugger.SetBreakpointByUrlRequest) => PromiseOrNot<Debugger.SetBreakpointByUrlResponse>) => void;
-        /** Sets JavaScript breakpoint at a given location. */
-        onSetBreakpoint: (handler: (request: Debugger.SetBreakpointRequest) => PromiseOrNot<Debugger.SetBreakpointResponse>) => void;
-        /** Removes JavaScript breakpoint. */
-        onRemoveBreakpoint: (handler: (request: Debugger.RemoveBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Continues execution until specific location is reached. */
-        onContinueToLocation: (handler: (request: Debugger.ContinueToLocationRequest) => PromiseOrNot<{}>) => void;
-        /** Steps over the statement. */
-        onStepOver: (handler: () => PromiseOrNot<{}>) => void;
-        /** Steps into the function call. */
-        onStepInto: (handler: () => PromiseOrNot<{}>) => void;
-        /** Steps out of the function call. */
-        onStepOut: (handler: () => PromiseOrNot<{}>) => void;
-        /** Stops on the next JavaScript statement. */
-        onPause: (handler: () => PromiseOrNot<{}>) => void;
-        /** Resumes JavaScript execution. */
-        onResume: (handler: () => PromiseOrNot<{}>) => void;
-        /** Searches for given string in script content. */
-        onSearchInContent: (handler: (request: Debugger.SearchInContentRequest) => PromiseOrNot<Debugger.SearchInContentResponse>) => void;
-        /** Always returns true. */
-        onCanSetScriptSource: (handler: () => PromiseOrNot<Debugger.CanSetScriptSourceResponse>) => void;
-        /** Edits JavaScript source live. */
-        onSetScriptSource: (handler: (request: Debugger.SetScriptSourceRequest) => PromiseOrNot<Debugger.SetScriptSourceResponse>) => void;
-        /** Restarts particular call frame from the beginning. */
-        onRestartFrame: (handler: (request: Debugger.RestartFrameRequest) => PromiseOrNot<Debugger.RestartFrameResponse>) => void;
-        /** Returns source for the script with given id. */
-        onGetScriptSource: (handler: (request: Debugger.GetScriptSourceRequest) => PromiseOrNot<Debugger.GetScriptSourceResponse>) => void;
-        /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
-        onSetPauseOnExceptions: (handler: (request: Debugger.SetPauseOnExceptionsRequest) => PromiseOrNot<{}>) => void;
-        /** Evaluates expression on a given call frame. */
-        onEvaluateOnCallFrame: (handler: (request: Debugger.EvaluateOnCallFrameRequest) => PromiseOrNot<Debugger.EvaluateOnCallFrameResponse>) => void;
-        /** Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually. */
-        onSetVariableValue: (handler: (request: Debugger.SetVariableValueRequest) => PromiseOrNot<{}>) => void;
-        /** Returns call stack including variables changed since VM was paused. VM must be paused. */
-        onGetBacktrace: (handler: () => PromiseOrNot<Debugger.GetBacktraceResponse>) => void;
-        /** Enables or disables async call stacks tracking. */
-        onSetAsyncCallStackDepth: (handler: (request: Debugger.SetAsyncCallStackDepthRequest) => PromiseOrNot<{}>) => void;
-        /** Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. */
-        onSetBlackboxPatterns: (handler: (request: Debugger.SetBlackboxPatternsRequest) => PromiseOrNot<{}>) => void;
-        /** Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted. */
-        onSetBlackboxedRanges: (handler: (request: Debugger.SetBlackboxedRangesRequest) => PromiseOrNot<{}>) => void;
-        /** Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger. */
-        fireScriptParsed: (event: Debugger.ScriptParsedEvent) => void;
-        /** Fired when virtual machine fails to parse the script. */
-        fireScriptFailedToParse: (event: Debugger.ScriptFailedToParseEvent) => void;
-        /** Fired when breakpoint is resolved to an actual script and location. */
-        fireBreakpointResolved: (event: Debugger.BreakpointResolvedEvent) => void;
-        /** Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria. */
-        firePaused: (event: Debugger.PausedEvent) => void;
-        /** Fired when the virtual machine resumed execution. */
-        fireResumed: () => void;
     }
     
     /** Console domain defines methods and events for interaction with the JavaScript console. Console collects messages created by means of the <a href='http://getfirebug.com/wiki/index.php/Console_API'>JavaScript Console API</a>. One needs to enable this domain using 'enable</code> command in order to start receiving the console messages. Browser collects messages issued while console domain is not enabled as well and reports them using <code>messageAdded' notification upon enabling. */
     export module Console {
         
-        /** Number of seconds since epoch. */
-        export type Timestamp = number;
-        
         /** Console message. */
         export interface ConsoleMessage {
             /** Message source. */
             source: 'xml' | 'javascript' | 'network' | 'console-api' | 'storage' | 'appcache' | 'rendering' | 'security' | 'other' | 'deprecation' | 'worker';
+            
             /** Message severity. */
             level: 'log' | 'warning' | 'error' | 'debug' | 'info';
+            
             /** Message text. */
             text: string;
+            
             /** Never present. Use Runtime.consoleAPICalled instead. */
             type?: 'log' | 'dir' | 'dirxml' | 'table' | 'trace' | 'clear' | 'startGroup' | 'startGroupCollapsed' | 'endGroup' | 'assert' | 'profile' | 'profileEnd';
+            
             /** Script ID of the message origin. */
             scriptId?: string;
+            
             /** URL of the message origin. */
             url?: string;
+            
             /** Line number in the resource that generated this message. */
             line?: integer;
+            
             /** Column number in the resource that generated this message. */
             column?: integer;
+            
             /** Repeat count for repeated messages. */
             repeatCount?: integer;
+            
             /** Never present. Use Runtime.consoleAPICalled instead. */
             parameters?: Runtime.RemoteObject[];
+            
             /** JavaScript stack trace for assertions and error messages. */
             stack?: Runtime.StackTrace;
+            
             /** Identifier of the network request associated with this message. */
             networkRequestId?: string;
+            
             /** Timestamp, when this message was fired. */
-            timestamp: Timestamp;
+            timestamp: Runtime.Timestamp;
+            
             /** Identifier of the context where this message was created */
             executionContextId?: Runtime.ExecutionContextId;
+            
             /** Identifier of the worker this message came from. */
             workerId?: string;
+            
         }
         
         export interface MessageAddedEvent {
             /** Console message that has been added. */
             message: ConsoleMessage;
+            
         }
         
         export interface MessageRepeatCountUpdatedEvent {
             /** New repeat count value. */
             count: integer;
+            
             /** Timestamp of most recent message in batch. */
-            timestamp: Timestamp;
+            timestamp: Runtime.Timestamp;
+            
         }
-    }
-    
-    export interface ConsoleClient {
-        /** Enables console domain, sends the messages collected so far to the client by means of the 'messageAdded' notification. */
-        enable: () => Promise<{}>;
-        /** Disables console domain, prevents further console messages from being reported to the client. */
-        disable: () => Promise<{}>;
-        /** Clears console messages collected in the browser. */
-        clearMessages: () => Promise<{}>;
-        /** Issued when new console message is added. */
-        onMessageAdded: (handler: (event: Console.MessageAddedEvent) => void) => void;
-        /** Is not issued. Will be gone in the future versions of the protocol. */
-        onMessageRepeatCountUpdated: (handler: (event: Console.MessageRepeatCountUpdatedEvent) => void) => void;
-        /** Not issued. */
-        onMessagesCleared: (handler: () => void) => void;
-    }
-    
-    export interface ConsoleAdapter {
-        /** Enables console domain, sends the messages collected so far to the client by means of the 'messageAdded' notification. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables console domain, prevents further console messages from being reported to the client. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Clears console messages collected in the browser. */
-        onClearMessages: (handler: () => PromiseOrNot<{}>) => void;
-        /** Issued when new console message is added. */
-        fireMessageAdded: (event: Console.MessageAddedEvent) => void;
-        /** Is not issued. Will be gone in the future versions of the protocol. */
-        fireMessageRepeatCountUpdated: (event: Console.MessageRepeatCountUpdatedEvent) => void;
-        /** Not issued. */
-        fireMessagesCleared: () => void;
     }
     
     export module Profiler {
@@ -1051,89 +982,87 @@ export module Crdi {
         export interface CPUProfileNode {
             /** Function location. */
             callFrame: Runtime.CallFrame;
+            
             /** Number of samples where this node was on top of the call stack. */
             hitCount: integer;
+            
             /** Child nodes. */
             children: CPUProfileNode[];
+            
             /** The reason of being not optimized. The function may be deoptimized or marked as don't optimize. */
             deoptReason: string;
+            
             /** Unique id of the node. */
             id: integer;
+            
             /** An array of source position ticks. */
             positionTicks: PositionTickInfo[];
+            
         }
         
         /** Profile. */
         export interface CPUProfile {
             head: CPUProfileNode;
+            
             /** Profiling start time in seconds. */
             startTime: number;
+            
             /** Profiling end time in seconds. */
             endTime: number;
+            
             /** Ids of samples top nodes. */
             samples?: integer[];
+            
             /** Timestamps of the samples in microseconds. */
             timestamps?: number[];
+            
         }
         
         /** Specifies a number of samples attributed to a certain source position. */
         export interface PositionTickInfo {
             /** Source line number (1-based). */
             line: integer;
+            
             /** Number of samples attributed to the source line. */
             ticks: integer;
+            
         }
         
         export interface SetSamplingIntervalRequest {
             /** New sampling interval in microseconds. */
             interval: integer;
+            
         }
         
         export interface StopResponse {
             /** Recorded profile. */
             profile: CPUProfile;
+            
         }
         
         export interface ConsoleProfileStartedEvent {
             id: string;
+            
             /** Location of console.profile(). */
             location: Debugger.Location;
+            
             /** Profile title passed as argument to console.profile(). */
             title?: string;
+            
         }
         
         export interface ConsoleProfileFinishedEvent {
             id: string;
+            
             /** Location of console.profileEnd(). */
             location: Debugger.Location;
+            
             profile: CPUProfile;
+            
             /** Profile title passed as argunet to console.profile(). */
             title?: string;
+            
         }
-    }
-    
-    export interface ProfilerClient {
-        enable: () => Promise<{}>;
-        disable: () => Promise<{}>;
-        /** Changes CPU profiler sampling interval. Must be called before CPU profiles recording started. */
-        setSamplingInterval: (request: Profiler.SetSamplingIntervalRequest) => Promise<{}>;
-        start: () => Promise<{}>;
-        stop: () => Promise<Profiler.StopResponse>;
-        /** Sent when new profile recodring is started using console.profile() call. */
-        onConsoleProfileStarted: (handler: (event: Profiler.ConsoleProfileStartedEvent) => void) => void;
-        onConsoleProfileFinished: (handler: (event: Profiler.ConsoleProfileFinishedEvent) => void) => void;
-    }
-    
-    export interface ProfilerAdapter {
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Changes CPU profiler sampling interval. Must be called before CPU profiles recording started. */
-        onSetSamplingInterval: (handler: (request: Profiler.SetSamplingIntervalRequest) => PromiseOrNot<{}>) => void;
-        onStart: (handler: () => PromiseOrNot<{}>) => void;
-        onStop: (handler: () => PromiseOrNot<Profiler.StopResponse>) => void;
-        /** Sent when new profile recodring is started using console.profile() call. */
-        fireConsoleProfileStarted: (event: Profiler.ConsoleProfileStartedEvent) => void;
-        fireConsoleProfileFinished: (event: Profiler.ConsoleProfileFinishedEvent) => void;
     }
     
     export module HeapProfiler {
@@ -1145,130 +1074,108 @@ export module Crdi {
         export interface SamplingHeapProfileNode {
             /** Function location. */
             callFrame: Runtime.CallFrame;
+            
             /** Allocations size in bytes for the node excluding children. */
             selfSize: number;
+            
             /** Child nodes. */
             children: SamplingHeapProfileNode[];
+            
         }
         
         /** Profile. */
         export interface SamplingHeapProfile {
             head: SamplingHeapProfileNode;
+            
         }
         
         export interface StartTrackingHeapObjectsRequest {
             trackAllocations?: boolean;
+            
         }
         
         export interface StopTrackingHeapObjectsRequest {
             /** If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped. */
             reportProgress?: boolean;
+            
         }
         
         export interface TakeHeapSnapshotRequest {
             /** If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken. */
             reportProgress?: boolean;
+            
         }
         
         export interface GetObjectByHeapObjectIdRequest {
             objectId: HeapSnapshotObjectId;
+            
             /** Symbolic group name that can be used to release multiple objects. */
             objectGroup?: string;
+            
         }
         
         export interface GetObjectByHeapObjectIdResponse {
             /** Evaluation result. */
             result: Runtime.RemoteObject;
+            
         }
         
         export interface AddInspectedHeapObjectRequest {
             /** Heap snapshot object id to be accessible by means of $x command line API. */
             heapObjectId: HeapSnapshotObjectId;
+            
         }
         
         export interface GetHeapObjectIdRequest {
             /** Identifier of the object to get heap object id for. */
             objectId: Runtime.RemoteObjectId;
+            
         }
         
         export interface GetHeapObjectIdResponse {
             /** Id of the heap snapshot object corresponding to the passed remote object id. */
             heapSnapshotObjectId: HeapSnapshotObjectId;
+            
         }
         
         export interface StartSamplingRequest {
             /** Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes. */
             samplingInterval?: number;
+            
         }
         
         export interface StopSamplingResponse {
             /** Recorded sampling heap profile. */
             profile: SamplingHeapProfile;
+            
         }
         
         export interface AddHeapSnapshotChunkEvent {
             chunk: string;
+            
         }
         
         export interface ReportHeapSnapshotProgressEvent {
             done: integer;
+            
             total: integer;
+            
             finished?: boolean;
+            
         }
         
         export interface LastSeenObjectIdEvent {
             lastSeenObjectId: integer;
+            
             timestamp: number;
+            
         }
         
         export interface HeapStatsUpdateEvent {
             /** An array of triplets. Each triplet describes a fragment. The first integer is the fragment index, the second integer is a total count of objects for the fragment, the third integer is a total size of the objects for the fragment. */
             statsUpdate: integer[];
+            
         }
-    }
-    
-    export interface HeapProfilerClient {
-        enable: () => Promise<{}>;
-        disable: () => Promise<{}>;
-        startTrackingHeapObjects: (request: HeapProfiler.StartTrackingHeapObjectsRequest) => Promise<{}>;
-        stopTrackingHeapObjects: (request: HeapProfiler.StopTrackingHeapObjectsRequest) => Promise<{}>;
-        takeHeapSnapshot: (request: HeapProfiler.TakeHeapSnapshotRequest) => Promise<{}>;
-        collectGarbage: () => Promise<{}>;
-        getObjectByHeapObjectId: (request: HeapProfiler.GetObjectByHeapObjectIdRequest) => Promise<HeapProfiler.GetObjectByHeapObjectIdResponse>;
-        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
-        addInspectedHeapObject: (request: HeapProfiler.AddInspectedHeapObjectRequest) => Promise<{}>;
-        getHeapObjectId: (request: HeapProfiler.GetHeapObjectIdRequest) => Promise<HeapProfiler.GetHeapObjectIdResponse>;
-        startSampling: (request: HeapProfiler.StartSamplingRequest) => Promise<{}>;
-        stopSampling: () => Promise<HeapProfiler.StopSamplingResponse>;
-        onAddHeapSnapshotChunk: (handler: (event: HeapProfiler.AddHeapSnapshotChunkEvent) => void) => void;
-        onResetProfiles: (handler: () => void) => void;
-        onReportHeapSnapshotProgress: (handler: (event: HeapProfiler.ReportHeapSnapshotProgressEvent) => void) => void;
-        /** If heap objects tracking has been started then backend regulary sends a current value for last seen object id and corresponding timestamp. If the were changes in the heap since last event then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event. */
-        onLastSeenObjectId: (handler: (event: HeapProfiler.LastSeenObjectIdEvent) => void) => void;
-        /** If heap objects tracking has been started then backend may send update for one or more fragments */
-        onHeapStatsUpdate: (handler: (event: HeapProfiler.HeapStatsUpdateEvent) => void) => void;
-    }
-    
-    export interface HeapProfilerAdapter {
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onStartTrackingHeapObjects: (handler: (request: HeapProfiler.StartTrackingHeapObjectsRequest) => PromiseOrNot<{}>) => void;
-        onStopTrackingHeapObjects: (handler: (request: HeapProfiler.StopTrackingHeapObjectsRequest) => PromiseOrNot<{}>) => void;
-        onTakeHeapSnapshot: (handler: (request: HeapProfiler.TakeHeapSnapshotRequest) => PromiseOrNot<{}>) => void;
-        onCollectGarbage: (handler: () => PromiseOrNot<{}>) => void;
-        onGetObjectByHeapObjectId: (handler: (request: HeapProfiler.GetObjectByHeapObjectIdRequest) => PromiseOrNot<HeapProfiler.GetObjectByHeapObjectIdResponse>) => void;
-        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
-        onAddInspectedHeapObject: (handler: (request: HeapProfiler.AddInspectedHeapObjectRequest) => PromiseOrNot<{}>) => void;
-        onGetHeapObjectId: (handler: (request: HeapProfiler.GetHeapObjectIdRequest) => PromiseOrNot<HeapProfiler.GetHeapObjectIdResponse>) => void;
-        onStartSampling: (handler: (request: HeapProfiler.StartSamplingRequest) => PromiseOrNot<{}>) => void;
-        onStopSampling: (handler: () => PromiseOrNot<HeapProfiler.StopSamplingResponse>) => void;
-        fireAddHeapSnapshotChunk: (event: HeapProfiler.AddHeapSnapshotChunkEvent) => void;
-        fireResetProfiles: () => void;
-        fireReportHeapSnapshotProgress: (event: HeapProfiler.ReportHeapSnapshotProgressEvent) => void;
-        /** If heap objects tracking has been started then backend regulary sends a current value for last seen object id and corresponding timestamp. If the were changes in the heap since last event then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event. */
-        fireLastSeenObjectId: (event: HeapProfiler.LastSeenObjectIdEvent) => void;
-        /** If heap objects tracking has been started then backend may send update for one or more fragments */
-        fireHeapStatsUpdate: (event: HeapProfiler.HeapStatsUpdateEvent) => void;
     }
     
     export module Inspector {
@@ -1276,29 +1183,8 @@ export module Crdi {
         export interface DetachedEvent {
             /** The reason why connection has been terminated. */
             reason: string;
+            
         }
-    }
-    
-    export interface InspectorClient {
-        /** Enables inspector domain notifications. */
-        enable: () => Promise<{}>;
-        /** Disables inspector domain notifications. */
-        disable: () => Promise<{}>;
-        /** Fired when remote debugging connection is about to be terminated. Contains detach reason. */
-        onDetached: (handler: (event: Inspector.DetachedEvent) => void) => void;
-        /** Fired when debugging target has crashed */
-        onTargetCrashed: (handler: () => void) => void;
-    }
-    
-    export interface InspectorAdapter {
-        /** Enables inspector domain notifications. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables inspector domain notifications. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Fired when remote debugging connection is about to be terminated. Contains detach reason. */
-        fireDetached: (event: Inspector.DetachedEvent) => void;
-        /** Fired when debugging target has crashed */
-        fireTargetCrashed: () => void;
     }
     
     export module Memory {
@@ -1308,35 +1194,24 @@ export module Crdi {
         
         export interface GetDOMCountersResponse {
             documents: integer;
+            
             nodes: integer;
+            
             jsEventListeners: integer;
+            
         }
         
         export interface SetPressureNotificationsSuppressedRequest {
             /** If true, memory pressure notifications will be suppressed. */
             suppressed: boolean;
+            
         }
         
         export interface SimulatePressureNotificationRequest {
             /** Memory pressure level of the notification. */
             level: PressureLevel;
+            
         }
-    }
-    
-    export interface MemoryClient {
-        getDOMCounters: () => Promise<Memory.GetDOMCountersResponse>;
-        /** Enable/disable suppressing memory pressure notifications in all processes. */
-        setPressureNotificationsSuppressed: (request: Memory.SetPressureNotificationsSuppressedRequest) => Promise<{}>;
-        /** Simulate a memory pressure notification in all processes. */
-        simulatePressureNotification: (request: Memory.SimulatePressureNotificationRequest) => Promise<{}>;
-    }
-    
-    export interface MemoryAdapter {
-        onGetDOMCounters: (handler: () => PromiseOrNot<Memory.GetDOMCountersResponse>) => void;
-        /** Enable/disable suppressing memory pressure notifications in all processes. */
-        onSetPressureNotificationsSuppressed: (handler: (request: Memory.SetPressureNotificationsSuppressedRequest) => PromiseOrNot<{}>) => void;
-        /** Simulate a memory pressure notification in all processes. */
-        onSimulatePressureNotification: (handler: (request: Memory.SimulatePressureNotificationRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** Actions and events related to the inspected page belong to the page domain. */
@@ -1352,42 +1227,57 @@ export module Crdi {
         export interface Frame {
             /** Frame unique identifier. */
             id: string;
+            
             /** Parent frame identifier. */
             parentId?: string;
+            
             /** Identifier of the loader associated with this frame. */
             loaderId: Network.LoaderId;
+            
             /** Frame's name as specified in the tag. */
             name?: string;
+            
             /** Frame document's URL. */
             url: string;
+            
             /** Frame document's security origin. */
             securityOrigin: string;
+            
             /** Frame document's mimeType as determined by the browser. */
             mimeType: string;
+            
         }
         
         /** Information about the Resource on the page. */
         export interface FrameResource {
             /** Resource URL. */
             url: string;
+            
             /** Type of this resource. */
             type: ResourceType;
+            
             /** Resource mimeType as determined by the browser. */
             mimeType: string;
+            
             /** True if the resource failed to load. */
             failed?: boolean;
+            
             /** True if the resource was canceled during loading. */
             canceled?: boolean;
+            
         }
         
         /** Information about the Frame hierarchy along with their cached resources. */
         export interface FrameResourceTree {
             /** Frame information for this tree item. */
             frame: Frame;
+            
             /** Child frames. */
             childFrames?: FrameResourceTree[];
+            
             /** Information about frame resources. */
             resources: FrameResource[];
+            
         }
         
         /** Unique script identifier. */
@@ -1397,28 +1287,38 @@ export module Crdi {
         export interface NavigationEntry {
             /** Unique id of the navigation history entry. */
             id: integer;
+            
             /** URL of the navigation history entry. */
             url: string;
+            
             /** Title of the navigation history entry. */
             title: string;
+            
         }
         
         /** Screencast frame metadata. */
         export interface ScreencastFrameMetadata {
             /** Top offset in DIP. */
             offsetTop: number;
+            
             /** Page scale factor. */
             pageScaleFactor: number;
+            
             /** Device screen width in DIP. */
             deviceWidth: number;
+            
             /** Device screen height in DIP. */
             deviceHeight: number;
+            
             /** Position of horizontal scroll in CSS pixels. */
             scrollOffsetX: number;
+            
             /** Position of vertical scroll in CSS pixels. */
             scrollOffsetY: number;
+            
             /** Frame swap timestamp. */
             timestamp?: number;
+            
         }
         
         /** Javascript dialog type. */
@@ -1428,487 +1328,416 @@ export module Crdi {
         export interface AppManifestError {
             /** Error message. */
             message: string;
+            
             /** If criticial, this is a non-recoverable parse error. */
             critical: integer;
+            
             /** Error line. */
             line: integer;
+            
             /** Error column. */
             column: integer;
+            
         }
+        
+        /** Proceed: allow the navigation; Cancel: cancel the navigation; CancelAndIgnore: cancels the navigation and makes the requester of the navigation acts like the request was never made. */
+        export type NavigationResponse = 'Proceed' | 'Cancel' | 'CancelAndIgnore';
         
         export interface AddScriptToEvaluateOnLoadRequest {
             scriptSource: string;
+            
         }
         
         export interface AddScriptToEvaluateOnLoadResponse {
             /** Identifier of the added script. */
             identifier: ScriptIdentifier;
+            
         }
         
         export interface RemoveScriptToEvaluateOnLoadRequest {
             identifier: ScriptIdentifier;
+            
         }
         
         export interface SetAutoAttachToCreatedPagesRequest {
             /** If true, browser will open a new inspector window for every page created from this one. */
             autoAttach: boolean;
+            
         }
         
         export interface ReloadRequest {
             /** If true, browser cache is ignored (as if the user pressed Shift+refresh). */
             ignoreCache?: boolean;
+            
             /** If set, the script will be injected into all frames of the inspected page after reload. */
             scriptToEvaluateOnLoad?: string;
+            
         }
         
         export interface NavigateRequest {
             /** URL to navigate the page to. */
             url: string;
+            
         }
         
         export interface NavigateResponse {
             /** Frame id that will be navigated. */
             frameId: FrameId;
+            
         }
         
         export interface GetNavigationHistoryResponse {
             /** Index of the current navigation history entry. */
             currentIndex: integer;
+            
             /** Array of navigation history entries. */
             entries: NavigationEntry[];
+            
         }
         
         export interface NavigateToHistoryEntryRequest {
             /** Unique id of the entry to navigate to. */
             entryId: integer;
+            
         }
         
         export interface GetCookiesResponse {
             /** Array of cookie objects. */
             cookies: Network.Cookie[];
+            
         }
         
         export interface DeleteCookieRequest {
             /** Name of the cookie to remove. */
             cookieName: string;
+            
             /** URL to match cooke domain and path. */
             url: string;
+            
         }
         
         export interface GetResourceTreeResponse {
             /** Present frame / resource tree structure. */
             frameTree: FrameResourceTree;
+            
         }
         
         export interface GetResourceContentRequest {
             /** Frame id to get resource for. */
             frameId: FrameId;
+            
             /** URL of the resource to get content for. */
             url: string;
+            
         }
         
         export interface GetResourceContentResponse {
             /** Resource content. */
             content: string;
+            
             /** True, if content was served as base64. */
             base64Encoded: boolean;
+            
         }
         
         export interface SearchInResourceRequest {
             /** Frame id for resource to search in. */
             frameId: FrameId;
+            
             /** URL of the resource to search in. */
             url: string;
+            
             /** String to search for. */
             query: string;
+            
             /** If true, search is case sensitive. */
             caseSensitive?: boolean;
+            
             /** If true, treats string parameter as regex. */
             isRegex?: boolean;
+            
         }
         
         export interface SearchInResourceResponse {
             /** List of search matches. */
             result: Debugger.SearchMatch[];
+            
         }
         
         export interface SetDocumentContentRequest {
             /** Frame id to set HTML for. */
             frameId: FrameId;
+            
             /** HTML content to set. */
             html: string;
+            
         }
         
         export interface SetDeviceMetricsOverrideRequest {
             /** Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override. */
             width: integer;
+            
             /** Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override. */
             height: integer;
+            
             /** Overriding device scale factor value. 0 disables the override. */
             deviceScaleFactor: number;
+            
             /** Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more. */
             mobile: boolean;
+            
             /** Whether a view that exceeds the available browser window area should be scaled down to fit. */
             fitWindow: boolean;
+            
             /** Scale to apply to resulting view image. Ignored in |fitWindow| mode. */
             scale?: number;
+            
             /** X offset to shift resulting view image by. Ignored in |fitWindow| mode. */
             offsetX?: number;
+            
             /** Y offset to shift resulting view image by. Ignored in |fitWindow| mode. */
             offsetY?: number;
+            
             /** Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             screenWidth?: integer;
+            
             /** Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             screenHeight?: integer;
+            
             /** Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             positionX?: integer;
+            
             /** Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             positionY?: integer;
+            
             /** Screen orientation override. */
             screenOrientation?: Emulation.ScreenOrientation;
+            
         }
         
         export interface SetGeolocationOverrideRequest {
             /** Mock latitude */
             latitude?: number;
+            
             /** Mock longitude */
             longitude?: number;
+            
             /** Mock accuracy */
             accuracy?: number;
+            
         }
         
         export interface SetDeviceOrientationOverrideRequest {
             /** Mock alpha */
             alpha: number;
+            
             /** Mock beta */
             beta: number;
+            
             /** Mock gamma */
             gamma: number;
+            
         }
         
         export interface SetTouchEmulationEnabledRequest {
             /** Whether the touch event emulation should be enabled. */
             enabled: boolean;
+            
             /** Touch/gesture events configuration. Default: current platform. */
             configuration?: 'mobile' | 'desktop';
+            
         }
         
         export interface CaptureScreenshotResponse {
             /** Base64-encoded image data (PNG). */
             data: string;
+            
         }
         
         export interface StartScreencastRequest {
             /** Image compression format. */
             format?: 'jpeg' | 'png';
+            
             /** Compression quality from range [0..100]. */
             quality?: integer;
+            
             /** Maximum screenshot width. */
             maxWidth?: integer;
+            
             /** Maximum screenshot height. */
             maxHeight?: integer;
+            
             /** Send every n-th frame. */
             everyNthFrame?: integer;
+            
         }
         
         export interface ScreencastFrameAckRequest {
             /** Frame number. */
             sessionId: integer;
+            
         }
         
         export interface HandleJavaScriptDialogRequest {
             /** Whether to accept or dismiss the dialog. */
             accept: boolean;
+            
             /** The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog. */
             promptText?: string;
+            
         }
         
         export interface SetColorPickerEnabledRequest {
             /** Shows / hides color picker */
             enabled: boolean;
+            
         }
         
         export interface SetOverlayMessageRequest {
             /** Overlay message to display when paused in debugger. */
             message?: string;
+            
         }
         
         export interface GetAppManifestResponse {
             /** Manifest location. */
             url: string;
+            
             errors: AppManifestError[];
+            
             /** Manifest content. */
             data?: string;
+            
         }
         
         export interface SetBlockedEventsWarningThresholdRequest {
             /** If set to a positive number, specifies threshold in seconds for input event latency that will cause a console warning about blocked event to be issued. If zero or less, the warning is disabled. */
             threshold: number;
+            
+        }
+        
+        export interface SetControlNavigationsRequest {
+            enabled: boolean;
+            
+        }
+        
+        export interface ProcessNavigationRequest {
+            response: NavigationResponse;
+            
+            navigationId: integer;
+            
         }
         
         export interface DomContentEventFiredEvent {
             timestamp: number;
+            
         }
         
         export interface LoadEventFiredEvent {
             timestamp: number;
+            
         }
         
         export interface FrameAttachedEvent {
             /** Id of the frame that has been attached. */
             frameId: FrameId;
+            
             /** Parent frame identifier. */
             parentFrameId: FrameId;
+            
         }
         
         export interface FrameNavigatedEvent {
             /** Frame object. */
             frame: Frame;
+            
         }
         
         export interface FrameDetachedEvent {
             /** Id of the frame that has been detached. */
             frameId: FrameId;
+            
         }
         
         export interface FrameStartedLoadingEvent {
             /** Id of the frame that has started loading. */
             frameId: FrameId;
+            
         }
         
         export interface FrameStoppedLoadingEvent {
             /** Id of the frame that has stopped loading. */
             frameId: FrameId;
+            
         }
         
         export interface FrameScheduledNavigationEvent {
             /** Id of the frame that has scheduled a navigation. */
             frameId: FrameId;
+            
             /** Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start. */
             delay: number;
+            
         }
         
         export interface FrameClearedScheduledNavigationEvent {
             /** Id of the frame that has cleared its scheduled navigation. */
             frameId: FrameId;
+            
         }
         
         export interface JavascriptDialogOpeningEvent {
             /** Message that will be displayed by the dialog. */
             message: string;
+            
             /** Dialog type. */
             type: DialogType;
+            
         }
         
         export interface JavascriptDialogClosedEvent {
             /** Whether dialog was confirmed. */
             result: boolean;
+            
         }
         
         export interface ScreencastFrameEvent {
             /** Base64-encoded compressed image. */
             data: string;
+            
             /** Screencast frame metadata. */
             metadata: ScreencastFrameMetadata;
+            
             /** Frame number. */
             sessionId: integer;
+            
         }
         
         export interface ScreencastVisibilityChangedEvent {
             /** True if the page is visible. */
             visible: boolean;
+            
         }
         
         export interface ColorPickedEvent {
             /** RGBA of the picked color. */
             color: DOM.RGBA;
+            
         }
-    }
-    
-    export interface PageClient {
-        /** Enables page domain notifications. */
-        enable: () => Promise<{}>;
-        /** Disables page domain notifications. */
-        disable: () => Promise<{}>;
-        addScriptToEvaluateOnLoad: (request: Page.AddScriptToEvaluateOnLoadRequest) => Promise<Page.AddScriptToEvaluateOnLoadResponse>;
-        removeScriptToEvaluateOnLoad: (request: Page.RemoveScriptToEvaluateOnLoadRequest) => Promise<{}>;
-        /** Controls whether browser will open a new inspector window for connected pages. */
-        setAutoAttachToCreatedPages: (request: Page.SetAutoAttachToCreatedPagesRequest) => Promise<{}>;
-        /** Reloads given page optionally ignoring the cache. */
-        reload: (request: Page.ReloadRequest) => Promise<{}>;
-        /** Navigates current page to the given URL. */
-        navigate: (request: Page.NavigateRequest) => Promise<Page.NavigateResponse>;
-        /** Returns navigation history for the current page. */
-        getNavigationHistory: () => Promise<Page.GetNavigationHistoryResponse>;
-        /** Navigates current page to the given history entry. */
-        navigateToHistoryEntry: (request: Page.NavigateToHistoryEntryRequest) => Promise<{}>;
-        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
-        getCookies: () => Promise<Page.GetCookiesResponse>;
-        /** Deletes browser cookie with given name, domain and path. */
-        deleteCookie: (request: Page.DeleteCookieRequest) => Promise<{}>;
-        /** Returns present frame / resource tree structure. */
-        getResourceTree: () => Promise<Page.GetResourceTreeResponse>;
-        /** Returns content of the given resource. */
-        getResourceContent: (request: Page.GetResourceContentRequest) => Promise<Page.GetResourceContentResponse>;
-        /** Searches for given string in resource content. */
-        searchInResource: (request: Page.SearchInResourceRequest) => Promise<Page.SearchInResourceResponse>;
-        /** Sets given markup as the document's HTML. */
-        setDocumentContent: (request: Page.SetDocumentContentRequest) => Promise<{}>;
-        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
-        setDeviceMetricsOverride: (request: Page.SetDeviceMetricsOverrideRequest) => Promise<{}>;
-        /** Clears the overriden device metrics. */
-        clearDeviceMetricsOverride: () => Promise<{}>;
-        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
-        setGeolocationOverride: (request: Page.SetGeolocationOverrideRequest) => Promise<{}>;
-        /** Clears the overriden Geolocation Position and Error. */
-        clearGeolocationOverride: () => Promise<{}>;
-        /** Overrides the Device Orientation. */
-        setDeviceOrientationOverride: (request: Page.SetDeviceOrientationOverrideRequest) => Promise<{}>;
-        /** Clears the overridden Device Orientation. */
-        clearDeviceOrientationOverride: () => Promise<{}>;
-        /** Toggles mouse event-based touch event emulation. */
-        setTouchEmulationEnabled: (request: Page.SetTouchEmulationEnabledRequest) => Promise<{}>;
-        /** Capture page screenshot. */
-        captureScreenshot: () => Promise<Page.CaptureScreenshotResponse>;
-        /** Starts sending each frame using the 'screencastFrame' event. */
-        startScreencast: (request: Page.StartScreencastRequest) => Promise<{}>;
-        /** Stops sending each frame in the 'screencastFrame'. */
-        stopScreencast: () => Promise<{}>;
-        /** Acknowledges that a screencast frame has been received by the frontend. */
-        screencastFrameAck: (request: Page.ScreencastFrameAckRequest) => Promise<{}>;
-        /** Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload). */
-        handleJavaScriptDialog: (request: Page.HandleJavaScriptDialogRequest) => Promise<{}>;
-        /** Shows / hides color picker */
-        setColorPickerEnabled: (request: Page.SetColorPickerEnabledRequest) => Promise<{}>;
-        /** Sets overlay message. */
-        setOverlayMessage: (request: Page.SetOverlayMessageRequest) => Promise<{}>;
-        getAppManifest: () => Promise<Page.GetAppManifestResponse>;
-        requestAppBanner: () => Promise<{}>;
-        setBlockedEventsWarningThreshold: (request: Page.SetBlockedEventsWarningThresholdRequest) => Promise<{}>;
-        onDomContentEventFired: (handler: (event: Page.DomContentEventFiredEvent) => void) => void;
-        onLoadEventFired: (handler: (event: Page.LoadEventFiredEvent) => void) => void;
-        /** Fired when frame has been attached to its parent. */
-        onFrameAttached: (handler: (event: Page.FrameAttachedEvent) => void) => void;
-        /** Fired once navigation of the frame has completed. Frame is now associated with the new loader. */
-        onFrameNavigated: (handler: (event: Page.FrameNavigatedEvent) => void) => void;
-        /** Fired when frame has been detached from its parent. */
-        onFrameDetached: (handler: (event: Page.FrameDetachedEvent) => void) => void;
-        /** Fired when frame has started loading. */
-        onFrameStartedLoading: (handler: (event: Page.FrameStartedLoadingEvent) => void) => void;
-        /** Fired when frame has stopped loading. */
-        onFrameStoppedLoading: (handler: (event: Page.FrameStoppedLoadingEvent) => void) => void;
-        /** Fired when frame schedules a potential navigation. */
-        onFrameScheduledNavigation: (handler: (event: Page.FrameScheduledNavigationEvent) => void) => void;
-        /** Fired when frame no longer has a scheduled navigation. */
-        onFrameClearedScheduledNavigation: (handler: (event: Page.FrameClearedScheduledNavigationEvent) => void) => void;
-        onFrameResized: (handler: () => void) => void;
-        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open. */
-        onJavascriptDialogOpening: (handler: (event: Page.JavascriptDialogOpeningEvent) => void) => void;
-        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed. */
-        onJavascriptDialogClosed: (handler: (event: Page.JavascriptDialogClosedEvent) => void) => void;
-        /** Compressed image data requested by the 'startScreencast'. */
-        onScreencastFrame: (handler: (event: Page.ScreencastFrameEvent) => void) => void;
-        /** Fired when the page with currently enabled screencast was shown or hidden </code>. */
-        onScreencastVisibilityChanged: (handler: (event: Page.ScreencastVisibilityChangedEvent) => void) => void;
-        /** Fired when a color has been picked. */
-        onColorPicked: (handler: (event: Page.ColorPickedEvent) => void) => void;
-        /** Fired when interstitial page was shown */
-        onInterstitialShown: (handler: () => void) => void;
-        /** Fired when interstitial page was hidden */
-        onInterstitialHidden: (handler: () => void) => void;
-    }
-    
-    export interface PageAdapter {
-        /** Enables page domain notifications. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables page domain notifications. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onAddScriptToEvaluateOnLoad: (handler: (request: Page.AddScriptToEvaluateOnLoadRequest) => PromiseOrNot<Page.AddScriptToEvaluateOnLoadResponse>) => void;
-        onRemoveScriptToEvaluateOnLoad: (handler: (request: Page.RemoveScriptToEvaluateOnLoadRequest) => PromiseOrNot<{}>) => void;
-        /** Controls whether browser will open a new inspector window for connected pages. */
-        onSetAutoAttachToCreatedPages: (handler: (request: Page.SetAutoAttachToCreatedPagesRequest) => PromiseOrNot<{}>) => void;
-        /** Reloads given page optionally ignoring the cache. */
-        onReload: (handler: (request: Page.ReloadRequest) => PromiseOrNot<{}>) => void;
-        /** Navigates current page to the given URL. */
-        onNavigate: (handler: (request: Page.NavigateRequest) => PromiseOrNot<Page.NavigateResponse>) => void;
-        /** Returns navigation history for the current page. */
-        onGetNavigationHistory: (handler: () => PromiseOrNot<Page.GetNavigationHistoryResponse>) => void;
-        /** Navigates current page to the given history entry. */
-        onNavigateToHistoryEntry: (handler: (request: Page.NavigateToHistoryEntryRequest) => PromiseOrNot<{}>) => void;
-        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
-        onGetCookies: (handler: () => PromiseOrNot<Page.GetCookiesResponse>) => void;
-        /** Deletes browser cookie with given name, domain and path. */
-        onDeleteCookie: (handler: (request: Page.DeleteCookieRequest) => PromiseOrNot<{}>) => void;
-        /** Returns present frame / resource tree structure. */
-        onGetResourceTree: (handler: () => PromiseOrNot<Page.GetResourceTreeResponse>) => void;
-        /** Returns content of the given resource. */
-        onGetResourceContent: (handler: (request: Page.GetResourceContentRequest) => PromiseOrNot<Page.GetResourceContentResponse>) => void;
-        /** Searches for given string in resource content. */
-        onSearchInResource: (handler: (request: Page.SearchInResourceRequest) => PromiseOrNot<Page.SearchInResourceResponse>) => void;
-        /** Sets given markup as the document's HTML. */
-        onSetDocumentContent: (handler: (request: Page.SetDocumentContentRequest) => PromiseOrNot<{}>) => void;
-        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
-        onSetDeviceMetricsOverride: (handler: (request: Page.SetDeviceMetricsOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Clears the overriden device metrics. */
-        onClearDeviceMetricsOverride: (handler: () => PromiseOrNot<{}>) => void;
-        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
-        onSetGeolocationOverride: (handler: (request: Page.SetGeolocationOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Clears the overriden Geolocation Position and Error. */
-        onClearGeolocationOverride: (handler: () => PromiseOrNot<{}>) => void;
-        /** Overrides the Device Orientation. */
-        onSetDeviceOrientationOverride: (handler: (request: Page.SetDeviceOrientationOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Clears the overridden Device Orientation. */
-        onClearDeviceOrientationOverride: (handler: () => PromiseOrNot<{}>) => void;
-        /** Toggles mouse event-based touch event emulation. */
-        onSetTouchEmulationEnabled: (handler: (request: Page.SetTouchEmulationEnabledRequest) => PromiseOrNot<{}>) => void;
-        /** Capture page screenshot. */
-        onCaptureScreenshot: (handler: () => PromiseOrNot<Page.CaptureScreenshotResponse>) => void;
-        /** Starts sending each frame using the 'screencastFrame' event. */
-        onStartScreencast: (handler: (request: Page.StartScreencastRequest) => PromiseOrNot<{}>) => void;
-        /** Stops sending each frame in the 'screencastFrame'. */
-        onStopScreencast: (handler: () => PromiseOrNot<{}>) => void;
-        /** Acknowledges that a screencast frame has been received by the frontend. */
-        onScreencastFrameAck: (handler: (request: Page.ScreencastFrameAckRequest) => PromiseOrNot<{}>) => void;
-        /** Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload). */
-        onHandleJavaScriptDialog: (handler: (request: Page.HandleJavaScriptDialogRequest) => PromiseOrNot<{}>) => void;
-        /** Shows / hides color picker */
-        onSetColorPickerEnabled: (handler: (request: Page.SetColorPickerEnabledRequest) => PromiseOrNot<{}>) => void;
-        /** Sets overlay message. */
-        onSetOverlayMessage: (handler: (request: Page.SetOverlayMessageRequest) => PromiseOrNot<{}>) => void;
-        onGetAppManifest: (handler: () => PromiseOrNot<Page.GetAppManifestResponse>) => void;
-        onRequestAppBanner: (handler: () => PromiseOrNot<{}>) => void;
-        onSetBlockedEventsWarningThreshold: (handler: (request: Page.SetBlockedEventsWarningThresholdRequest) => PromiseOrNot<{}>) => void;
-        fireDomContentEventFired: (event: Page.DomContentEventFiredEvent) => void;
-        fireLoadEventFired: (event: Page.LoadEventFiredEvent) => void;
-        /** Fired when frame has been attached to its parent. */
-        fireFrameAttached: (event: Page.FrameAttachedEvent) => void;
-        /** Fired once navigation of the frame has completed. Frame is now associated with the new loader. */
-        fireFrameNavigated: (event: Page.FrameNavigatedEvent) => void;
-        /** Fired when frame has been detached from its parent. */
-        fireFrameDetached: (event: Page.FrameDetachedEvent) => void;
-        /** Fired when frame has started loading. */
-        fireFrameStartedLoading: (event: Page.FrameStartedLoadingEvent) => void;
-        /** Fired when frame has stopped loading. */
-        fireFrameStoppedLoading: (event: Page.FrameStoppedLoadingEvent) => void;
-        /** Fired when frame schedules a potential navigation. */
-        fireFrameScheduledNavigation: (event: Page.FrameScheduledNavigationEvent) => void;
-        /** Fired when frame no longer has a scheduled navigation. */
-        fireFrameClearedScheduledNavigation: (event: Page.FrameClearedScheduledNavigationEvent) => void;
-        fireFrameResized: () => void;
-        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open. */
-        fireJavascriptDialogOpening: (event: Page.JavascriptDialogOpeningEvent) => void;
-        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed. */
-        fireJavascriptDialogClosed: (event: Page.JavascriptDialogClosedEvent) => void;
-        /** Compressed image data requested by the 'startScreencast'. */
-        fireScreencastFrame: (event: Page.ScreencastFrameEvent) => void;
-        /** Fired when the page with currently enabled screencast was shown or hidden </code>. */
-        fireScreencastVisibilityChanged: (event: Page.ScreencastVisibilityChangedEvent) => void;
-        /** Fired when a color has been picked. */
-        fireColorPicked: (event: Page.ColorPickedEvent) => void;
-        /** Fired when interstitial page was shown */
-        fireInterstitialShown: () => void;
-        /** Fired when interstitial page was hidden */
-        fireInterstitialHidden: () => void;
+        
+        export interface NavigationRequestedEvent {
+            /** Whether the navigation is taking place in the main frame or in a subframe. */
+            isInMainFrame: boolean;
+            
+            /** Whether the navigation has encountered a server redirect or not. */
+            isRedirect: boolean;
+            
+            navigationId: integer;
+            
+            /** URL of requested navigation. */
+            url: string;
+            
+        }
     }
     
     /** This domain allows to control rendering of the page. */
@@ -1917,53 +1746,32 @@ export module Crdi {
         export interface SetShowPaintRectsRequest {
             /** True for showing paint rectangles */
             result: boolean;
+            
         }
         
         export interface SetShowDebugBordersRequest {
             /** True for showing debug borders */
             show: boolean;
+            
         }
         
         export interface SetShowFPSCounterRequest {
             /** True for showing the FPS counter */
             show: boolean;
+            
         }
         
         export interface SetShowScrollBottleneckRectsRequest {
             /** True for showing scroll bottleneck rects */
             show: boolean;
+            
         }
         
         export interface SetShowViewportSizeOnResizeRequest {
             /** Whether to paint size or not. */
             show: boolean;
+            
         }
-    }
-    
-    export interface RenderingClient {
-        /** Requests that backend shows paint rectangles */
-        setShowPaintRects: (request: Rendering.SetShowPaintRectsRequest) => Promise<{}>;
-        /** Requests that backend shows debug borders on layers */
-        setShowDebugBorders: (request: Rendering.SetShowDebugBordersRequest) => Promise<{}>;
-        /** Requests that backend shows the FPS counter */
-        setShowFPSCounter: (request: Rendering.SetShowFPSCounterRequest) => Promise<{}>;
-        /** Requests that backend shows scroll bottleneck rects */
-        setShowScrollBottleneckRects: (request: Rendering.SetShowScrollBottleneckRectsRequest) => Promise<{}>;
-        /** Paints viewport size upon main frame resize. */
-        setShowViewportSizeOnResize: (request: Rendering.SetShowViewportSizeOnResizeRequest) => Promise<{}>;
-    }
-    
-    export interface RenderingAdapter {
-        /** Requests that backend shows paint rectangles */
-        onSetShowPaintRects: (handler: (request: Rendering.SetShowPaintRectsRequest) => PromiseOrNot<{}>) => void;
-        /** Requests that backend shows debug borders on layers */
-        onSetShowDebugBorders: (handler: (request: Rendering.SetShowDebugBordersRequest) => PromiseOrNot<{}>) => void;
-        /** Requests that backend shows the FPS counter */
-        onSetShowFPSCounter: (handler: (request: Rendering.SetShowFPSCounterRequest) => PromiseOrNot<{}>) => void;
-        /** Requests that backend shows scroll bottleneck rects */
-        onSetShowScrollBottleneckRects: (handler: (request: Rendering.SetShowScrollBottleneckRectsRequest) => PromiseOrNot<{}>) => void;
-        /** Paints viewport size upon main frame resize. */
-        onSetShowViewportSizeOnResize: (handler: (request: Rendering.SetShowViewportSizeOnResizeRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** This domain emulates different environments for the page. */
@@ -1973,8 +1781,10 @@ export module Crdi {
         export interface ScreenOrientation {
             /** Orientation type. */
             type: 'portraitPrimary' | 'portraitSecondary' | 'landscapePrimary' | 'landscapeSecondary';
+            
             /** Orientation angle. */
             angle: integer;
+            
         }
         
         /** advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to allow the next delayed task (if any) to run; pause: The virtual time base may not advance; pauseIfNetworkFetchesPending: The virtual time base may not advance if there are any pending resource fetches. */
@@ -1983,130 +1793,100 @@ export module Crdi {
         export interface SetDeviceMetricsOverrideRequest {
             /** Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override. */
             width: integer;
+            
             /** Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override. */
             height: integer;
+            
             /** Overriding device scale factor value. 0 disables the override. */
             deviceScaleFactor: number;
+            
             /** Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more. */
             mobile: boolean;
+            
             /** Whether a view that exceeds the available browser window area should be scaled down to fit. */
             fitWindow: boolean;
+            
             /** Scale to apply to resulting view image. Ignored in |fitWindow| mode. */
             scale?: number;
+            
             /** X offset to shift resulting view image by. Ignored in |fitWindow| mode. */
             offsetX?: number;
+            
             /** Y offset to shift resulting view image by. Ignored in |fitWindow| mode. */
             offsetY?: number;
+            
             /** Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             screenWidth?: integer;
+            
             /** Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             screenHeight?: integer;
+            
             /** Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             positionX?: integer;
+            
             /** Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
             positionY?: integer;
+            
             /** Screen orientation override. */
             screenOrientation?: ScreenOrientation;
+            
         }
         
         export interface SetPageScaleFactorRequest {
             /** Page scale factor. */
             pageScaleFactor: number;
+            
         }
         
         export interface SetScriptExecutionDisabledRequest {
             /** Whether script execution should be disabled in the page. */
             value: boolean;
+            
         }
         
         export interface SetGeolocationOverrideRequest {
             /** Mock latitude */
             latitude?: number;
+            
             /** Mock longitude */
             longitude?: number;
+            
             /** Mock accuracy */
             accuracy?: number;
+            
         }
         
         export interface SetTouchEmulationEnabledRequest {
             /** Whether the touch event emulation should be enabled. */
             enabled: boolean;
+            
             /** Touch/gesture events configuration. Default: current platform. */
             configuration?: 'mobile' | 'desktop';
+            
         }
         
         export interface SetEmulatedMediaRequest {
             /** Media type to emulate. Empty string disables the override. */
             media: string;
+            
         }
         
         export interface SetCPUThrottlingRateRequest {
             /** Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc). */
             rate: number;
+            
         }
         
         export interface CanEmulateResponse {
             /** True if emulation is supported. */
             result: boolean;
+            
         }
         
         export interface SetVirtualTimePolicyRequest {
             policy: VirtualTimePolicy;
+            
         }
-    }
-    
-    export interface EmulationClient {
-        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
-        setDeviceMetricsOverride: (request: Emulation.SetDeviceMetricsOverrideRequest) => Promise<{}>;
-        /** Clears the overriden device metrics. */
-        clearDeviceMetricsOverride: () => Promise<{}>;
-        /** Requests that page scale factor is reset to initial values. */
-        resetPageScaleFactor: () => Promise<{}>;
-        /** Sets a specified page scale factor. */
-        setPageScaleFactor: (request: Emulation.SetPageScaleFactorRequest) => Promise<{}>;
-        /** Switches script execution in the page. */
-        setScriptExecutionDisabled: (request: Emulation.SetScriptExecutionDisabledRequest) => Promise<{}>;
-        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
-        setGeolocationOverride: (request: Emulation.SetGeolocationOverrideRequest) => Promise<{}>;
-        /** Clears the overriden Geolocation Position and Error. */
-        clearGeolocationOverride: () => Promise<{}>;
-        /** Toggles mouse event-based touch event emulation. */
-        setTouchEmulationEnabled: (request: Emulation.SetTouchEmulationEnabledRequest) => Promise<{}>;
-        /** Emulates the given media for CSS media queries. */
-        setEmulatedMedia: (request: Emulation.SetEmulatedMediaRequest) => Promise<{}>;
-        /** Enables CPU throttling to emulate slow CPUs. */
-        setCPUThrottlingRate: (request: Emulation.SetCPUThrottlingRateRequest) => Promise<{}>;
-        /** Tells whether emulation is supported. */
-        canEmulate: () => Promise<Emulation.CanEmulateResponse>;
-        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
-        setVirtualTimePolicy: (request: Emulation.SetVirtualTimePolicyRequest) => Promise<{}>;
-    }
-    
-    export interface EmulationAdapter {
-        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
-        onSetDeviceMetricsOverride: (handler: (request: Emulation.SetDeviceMetricsOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Clears the overriden device metrics. */
-        onClearDeviceMetricsOverride: (handler: () => PromiseOrNot<{}>) => void;
-        /** Requests that page scale factor is reset to initial values. */
-        onResetPageScaleFactor: (handler: () => PromiseOrNot<{}>) => void;
-        /** Sets a specified page scale factor. */
-        onSetPageScaleFactor: (handler: (request: Emulation.SetPageScaleFactorRequest) => PromiseOrNot<{}>) => void;
-        /** Switches script execution in the page. */
-        onSetScriptExecutionDisabled: (handler: (request: Emulation.SetScriptExecutionDisabledRequest) => PromiseOrNot<{}>) => void;
-        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
-        onSetGeolocationOverride: (handler: (request: Emulation.SetGeolocationOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Clears the overriden Geolocation Position and Error. */
-        onClearGeolocationOverride: (handler: () => PromiseOrNot<{}>) => void;
-        /** Toggles mouse event-based touch event emulation. */
-        onSetTouchEmulationEnabled: (handler: (request: Emulation.SetTouchEmulationEnabledRequest) => PromiseOrNot<{}>) => void;
-        /** Emulates the given media for CSS media queries. */
-        onSetEmulatedMedia: (handler: (request: Emulation.SetEmulatedMediaRequest) => PromiseOrNot<{}>) => void;
-        /** Enables CPU throttling to emulate slow CPUs. */
-        onSetCPUThrottlingRate: (handler: (request: Emulation.SetCPUThrottlingRateRequest) => PromiseOrNot<{}>) => void;
-        /** Tells whether emulation is supported. */
-        onCanEmulate: (handler: () => PromiseOrNot<Emulation.CanEmulateResponse>) => void;
-        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
-        onSetVirtualTimePolicy: (handler: (request: Emulation.SetVirtualTimePolicyRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** Security */
@@ -2122,54 +1902,48 @@ export module Crdi {
         export interface SecurityStateExplanation {
             /** Security state representing the severity of the factor being explained. */
             securityState: SecurityState;
+            
             /** Short phrase describing the type of factor. */
             summary: string;
+            
             /** Full text explanation of the factor. */
             description: string;
+            
             /** Associated certificate id. */
             certificateId?: CertificateId;
+            
         }
         
         /** Information about mixed content on the page. */
         export interface MixedContentStatus {
             /** True if the page ran insecure content such as scripts. */
             ranInsecureContent: boolean;
+            
             /** True if the page displayed insecure content such as images. */
             displayedInsecureContent: boolean;
+            
             /** Security state representing a page that ran insecure content. */
             ranInsecureContentStyle: SecurityState;
+            
             /** Security state representing a page that displayed insecure content. */
             displayedInsecureContentStyle: SecurityState;
+            
         }
         
         export interface SecurityStateChangedEvent {
             /** Security state. */
             securityState: SecurityState;
+            
             /** List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included. */
             explanations?: SecurityStateExplanation[];
+            
             /** Information about mixed content on the page. */
             mixedContentStatus?: MixedContentStatus;
+            
             /** True if the page was loaded over cryptographic transport such as HTTPS. */
             schemeIsCryptographic?: boolean;
+            
         }
-    }
-    
-    export interface SecurityClient {
-        /** Enables tracking security state changes. */
-        enable: () => Promise<{}>;
-        /** Disables tracking security state changes. */
-        disable: () => Promise<{}>;
-        /** The security state of the page changed. */
-        onSecurityStateChanged: (handler: (event: Security.SecurityStateChangedEvent) => void) => void;
-    }
-    
-    export interface SecurityAdapter {
-        /** Enables tracking security state changes. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables tracking security state changes. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** The security state of the page changed. */
-        fireSecurityStateChanged: (event: Security.SecurityStateChangedEvent) => void;
     }
     
     /** Network domain allows tracking network activities of the page. It exposes information about http, file, data and other requests and responses, their headers, bodies, timing, etc. */
@@ -2196,36 +1970,52 @@ export module Crdi {
         export interface ResourceTiming {
             /** Timing's requestTime is a baseline in seconds, while the other numbers are ticks in milliseconds relatively to this requestTime. */
             requestTime: number;
+            
             /** Started resolving proxy. */
             proxyStart: number;
+            
             /** Finished resolving proxy. */
             proxyEnd: number;
+            
             /** Started DNS address resolve. */
             dnsStart: number;
+            
             /** Finished DNS address resolve. */
             dnsEnd: number;
+            
             /** Started connecting to the remote host. */
             connectStart: number;
+            
             /** Connected to the remote host. */
             connectEnd: number;
+            
             /** Started SSL handshake. */
             sslStart: number;
+            
             /** Finished SSL handshake. */
             sslEnd: number;
+            
             /** Started running ServiceWorker. */
             workerStart: number;
+            
             /** Finished Starting ServiceWorker. */
             workerReady: number;
+            
             /** Started sending request. */
             sendStart: number;
+            
             /** Finished sending request. */
             sendEnd: number;
+            
             /** Time the server started pushing request. */
             pushStart: number;
+            
             /** Time the server finished pushing request. */
             pushEnd: number;
+            
             /** Finished receiving response headers. */
             receiveHeadersEnd: number;
+            
         }
         
         /** Loading priority of a resource request. */
@@ -2235,86 +2025,117 @@ export module Crdi {
         export interface Request {
             /** Request URL. */
             url: string;
+            
             /** HTTP request method. */
             method: string;
+            
             /** HTTP request headers. */
             headers: Headers;
+            
             /** HTTP POST request data. */
             postData?: string;
+            
             /** The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/ */
             mixedContentType?: 'blockable' | 'optionally-blockable' | 'none';
+            
             /** Priority of the resource request at the time request is sent. */
             initialPriority: ResourcePriority;
+            
         }
         
         /** Subject of a certificate. */
         export interface CertificateSubject {
             /** Certificate subject name. */
             name: string;
+            
             /** Subject Alternative Name (SAN) DNS names. */
             sanDnsNames: string[];
+            
             /** Subject Alternative Name (SAN) IP addresses. */
             sanIpAddresses: string[];
+            
         }
         
         /** Details about a request's certificate. */
         export interface CertificateDetails {
             /** Certificate subject. */
             subject: CertificateSubject;
+            
             /** Name of the issuing CA. */
             issuer: string;
+            
             /** Certificate valid from date. */
             validFrom: Timestamp;
+            
             /** Certificate valid to (expiration) date */
             validTo: Timestamp;
+            
         }
         
         /** Details about the validation status of a request's certificate. */
         export interface CertificateValidationDetails {
             /** The number of SCTs from unknown logs. */
             numUnknownScts: integer;
+            
             /** The number of invalid SCTs. */
             numInvalidScts: integer;
+            
             /** The number of valid SCTs. */
             numValidScts: integer;
+            
         }
         
         /** Details of a signed certificate timestamp (SCT). */
         export interface SignedCertificateTimestamp {
             /** Validation status. */
             status: string;
+            
             /** Origin. */
             origin: string;
+            
             /** Log name / description. */
             logDescription: string;
+            
             /** Log ID. */
             logId: string;
+            
             /** Issuance date. */
             timestamp: Timestamp;
+            
             /** Hash algorithm. */
             hashAlgorithm: string;
+            
             /** Signature algorithm. */
             signatureAlgorithm: string;
+            
             /** Signature data. */
             signatureData: string;
+            
         }
         
         /** Security details about a request. */
         export interface SecurityDetails {
             /** Protocol name (e.g. "TLS 1.2" or "QUIC"). */
             protocol: string;
+            
             /** Key Exchange used by the connection. */
             keyExchange: string;
+            
             /** Cipher name. */
             cipher: string;
+            
             /** TLS MAC. Note that AEAD ciphers do not have separate MACs. */
             mac?: string;
+            
             /** Certificate ID value. */
             certificateId: Security.CertificateId;
+            
             /** Validation details for the request's certficate. */
             certificateValidationDetails?: CertificateValidationDetails;
+            
             /** List of signed certificate timestamps (SCTs). */
             signedCertificateTimestampList: SignedCertificateTimestamp[];
+            
         }
         
         /** The reason why request was blocked. */
@@ -2324,561 +2145,542 @@ export module Crdi {
         export interface Response {
             /** Response URL. This URL can be different from CachedResource.url in case of redirect. */
             url: string;
+            
             /** HTTP response status code. */
             status: number;
+            
             /** HTTP response status text. */
             statusText: string;
+            
             /** HTTP response headers. */
             headers: Headers;
+            
             /** HTTP response headers text. */
             headersText?: string;
+            
             /** Resource mimeType as determined by the browser. */
             mimeType: string;
+            
             /** Refined HTTP request headers that were actually transmitted over the network. */
             requestHeaders?: Headers;
+            
             /** HTTP request headers text. */
             requestHeadersText?: string;
+            
             /** Specifies whether physical connection was actually reused for this request. */
             connectionReused: boolean;
+            
             /** Physical connection id that was actually used for this request. */
             connectionId: number;
+            
             /** Remote IP address. */
             remoteIPAddress?: string;
+            
             /** Remote port. */
             remotePort?: integer;
+            
             /** Specifies that the request was served from the disk cache. */
             fromDiskCache?: boolean;
+            
             /** Specifies that the request was served from the ServiceWorker. */
             fromServiceWorker?: boolean;
+            
             /** Total number of bytes received for this request so far. */
             encodedDataLength: number;
+            
             /** Timing information for the given request. */
             timing?: ResourceTiming;
+            
             /** Protocol used to fetch this request. */
             protocol?: string;
+            
             /** Security state of the request resource. */
             securityState: Security.SecurityState;
+            
             /** Security details for the request. */
             securityDetails?: SecurityDetails;
+            
         }
         
         /** WebSocket request data. */
         export interface WebSocketRequest {
             /** HTTP request headers. */
             headers: Headers;
+            
         }
         
         /** WebSocket response data. */
         export interface WebSocketResponse {
             /** HTTP response status code. */
             status: number;
+            
             /** HTTP response status text. */
             statusText: string;
+            
             /** HTTP response headers. */
             headers: Headers;
+            
             /** HTTP response headers text. */
             headersText?: string;
+            
             /** HTTP request headers. */
             requestHeaders?: Headers;
+            
             /** HTTP request headers text. */
             requestHeadersText?: string;
+            
         }
         
         /** WebSocket frame data. */
         export interface WebSocketFrame {
             /** WebSocket frame opcode. */
             opcode: number;
+            
             /** WebSocke frame mask. */
             mask: boolean;
+            
             /** WebSocke frame payload data. */
             payloadData: string;
+            
         }
         
         /** Information about the cached resource. */
         export interface CachedResource {
             /** Resource URL. This is the url of the original network request. */
             url: string;
+            
             /** Type of this resource. */
             type: Page.ResourceType;
+            
             /** Cached response data. */
             response?: Response;
+            
             /** Cached response body size. */
             bodySize: number;
+            
         }
         
         /** Information about the request initiator. */
         export interface Initiator {
             /** Type of this initiator. */
             type: 'parser' | 'script' | 'other';
+            
             /** Initiator JavaScript stack trace, set for Script only. */
             stack?: Runtime.StackTrace;
+            
             /** Initiator URL, set for Parser type only. */
             url?: string;
+            
             /** Initiator line number, set for Parser type only. */
             lineNumber?: number;
+            
         }
         
         /** Cookie object */
         export interface Cookie {
             /** Cookie name. */
             name: string;
+            
             /** Cookie value. */
             value: string;
+            
             /** Cookie domain. */
             domain: string;
+            
             /** Cookie path. */
             path: string;
+            
             /** Cookie expires. */
             expires: number;
+            
             /** Cookie size. */
             size: integer;
+            
             /** True if cookie is http-only. */
             httpOnly: boolean;
+            
             /** True if cookie is secure. */
             secure: boolean;
+            
             /** True in case of session cookie. */
             session: boolean;
+            
             /** Represents the cookies' 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies */
             sameSite?: 'Strict' | 'Lax';
+            
         }
         
         export interface EnableRequest {
             /** Buffer size in bytes to use when preserving network payloads (XHRs, etc). */
             maxTotalBufferSize?: integer;
+            
             /** Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc). */
             maxResourceBufferSize?: integer;
+            
         }
         
         export interface SetUserAgentOverrideRequest {
             /** User agent to use. */
             userAgent: string;
+            
         }
         
         export interface SetExtraHTTPHeadersRequest {
             /** Map with extra HTTP headers. */
             headers: Headers;
+            
         }
         
         export interface GetResponseBodyRequest {
             /** Identifier of the network request to get content for. */
             requestId: RequestId;
+            
         }
         
         export interface GetResponseBodyResponse {
             /** Response body. */
             body: string;
+            
             /** True, if content was sent as base64. */
             base64Encoded: boolean;
+            
         }
         
         export interface AddBlockedURLRequest {
             /** URL to block. */
             url: string;
+            
         }
         
         export interface RemoveBlockedURLRequest {
             /** URL to stop blocking. */
             url: string;
+            
         }
         
         export interface ReplayXHRRequest {
             /** Identifier of XHR to replay. */
             requestId: RequestId;
+            
         }
         
         export interface SetMonitoringXHREnabledRequest {
             /** Monitoring enabled state. */
             enabled: boolean;
+            
         }
         
         export interface CanClearBrowserCacheResponse {
             /** True if browser cache can be cleared. */
             result: boolean;
+            
         }
         
         export interface CanClearBrowserCookiesResponse {
             /** True if browser cookies can be cleared. */
             result: boolean;
+            
         }
         
         export interface GetCookiesResponse {
             /** Array of cookie objects. */
             cookies: Cookie[];
+            
         }
         
         export interface DeleteCookieRequest {
             /** Name of the cookie to remove. */
             cookieName: string;
+            
             /** URL to match cooke domain and path. */
             url: string;
+            
         }
         
         export interface CanEmulateNetworkConditionsResponse {
             /** True if emulation of network conditions is supported. */
             result: boolean;
+            
         }
         
         export interface EmulateNetworkConditionsRequest {
             /** True to emulate internet disconnection. */
             offline: boolean;
+            
             /** Additional latency (ms). */
             latency: number;
+            
             /** Maximal aggregated download throughput. */
             downloadThroughput: number;
+            
             /** Maximal aggregated upload throughput. */
             uploadThroughput: number;
+            
             /** Connection type if known. */
             connectionType?: ConnectionType;
+            
         }
         
         export interface SetCacheDisabledRequest {
             /** Cache disabled state. */
             cacheDisabled: boolean;
+            
         }
         
         export interface SetBypassServiceWorkerRequest {
             /** Bypass service worker and load from network. */
             bypass: boolean;
+            
         }
         
         export interface SetDataSizeLimitsForTestRequest {
             /** Maximum total buffer size. */
             maxTotalSize: integer;
+            
             /** Maximum per-resource size. */
             maxResourceSize: integer;
+            
         }
         
         export interface GetCertificateDetailsRequest {
             /** ID of the certificate to get details for. */
             certificateId: Security.CertificateId;
+            
         }
         
         export interface GetCertificateDetailsResponse {
             /** Certificate details. */
             result: CertificateDetails;
+            
         }
         
         export interface ShowCertificateViewerRequest {
             /** Certificate id. */
             certificateId: Security.CertificateId;
+            
         }
         
         export interface ResourceChangedPriorityEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** New priority */
             newPriority: ResourcePriority;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
         }
         
         export interface RequestWillBeSentEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Frame identifier. */
             frameId: Page.FrameId;
+            
             /** Loader identifier. */
             loaderId: LoaderId;
+            
             /** URL of the document this request is loaded for. */
             documentURL: string;
+            
             /** Request data. */
             request: Request;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** UTC Timestamp. */
             wallTime: Timestamp;
+            
             /** Request initiator. */
             initiator: Initiator;
+            
             /** Redirect response data. */
             redirectResponse?: Response;
+            
             /** Type of this resource. */
             type?: Page.ResourceType;
+            
         }
         
         export interface RequestServedFromCacheEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
         }
         
         export interface ResponseReceivedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Frame identifier. */
             frameId: Page.FrameId;
+            
             /** Loader identifier. */
             loaderId: LoaderId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** Resource type. */
             type: Page.ResourceType;
+            
             /** Response data. */
             response: Response;
+            
         }
         
         export interface DataReceivedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** Data chunk length. */
             dataLength: integer;
+            
             /** Actual bytes received (might be less than dataLength for compressed encodings). */
             encodedDataLength: integer;
+            
         }
         
         export interface LoadingFinishedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** Total number of bytes received for this request. */
             encodedDataLength: number;
+            
         }
         
         export interface LoadingFailedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** Resource type. */
             type: Page.ResourceType;
+            
             /** User friendly error message. */
             errorText: string;
+            
             /** True if loading was canceled. */
             canceled?: boolean;
+            
             /** The reason why loading was blocked, if any. */
             blockedReason?: BlockedReason;
+            
         }
         
         export interface WebSocketWillSendHandshakeRequestEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** UTC Timestamp. */
             wallTime: Timestamp;
+            
             /** WebSocket request data. */
             request: WebSocketRequest;
+            
         }
         
         export interface WebSocketHandshakeResponseReceivedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** WebSocket response data. */
             response: WebSocketResponse;
+            
         }
         
         export interface WebSocketCreatedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** WebSocket request URL. */
             url: string;
+            
             /** Request initiator. */
             initiator?: Initiator;
+            
         }
         
         export interface WebSocketClosedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
         }
         
         export interface WebSocketFrameReceivedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** WebSocket response data. */
             response: WebSocketFrame;
+            
         }
         
         export interface WebSocketFrameErrorEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** WebSocket frame error message. */
             errorMessage: string;
+            
         }
         
         export interface WebSocketFrameSentEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** WebSocket response data. */
             response: WebSocketFrame;
+            
         }
         
         export interface EventSourceMessageReceivedEvent {
             /** Request identifier. */
             requestId: RequestId;
+            
             /** Timestamp. */
             timestamp: Timestamp;
+            
             /** Message type. */
             eventName: string;
+            
             /** Message identifier. */
             eventId: string;
+            
             /** Message content. */
             data: string;
+            
         }
-    }
-    
-    export interface NetworkClient {
-        /** Enables network tracking, network events will now be delivered to the client. */
-        enable: (request: Network.EnableRequest) => Promise<{}>;
-        /** Disables network tracking, prevents network events from being sent to the client. */
-        disable: () => Promise<{}>;
-        /** Allows overriding user agent with the given string. */
-        setUserAgentOverride: (request: Network.SetUserAgentOverrideRequest) => Promise<{}>;
-        /** Specifies whether to always send extra HTTP headers with the requests from this page. */
-        setExtraHTTPHeaders: (request: Network.SetExtraHTTPHeadersRequest) => Promise<{}>;
-        /** Returns content served for the given request. */
-        getResponseBody: (request: Network.GetResponseBodyRequest) => Promise<Network.GetResponseBodyResponse>;
-        /** Blocks specific URL from loading. */
-        addBlockedURL: (request: Network.AddBlockedURLRequest) => Promise<{}>;
-        /** Cancels blocking of a specific URL from loading. */
-        removeBlockedURL: (request: Network.RemoveBlockedURLRequest) => Promise<{}>;
-        /** This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password. */
-        replayXHR: (request: Network.ReplayXHRRequest) => Promise<{}>;
-        /** Toggles monitoring of XMLHttpRequest. If 'true', console will receive messages upon each XHR issued. */
-        setMonitoringXHREnabled: (request: Network.SetMonitoringXHREnabledRequest) => Promise<{}>;
-        /** Tells whether clearing browser cache is supported. */
-        canClearBrowserCache: () => Promise<Network.CanClearBrowserCacheResponse>;
-        /** Clears browser cache. */
-        clearBrowserCache: () => Promise<{}>;
-        /** Tells whether clearing browser cookies is supported. */
-        canClearBrowserCookies: () => Promise<Network.CanClearBrowserCookiesResponse>;
-        /** Clears browser cookies. */
-        clearBrowserCookies: () => Promise<{}>;
-        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
-        getCookies: () => Promise<Network.GetCookiesResponse>;
-        /** Deletes browser cookie with given name, domain and path. */
-        deleteCookie: (request: Network.DeleteCookieRequest) => Promise<{}>;
-        /** Tells whether emulation of network conditions is supported. */
-        canEmulateNetworkConditions: () => Promise<Network.CanEmulateNetworkConditionsResponse>;
-        /** Activates emulation of network conditions. */
-        emulateNetworkConditions: (request: Network.EmulateNetworkConditionsRequest) => Promise<{}>;
-        /** Toggles ignoring cache for each request. If 'true', cache will not be used. */
-        setCacheDisabled: (request: Network.SetCacheDisabledRequest) => Promise<{}>;
-        /** Toggles ignoring of service worker for each request. */
-        setBypassServiceWorker: (request: Network.SetBypassServiceWorkerRequest) => Promise<{}>;
-        /** For testing. */
-        setDataSizeLimitsForTest: (request: Network.SetDataSizeLimitsForTestRequest) => Promise<{}>;
-        /** Returns details for the given certificate. */
-        getCertificateDetails: (request: Network.GetCertificateDetailsRequest) => Promise<Network.GetCertificateDetailsResponse>;
-        /** Displays native dialog with the certificate details. */
-        showCertificateViewer: (request: Network.ShowCertificateViewerRequest) => Promise<{}>;
-        /** Fired when resource loading priority is changed */
-        onResourceChangedPriority: (handler: (event: Network.ResourceChangedPriorityEvent) => void) => void;
-        /** Fired when page is about to send HTTP request. */
-        onRequestWillBeSent: (handler: (event: Network.RequestWillBeSentEvent) => void) => void;
-        /** Fired if request ended up loading from cache. */
-        onRequestServedFromCache: (handler: (event: Network.RequestServedFromCacheEvent) => void) => void;
-        /** Fired when HTTP response is available. */
-        onResponseReceived: (handler: (event: Network.ResponseReceivedEvent) => void) => void;
-        /** Fired when data chunk was received over the network. */
-        onDataReceived: (handler: (event: Network.DataReceivedEvent) => void) => void;
-        /** Fired when HTTP request has finished loading. */
-        onLoadingFinished: (handler: (event: Network.LoadingFinishedEvent) => void) => void;
-        /** Fired when HTTP request has failed to load. */
-        onLoadingFailed: (handler: (event: Network.LoadingFailedEvent) => void) => void;
-        /** Fired when WebSocket is about to initiate handshake. */
-        onWebSocketWillSendHandshakeRequest: (handler: (event: Network.WebSocketWillSendHandshakeRequestEvent) => void) => void;
-        /** Fired when WebSocket handshake response becomes available. */
-        onWebSocketHandshakeResponseReceived: (handler: (event: Network.WebSocketHandshakeResponseReceivedEvent) => void) => void;
-        /** Fired upon WebSocket creation. */
-        onWebSocketCreated: (handler: (event: Network.WebSocketCreatedEvent) => void) => void;
-        /** Fired when WebSocket is closed. */
-        onWebSocketClosed: (handler: (event: Network.WebSocketClosedEvent) => void) => void;
-        /** Fired when WebSocket frame is received. */
-        onWebSocketFrameReceived: (handler: (event: Network.WebSocketFrameReceivedEvent) => void) => void;
-        /** Fired when WebSocket frame error occurs. */
-        onWebSocketFrameError: (handler: (event: Network.WebSocketFrameErrorEvent) => void) => void;
-        /** Fired when WebSocket frame is sent. */
-        onWebSocketFrameSent: (handler: (event: Network.WebSocketFrameSentEvent) => void) => void;
-        /** Fired when EventSource message is received. */
-        onEventSourceMessageReceived: (handler: (event: Network.EventSourceMessageReceivedEvent) => void) => void;
-    }
-    
-    export interface NetworkAdapter {
-        /** Enables network tracking, network events will now be delivered to the client. */
-        onEnable: (handler: (request: Network.EnableRequest) => PromiseOrNot<{}>) => void;
-        /** Disables network tracking, prevents network events from being sent to the client. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Allows overriding user agent with the given string. */
-        onSetUserAgentOverride: (handler: (request: Network.SetUserAgentOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Specifies whether to always send extra HTTP headers with the requests from this page. */
-        onSetExtraHTTPHeaders: (handler: (request: Network.SetExtraHTTPHeadersRequest) => PromiseOrNot<{}>) => void;
-        /** Returns content served for the given request. */
-        onGetResponseBody: (handler: (request: Network.GetResponseBodyRequest) => PromiseOrNot<Network.GetResponseBodyResponse>) => void;
-        /** Blocks specific URL from loading. */
-        onAddBlockedURL: (handler: (request: Network.AddBlockedURLRequest) => PromiseOrNot<{}>) => void;
-        /** Cancels blocking of a specific URL from loading. */
-        onRemoveBlockedURL: (handler: (request: Network.RemoveBlockedURLRequest) => PromiseOrNot<{}>) => void;
-        /** This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password. */
-        onReplayXHR: (handler: (request: Network.ReplayXHRRequest) => PromiseOrNot<{}>) => void;
-        /** Toggles monitoring of XMLHttpRequest. If 'true', console will receive messages upon each XHR issued. */
-        onSetMonitoringXHREnabled: (handler: (request: Network.SetMonitoringXHREnabledRequest) => PromiseOrNot<{}>) => void;
-        /** Tells whether clearing browser cache is supported. */
-        onCanClearBrowserCache: (handler: () => PromiseOrNot<Network.CanClearBrowserCacheResponse>) => void;
-        /** Clears browser cache. */
-        onClearBrowserCache: (handler: () => PromiseOrNot<{}>) => void;
-        /** Tells whether clearing browser cookies is supported. */
-        onCanClearBrowserCookies: (handler: () => PromiseOrNot<Network.CanClearBrowserCookiesResponse>) => void;
-        /** Clears browser cookies. */
-        onClearBrowserCookies: (handler: () => PromiseOrNot<{}>) => void;
-        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
-        onGetCookies: (handler: () => PromiseOrNot<Network.GetCookiesResponse>) => void;
-        /** Deletes browser cookie with given name, domain and path. */
-        onDeleteCookie: (handler: (request: Network.DeleteCookieRequest) => PromiseOrNot<{}>) => void;
-        /** Tells whether emulation of network conditions is supported. */
-        onCanEmulateNetworkConditions: (handler: () => PromiseOrNot<Network.CanEmulateNetworkConditionsResponse>) => void;
-        /** Activates emulation of network conditions. */
-        onEmulateNetworkConditions: (handler: (request: Network.EmulateNetworkConditionsRequest) => PromiseOrNot<{}>) => void;
-        /** Toggles ignoring cache for each request. If 'true', cache will not be used. */
-        onSetCacheDisabled: (handler: (request: Network.SetCacheDisabledRequest) => PromiseOrNot<{}>) => void;
-        /** Toggles ignoring of service worker for each request. */
-        onSetBypassServiceWorker: (handler: (request: Network.SetBypassServiceWorkerRequest) => PromiseOrNot<{}>) => void;
-        /** For testing. */
-        onSetDataSizeLimitsForTest: (handler: (request: Network.SetDataSizeLimitsForTestRequest) => PromiseOrNot<{}>) => void;
-        /** Returns details for the given certificate. */
-        onGetCertificateDetails: (handler: (request: Network.GetCertificateDetailsRequest) => PromiseOrNot<Network.GetCertificateDetailsResponse>) => void;
-        /** Displays native dialog with the certificate details. */
-        onShowCertificateViewer: (handler: (request: Network.ShowCertificateViewerRequest) => PromiseOrNot<{}>) => void;
-        /** Fired when resource loading priority is changed */
-        fireResourceChangedPriority: (event: Network.ResourceChangedPriorityEvent) => void;
-        /** Fired when page is about to send HTTP request. */
-        fireRequestWillBeSent: (event: Network.RequestWillBeSentEvent) => void;
-        /** Fired if request ended up loading from cache. */
-        fireRequestServedFromCache: (event: Network.RequestServedFromCacheEvent) => void;
-        /** Fired when HTTP response is available. */
-        fireResponseReceived: (event: Network.ResponseReceivedEvent) => void;
-        /** Fired when data chunk was received over the network. */
-        fireDataReceived: (event: Network.DataReceivedEvent) => void;
-        /** Fired when HTTP request has finished loading. */
-        fireLoadingFinished: (event: Network.LoadingFinishedEvent) => void;
-        /** Fired when HTTP request has failed to load. */
-        fireLoadingFailed: (event: Network.LoadingFailedEvent) => void;
-        /** Fired when WebSocket is about to initiate handshake. */
-        fireWebSocketWillSendHandshakeRequest: (event: Network.WebSocketWillSendHandshakeRequestEvent) => void;
-        /** Fired when WebSocket handshake response becomes available. */
-        fireWebSocketHandshakeResponseReceived: (event: Network.WebSocketHandshakeResponseReceivedEvent) => void;
-        /** Fired upon WebSocket creation. */
-        fireWebSocketCreated: (event: Network.WebSocketCreatedEvent) => void;
-        /** Fired when WebSocket is closed. */
-        fireWebSocketClosed: (event: Network.WebSocketClosedEvent) => void;
-        /** Fired when WebSocket frame is received. */
-        fireWebSocketFrameReceived: (event: Network.WebSocketFrameReceivedEvent) => void;
-        /** Fired when WebSocket frame error occurs. */
-        fireWebSocketFrameError: (event: Network.WebSocketFrameErrorEvent) => void;
-        /** Fired when WebSocket frame is sent. */
-        fireWebSocketFrameSent: (event: Network.WebSocketFrameSentEvent) => void;
-        /** Fired when EventSource message is received. */
-        fireEventSourceMessageReceived: (event: Network.EventSourceMessageReceivedEvent) => void;
     }
     
     export module Database {
@@ -2890,64 +2692,58 @@ export module Crdi {
         export interface Database {
             /** Database ID. */
             id: DatabaseId;
+            
             /** Database domain. */
             domain: string;
+            
             /** Database name. */
             name: string;
+            
             /** Database version. */
             version: string;
+            
         }
         
         /** Database error. */
         export interface Error {
             /** Error message. */
             message: string;
+            
             /** Error code. */
             code: integer;
+            
         }
         
         export interface GetDatabaseTableNamesRequest {
             databaseId: DatabaseId;
+            
         }
         
         export interface GetDatabaseTableNamesResponse {
             tableNames: string[];
+            
         }
         
         export interface ExecuteSQLRequest {
             databaseId: DatabaseId;
+            
             query: string;
+            
         }
         
         export interface ExecuteSQLResponse {
             columnNames?: string[];
+            
             values?: any[];
+            
             sqlError?: Error;
+            
         }
         
         export interface AddDatabaseEvent {
             database: Database;
+            
         }
-    }
-    
-    export interface DatabaseClient {
-        /** Enables database tracking, database events will now be delivered to the client. */
-        enable: () => Promise<{}>;
-        /** Disables database tracking, prevents database events from being sent to the client. */
-        disable: () => Promise<{}>;
-        getDatabaseTableNames: (request: Database.GetDatabaseTableNamesRequest) => Promise<Database.GetDatabaseTableNamesResponse>;
-        executeSQL: (request: Database.ExecuteSQLRequest) => Promise<Database.ExecuteSQLResponse>;
-        onAddDatabase: (handler: (event: Database.AddDatabaseEvent) => void) => void;
-    }
-    
-    export interface DatabaseAdapter {
-        /** Enables database tracking, database events will now be delivered to the client. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables database tracking, prevents database events from being sent to the client. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onGetDatabaseTableNames: (handler: (request: Database.GetDatabaseTableNamesRequest) => PromiseOrNot<Database.GetDatabaseTableNamesResponse>) => void;
-        onExecuteSQL: (handler: (request: Database.ExecuteSQLRequest) => PromiseOrNot<Database.ExecuteSQLResponse>) => void;
-        fireAddDatabase: (event: Database.AddDatabaseEvent) => void;
     }
     
     export module IndexedDB {
@@ -2956,169 +2752,182 @@ export module Crdi {
         export interface DatabaseWithObjectStores {
             /** Database name. */
             name: string;
+            
             /** Database version. */
             version: integer;
+            
             /** Object stores in this database. */
             objectStores: ObjectStore[];
+            
         }
         
         /** Object store. */
         export interface ObjectStore {
             /** Object store name. */
             name: string;
+            
             /** Object store key path. */
             keyPath: KeyPath;
+            
             /** If true, object store has auto increment flag set. */
             autoIncrement: boolean;
+            
             /** Indexes in this object store. */
             indexes: ObjectStoreIndex[];
+            
         }
         
         /** Object store index. */
         export interface ObjectStoreIndex {
             /** Index name. */
             name: string;
+            
             /** Index key path. */
             keyPath: KeyPath;
+            
             /** If true, index is unique. */
             unique: boolean;
+            
             /** If true, index allows multiple entries for a key. */
             multiEntry: boolean;
+            
         }
         
         /** Key. */
         export interface Key {
             /** Key type. */
             type: 'number' | 'string' | 'date' | 'array';
+            
             /** Number value. */
             number?: number;
+            
             /** String value. */
             string?: string;
+            
             /** Date value. */
             date?: number;
+            
             /** Array value. */
             array?: Key[];
+            
         }
         
         /** Key range. */
         export interface KeyRange {
             /** Lower bound. */
             lower?: Key;
+            
             /** Upper bound. */
             upper?: Key;
+            
             /** If true lower bound is open. */
             lowerOpen: boolean;
+            
             /** If true upper bound is open. */
             upperOpen: boolean;
+            
         }
         
         /** Data entry. */
         export interface DataEntry {
             /** JSON-stringified key object. */
             key: string;
+            
             /** JSON-stringified primary key object. */
             primaryKey: string;
+            
             /** JSON-stringified value object. */
             value: string;
+            
         }
         
         /** Key path. */
         export interface KeyPath {
             /** Key path type. */
             type: 'null' | 'string' | 'array';
+            
             /** String value. */
             string?: string;
+            
             /** Array value. */
             array?: string[];
+            
         }
         
         export interface RequestDatabaseNamesRequest {
             /** Security origin. */
             securityOrigin: string;
+            
         }
         
         export interface RequestDatabaseNamesResponse {
             /** Database names for origin. */
             databaseNames: string[];
+            
         }
         
         export interface RequestDatabaseRequest {
             /** Security origin. */
             securityOrigin: string;
+            
             /** Database name. */
             databaseName: string;
+            
         }
         
         export interface RequestDatabaseResponse {
             /** Database with an array of object stores. */
             databaseWithObjectStores: DatabaseWithObjectStores;
+            
         }
         
         export interface RequestDataRequest {
             /** Security origin. */
             securityOrigin: string;
+            
             /** Database name. */
             databaseName: string;
+            
             /** Object store name. */
             objectStoreName: string;
+            
             /** Index name, empty string for object store data requests. */
             indexName: string;
+            
             /** Number of records to skip. */
             skipCount: integer;
+            
             /** Number of records to fetch. */
             pageSize: integer;
+            
             /** Key range. */
             keyRange?: KeyRange;
+            
         }
         
         export interface RequestDataResponse {
             /** Array of object store data entries. */
             objectStoreDataEntries: DataEntry[];
+            
             /** If true, there are more entries to fetch in the given range. */
             hasMore: boolean;
+            
         }
         
         export interface ClearObjectStoreRequest {
             /** Security origin. */
             securityOrigin: string;
+            
             /** Database name. */
             databaseName: string;
+            
             /** Object store name. */
             objectStoreName: string;
+            
         }
         
         export interface ClearObjectStoreResponse {
         }
-    }
-    
-    export interface IndexedDBClient {
-        /** Enables events from backend. */
-        enable: () => Promise<{}>;
-        /** Disables events from backend. */
-        disable: () => Promise<{}>;
-        /** Requests database names for given security origin. */
-        requestDatabaseNames: (request: IndexedDB.RequestDatabaseNamesRequest) => Promise<IndexedDB.RequestDatabaseNamesResponse>;
-        /** Requests database with given name in given frame. */
-        requestDatabase: (request: IndexedDB.RequestDatabaseRequest) => Promise<IndexedDB.RequestDatabaseResponse>;
-        /** Requests data from object store or index. */
-        requestData: (request: IndexedDB.RequestDataRequest) => Promise<IndexedDB.RequestDataResponse>;
-        /** Clears all entries from an object store. */
-        clearObjectStore: (request: IndexedDB.ClearObjectStoreRequest) => Promise<IndexedDB.ClearObjectStoreResponse>;
-    }
-    
-    export interface IndexedDBAdapter {
-        /** Enables events from backend. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables events from backend. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Requests database names for given security origin. */
-        onRequestDatabaseNames: (handler: (request: IndexedDB.RequestDatabaseNamesRequest) => PromiseOrNot<IndexedDB.RequestDatabaseNamesResponse>) => void;
-        /** Requests database with given name in given frame. */
-        onRequestDatabase: (handler: (request: IndexedDB.RequestDatabaseRequest) => PromiseOrNot<IndexedDB.RequestDatabaseResponse>) => void;
-        /** Requests data from object store or index. */
-        onRequestData: (handler: (request: IndexedDB.RequestDataRequest) => PromiseOrNot<IndexedDB.RequestDataResponse>) => void;
-        /** Clears all entries from an object store. */
-        onClearObjectStore: (handler: (request: IndexedDB.ClearObjectStoreRequest) => PromiseOrNot<IndexedDB.ClearObjectStoreResponse>) => void;
     }
     
     export module CacheStorage {
@@ -3130,79 +2939,72 @@ export module Crdi {
         export interface DataEntry {
             /** Request url spec. */
             request: string;
+            
             /** Response stataus text. */
             response: string;
+            
         }
         
         /** Cache identifier. */
         export interface Cache {
             /** An opaque unique id of the cache. */
             cacheId: CacheId;
+            
             /** Security origin of the cache. */
             securityOrigin: string;
+            
             /** The name of the cache. */
             cacheName: string;
+            
         }
         
         export interface RequestCacheNamesRequest {
             /** Security origin. */
             securityOrigin: string;
+            
         }
         
         export interface RequestCacheNamesResponse {
             /** Caches for the security origin. */
             caches: Cache[];
+            
         }
         
         export interface RequestEntriesRequest {
             /** ID of cache to get entries from. */
             cacheId: CacheId;
+            
             /** Number of records to skip. */
             skipCount: integer;
+            
             /** Number of records to fetch. */
             pageSize: integer;
+            
         }
         
         export interface RequestEntriesResponse {
             /** Array of object store data entries. */
             cacheDataEntries: DataEntry[];
+            
             /** If true, there are more entries to fetch in the given range. */
             hasMore: boolean;
+            
         }
         
         export interface DeleteCacheRequest {
             /** Id of cache for deletion. */
             cacheId: CacheId;
+            
         }
         
         export interface DeleteEntryRequest {
             /** Id of cache where the entry will be deleted. */
             cacheId: CacheId;
+            
             /** URL spec of the request. */
             request: string;
+            
         }
-    }
-    
-    export interface CacheStorageClient {
-        /** Requests cache names. */
-        requestCacheNames: (request: CacheStorage.RequestCacheNamesRequest) => Promise<CacheStorage.RequestCacheNamesResponse>;
-        /** Requests data from cache. */
-        requestEntries: (request: CacheStorage.RequestEntriesRequest) => Promise<CacheStorage.RequestEntriesResponse>;
-        /** Deletes a cache. */
-        deleteCache: (request: CacheStorage.DeleteCacheRequest) => Promise<{}>;
-        /** Deletes a cache entry. */
-        deleteEntry: (request: CacheStorage.DeleteEntryRequest) => Promise<{}>;
-    }
-    
-    export interface CacheStorageAdapter {
-        /** Requests cache names. */
-        onRequestCacheNames: (handler: (request: CacheStorage.RequestCacheNamesRequest) => PromiseOrNot<CacheStorage.RequestCacheNamesResponse>) => void;
-        /** Requests data from cache. */
-        onRequestEntries: (handler: (request: CacheStorage.RequestEntriesRequest) => PromiseOrNot<CacheStorage.RequestEntriesResponse>) => void;
-        /** Deletes a cache. */
-        onDeleteCache: (handler: (request: CacheStorage.DeleteCacheRequest) => PromiseOrNot<{}>) => void;
-        /** Deletes a cache entry. */
-        onDeleteEntry: (handler: (request: CacheStorage.DeleteEntryRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** Query and modify DOM storage. */
@@ -3212,8 +3014,10 @@ export module Crdi {
         export interface StorageId {
             /** Security origin for the storage. */
             securityOrigin: string;
+            
             /** Whether the storage is local storage (not session storage). */
             isLocalStorage: boolean;
+            
         }
         
         /** DOM Storage item. */
@@ -3221,72 +3025,61 @@ export module Crdi {
         
         export interface GetDOMStorageItemsRequest {
             storageId: StorageId;
+            
         }
         
         export interface GetDOMStorageItemsResponse {
             entries: Item[];
+            
         }
         
         export interface SetDOMStorageItemRequest {
             storageId: StorageId;
+            
             key: string;
+            
             value: string;
+            
         }
         
         export interface RemoveDOMStorageItemRequest {
             storageId: StorageId;
+            
             key: string;
+            
         }
         
         export interface DomStorageItemsClearedEvent {
             storageId: StorageId;
+            
         }
         
         export interface DomStorageItemRemovedEvent {
             storageId: StorageId;
+            
             key: string;
+            
         }
         
         export interface DomStorageItemAddedEvent {
             storageId: StorageId;
+            
             key: string;
+            
             newValue: string;
+            
         }
         
         export interface DomStorageItemUpdatedEvent {
             storageId: StorageId;
+            
             key: string;
+            
             oldValue: string;
+            
             newValue: string;
+            
         }
-    }
-    
-    export interface DOMStorageClient {
-        /** Enables storage tracking, storage events will now be delivered to the client. */
-        enable: () => Promise<{}>;
-        /** Disables storage tracking, prevents storage events from being sent to the client. */
-        disable: () => Promise<{}>;
-        getDOMStorageItems: (request: DOMStorage.GetDOMStorageItemsRequest) => Promise<DOMStorage.GetDOMStorageItemsResponse>;
-        setDOMStorageItem: (request: DOMStorage.SetDOMStorageItemRequest) => Promise<{}>;
-        removeDOMStorageItem: (request: DOMStorage.RemoveDOMStorageItemRequest) => Promise<{}>;
-        onDomStorageItemsCleared: (handler: (event: DOMStorage.DomStorageItemsClearedEvent) => void) => void;
-        onDomStorageItemRemoved: (handler: (event: DOMStorage.DomStorageItemRemovedEvent) => void) => void;
-        onDomStorageItemAdded: (handler: (event: DOMStorage.DomStorageItemAddedEvent) => void) => void;
-        onDomStorageItemUpdated: (handler: (event: DOMStorage.DomStorageItemUpdatedEvent) => void) => void;
-    }
-    
-    export interface DOMStorageAdapter {
-        /** Enables storage tracking, storage events will now be delivered to the client. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables storage tracking, prevents storage events from being sent to the client. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onGetDOMStorageItems: (handler: (request: DOMStorage.GetDOMStorageItemsRequest) => PromiseOrNot<DOMStorage.GetDOMStorageItemsResponse>) => void;
-        onSetDOMStorageItem: (handler: (request: DOMStorage.SetDOMStorageItemRequest) => PromiseOrNot<{}>) => void;
-        onRemoveDOMStorageItem: (handler: (request: DOMStorage.RemoveDOMStorageItemRequest) => PromiseOrNot<{}>) => void;
-        fireDomStorageItemsCleared: (event: DOMStorage.DomStorageItemsClearedEvent) => void;
-        fireDomStorageItemRemoved: (event: DOMStorage.DomStorageItemRemovedEvent) => void;
-        fireDomStorageItemAdded: (event: DOMStorage.DomStorageItemAddedEvent) => void;
-        fireDomStorageItemUpdated: (event: DOMStorage.DomStorageItemUpdatedEvent) => void;
     }
     
     export module ApplicationCache {
@@ -3295,99 +3088,93 @@ export module Crdi {
         export interface ApplicationCacheResource {
             /** Resource url. */
             url: string;
+            
             /** Resource size. */
             size: integer;
+            
             /** Resource type. */
             type: string;
+            
         }
         
         /** Detailed application cache information. */
         export interface ApplicationCache {
             /** Manifest URL. */
             manifestURL: string;
+            
             /** Application cache size. */
             size: number;
+            
             /** Application cache creation time. */
             creationTime: number;
+            
             /** Application cache update time. */
             updateTime: number;
+            
             /** Application cache resources. */
             resources: ApplicationCacheResource[];
+            
         }
         
         /** Frame identifier - manifest URL pair. */
         export interface FrameWithManifest {
             /** Frame identifier. */
             frameId: Page.FrameId;
+            
             /** Manifest URL. */
             manifestURL: string;
+            
             /** Application cache status. */
             status: integer;
+            
         }
         
         export interface GetFramesWithManifestsResponse {
             /** Array of frame identifiers with manifest urls for each frame containing a document associated with some application cache. */
             frameIds: FrameWithManifest[];
+            
         }
         
         export interface GetManifestForFrameRequest {
             /** Identifier of the frame containing document whose manifest is retrieved. */
             frameId: Page.FrameId;
+            
         }
         
         export interface GetManifestForFrameResponse {
             /** Manifest URL for document in the given frame. */
             manifestURL: string;
+            
         }
         
         export interface GetApplicationCacheForFrameRequest {
             /** Identifier of the frame containing document whose application cache is retrieved. */
             frameId: Page.FrameId;
+            
         }
         
         export interface GetApplicationCacheForFrameResponse {
             /** Relevant application cache data for the document in given frame. */
             applicationCache: ApplicationCache;
+            
         }
         
         export interface ApplicationCacheStatusUpdatedEvent {
             /** Identifier of the frame containing document whose application cache updated status. */
             frameId: Page.FrameId;
+            
             /** Manifest URL. */
             manifestURL: string;
+            
             /** Updated application cache status. */
             status: integer;
+            
         }
         
         export interface NetworkStateUpdatedEvent {
             isNowOnline: boolean;
+            
         }
-    }
-    
-    export interface ApplicationCacheClient {
-        /** Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache. */
-        getFramesWithManifests: () => Promise<ApplicationCache.GetFramesWithManifestsResponse>;
-        /** Enables application cache domain notifications. */
-        enable: () => Promise<{}>;
-        /** Returns manifest URL for document in the given frame. */
-        getManifestForFrame: (request: ApplicationCache.GetManifestForFrameRequest) => Promise<ApplicationCache.GetManifestForFrameResponse>;
-        /** Returns relevant application cache data for the document in given frame. */
-        getApplicationCacheForFrame: (request: ApplicationCache.GetApplicationCacheForFrameRequest) => Promise<ApplicationCache.GetApplicationCacheForFrameResponse>;
-        onApplicationCacheStatusUpdated: (handler: (event: ApplicationCache.ApplicationCacheStatusUpdatedEvent) => void) => void;
-        onNetworkStateUpdated: (handler: (event: ApplicationCache.NetworkStateUpdatedEvent) => void) => void;
-    }
-    
-    export interface ApplicationCacheAdapter {
-        /** Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache. */
-        onGetFramesWithManifests: (handler: () => PromiseOrNot<ApplicationCache.GetFramesWithManifestsResponse>) => void;
-        /** Enables application cache domain notifications. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Returns manifest URL for document in the given frame. */
-        onGetManifestForFrame: (handler: (request: ApplicationCache.GetManifestForFrameRequest) => PromiseOrNot<ApplicationCache.GetManifestForFrameResponse>) => void;
-        /** Returns relevant application cache data for the document in given frame. */
-        onGetApplicationCacheForFrame: (handler: (request: ApplicationCache.GetApplicationCacheForFrameRequest) => PromiseOrNot<ApplicationCache.GetApplicationCacheForFrameResponse>) => void;
-        fireApplicationCacheStatusUpdated: (event: ApplicationCache.ApplicationCacheStatusUpdatedEvent) => void;
-        fireNetworkStateUpdated: (event: ApplicationCache.NetworkStateUpdatedEvent) => void;
     }
     
     /** This domain exposes DOM read/write operations. Each DOM Node is represented with its mirror object that has an 'id</code>. This <code>id</code> can be used to get additional information on the Node, resolve it into the JavaScript object wrapper, etc. It is important that client receives DOM events only for the nodes that are known to the client. Backend keeps track of the nodes that were sent to the client and never sends the same node twice. It is client's responsibility to collect information about the nodes that were sent to the client.<p>Note that <code>iframe' owner elements will return corresponding document elements as their child nodes.</p> */
@@ -3403,9 +3190,12 @@ export module Crdi {
         export interface BackendNode {
             /** 'Node''s nodeType. */
             nodeType: integer;
+            
             /** 'Node''s nodeName. */
             nodeName: string;
+            
             backendNodeId: BackendNodeId;
+            
         }
         
         /** Pseudo element type. */
@@ -3418,66 +3208,95 @@ export module Crdi {
         export interface Node {
             /** Node identifier that is passed into the rest of the DOM messages as the 'nodeId</code>. Backend will only push node with given <code>id' once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client. */
             nodeId: NodeId;
+            
             /** 'Node''s nodeType. */
             nodeType: integer;
+            
             /** 'Node''s nodeName. */
             nodeName: string;
+            
             /** 'Node''s localName. */
             localName: string;
+            
             /** 'Node''s nodeValue. */
             nodeValue: string;
+            
             /** Child count for 'Container' nodes. */
             childNodeCount?: integer;
+            
             /** Child nodes of this node when requested with children. */
             children?: Node[];
+            
             /** Attributes of the 'Element</code> node in the form of flat array <code>[name1, value1, name2, value2]'. */
             attributes?: string[];
+            
             /** Document URL that 'Document</code> or <code>FrameOwner' node points to. */
             documentURL?: string;
+            
             /** Base URL that 'Document</code> or <code>FrameOwner' node uses for URL completion. */
             baseURL?: string;
+            
             /** 'DocumentType''s publicId. */
             publicId?: string;
+            
             /** 'DocumentType''s systemId. */
             systemId?: string;
+            
             /** 'DocumentType''s internalSubset. */
             internalSubset?: string;
+            
             /** 'Document''s XML version in case of XML documents. */
             xmlVersion?: string;
+            
             /** 'Attr''s name. */
             name?: string;
+            
             /** 'Attr''s value. */
             value?: string;
+            
             /** Pseudo element type for this node. */
             pseudoType?: PseudoType;
+            
             /** Shadow root type. */
             shadowRootType?: ShadowRootType;
+            
             /** Frame ID for frame owner elements. */
             frameId?: Page.FrameId;
+            
             /** Content document for frame owner elements. */
             contentDocument?: Node;
+            
             /** Shadow root list for given element host. */
             shadowRoots?: Node[];
+            
             /** Content document fragment for template elements. */
             templateContent?: Node;
+            
             /** Pseudo elements associated with this node. */
             pseudoElements?: Node[];
+            
             /** Import document for the HTMLImport links. */
             importedDocument?: Node;
+            
             /** Distributed nodes for given insertion point. */
             distributedNodes?: BackendNode[];
+            
         }
         
         /** A structure holding an RGBA color. */
         export interface RGBA {
             /** The red component, in the [0-255] range. */
             r: integer;
+            
             /** The green component, in the [0-255] range. */
             g: integer;
+            
             /** The blue component, in the [0-255] range. */
             b: integer;
+            
             /** The alpha component, in the [0-1] range (default: 1). */
             a?: number;
+            
         }
         
         /** An array of quad vertices, x immediately followed by y for each point, points clock-wise. */
@@ -3487,67 +3306,93 @@ export module Crdi {
         export interface BoxModel {
             /** Content box */
             content: Quad;
+            
             /** Padding box */
             padding: Quad;
+            
             /** Border box */
             border: Quad;
+            
             /** Margin box */
             margin: Quad;
+            
             /** Node width */
             width: integer;
+            
             /** Node height */
             height: integer;
+            
             /** Shape outside coordinates */
             shapeOutside?: ShapeOutsideInfo;
+            
         }
         
         /** CSS Shape Outside details. */
         export interface ShapeOutsideInfo {
             /** Shape bounds */
             bounds: Quad;
+            
             /** Shape coordinate details */
             shape: any[];
+            
             /** Margin shape bounds */
             marginShape: any[];
+            
         }
         
         /** Rectangle. */
         export interface Rect {
             /** X coordinate */
             x: number;
+            
             /** Y coordinate */
             y: number;
+            
             /** Rectangle width */
             width: number;
+            
             /** Rectangle height */
             height: number;
+            
         }
         
         /** Configuration data for the highlighting of page elements. */
         export interface HighlightConfig {
             /** Whether the node info tooltip should be shown (default: false). */
             showInfo?: boolean;
+            
             /** Whether the rulers should be shown (default: false). */
             showRulers?: boolean;
+            
             /** Whether the extension lines from node to the rulers should be shown (default: false). */
             showExtensionLines?: boolean;
+            
             displayAsMaterial?: boolean;
+            
             /** The content box highlight fill color (default: transparent). */
             contentColor?: RGBA;
+            
             /** The padding highlight fill color (default: transparent). */
             paddingColor?: RGBA;
+            
             /** The border highlight fill color (default: transparent). */
             borderColor?: RGBA;
+            
             /** The margin highlight fill color (default: transparent). */
             marginColor?: RGBA;
+            
             /** The event target element highlight fill color (default: transparent). */
             eventTargetColor?: RGBA;
+            
             /** The shape outside fill color (default: transparent). */
             shapeColor?: RGBA;
+            
             /** The shape margin fill color (default: transparent). */
             shapeMarginColor?: RGBA;
+            
             /** Selectors to highlight relevant nodes. */
             selectorList?: string;
+            
         }
         
         export type InspectMode = 'searchForNode' | 'searchForUAShadowDOM' | 'showLayoutEditor' | 'none';
@@ -3555,657 +3400,544 @@ export module Crdi {
         export interface GetDocumentResponse {
             /** Resulting node. */
             root: Node;
+            
         }
         
         export interface RequestChildNodesRequest {
             /** Id of the node to get children for. */
             nodeId: NodeId;
+            
             /** The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0. */
             depth?: integer;
+            
         }
         
         export interface QuerySelectorRequest {
             /** Id of the node to query upon. */
             nodeId: NodeId;
+            
             /** Selector string. */
             selector: string;
+            
         }
         
         export interface QuerySelectorResponse {
             /** Query selector result. */
             nodeId: NodeId;
+            
         }
         
         export interface QuerySelectorAllRequest {
             /** Id of the node to query upon. */
             nodeId: NodeId;
+            
             /** Selector string. */
             selector: string;
+            
         }
         
         export interface QuerySelectorAllResponse {
             /** Query selector result. */
             nodeIds: NodeId[];
+            
         }
         
         export interface SetNodeNameRequest {
             /** Id of the node to set name for. */
             nodeId: NodeId;
+            
             /** New node's name. */
             name: string;
+            
         }
         
         export interface SetNodeNameResponse {
             /** New node's id. */
             nodeId: NodeId;
+            
         }
         
         export interface SetNodeValueRequest {
             /** Id of the node to set value for. */
             nodeId: NodeId;
+            
             /** New node's value. */
             value: string;
+            
         }
         
         export interface RemoveNodeRequest {
             /** Id of the node to remove. */
             nodeId: NodeId;
+            
         }
         
         export interface SetAttributeValueRequest {
             /** Id of the element to set attribute for. */
             nodeId: NodeId;
+            
             /** Attribute name. */
             name: string;
+            
             /** Attribute value. */
             value: string;
+            
         }
         
         export interface SetAttributesAsTextRequest {
             /** Id of the element to set attributes for. */
             nodeId: NodeId;
+            
             /** Text with a number of attributes. Will parse this text using HTML parser. */
             text: string;
+            
             /** Attribute name to replace with new attributes derived from text in case text parsed successfully. */
             name?: string;
+            
         }
         
         export interface RemoveAttributeRequest {
             /** Id of the element to remove attribute from. */
             nodeId: NodeId;
+            
             /** Name of the attribute to remove. */
             name: string;
+            
         }
         
         export interface GetOuterHTMLRequest {
             /** Id of the node to get markup for. */
             nodeId: NodeId;
+            
         }
         
         export interface GetOuterHTMLResponse {
             /** Outer HTML markup. */
             outerHTML: string;
+            
         }
         
         export interface SetOuterHTMLRequest {
             /** Id of the node to set markup for. */
             nodeId: NodeId;
+            
             /** Outer HTML markup to set. */
             outerHTML: string;
+            
         }
         
         export interface PerformSearchRequest {
             /** Plain text or query selector or XPath search query. */
             query: string;
+            
             /** True to search in user agent shadow DOM. */
             includeUserAgentShadowDOM?: boolean;
+            
         }
         
         export interface PerformSearchResponse {
             /** Unique search session identifier. */
             searchId: string;
+            
             /** Number of search results. */
             resultCount: integer;
+            
         }
         
         export interface GetSearchResultsRequest {
             /** Unique search session identifier. */
             searchId: string;
+            
             /** Start index of the search result to be returned. */
             fromIndex: integer;
+            
             /** End index of the search result to be returned. */
             toIndex: integer;
+            
         }
         
         export interface GetSearchResultsResponse {
             /** Ids of the search result nodes. */
             nodeIds: NodeId[];
+            
         }
         
         export interface DiscardSearchResultsRequest {
             /** Unique search session identifier. */
             searchId: string;
+            
         }
         
         export interface RequestNodeRequest {
             /** JavaScript object id to convert into node. */
             objectId: Runtime.RemoteObjectId;
+            
         }
         
         export interface RequestNodeResponse {
             /** Node id for given object. */
             nodeId: NodeId;
+            
         }
         
         export interface SetInspectModeRequest {
             /** Set an inspection mode. */
             mode: InspectMode;
+            
             /** A descriptor for the highlight appearance of hovered-over nodes. May be omitted if 'enabled == false'. */
             highlightConfig?: HighlightConfig;
+            
         }
         
         export interface HighlightRectRequest {
             /** X coordinate */
             x: integer;
+            
             /** Y coordinate */
             y: integer;
+            
             /** Rectangle width */
             width: integer;
+            
             /** Rectangle height */
             height: integer;
+            
             /** The highlight fill color (default: transparent). */
             color?: RGBA;
+            
             /** The highlight outline color (default: transparent). */
             outlineColor?: RGBA;
+            
         }
         
         export interface HighlightQuadRequest {
             /** Quad to highlight */
             quad: Quad;
+            
             /** The highlight fill color (default: transparent). */
             color?: RGBA;
+            
             /** The highlight outline color (default: transparent). */
             outlineColor?: RGBA;
+            
         }
         
         export interface HighlightNodeRequest {
             /** A descriptor for the highlight appearance. */
             highlightConfig: HighlightConfig;
+            
             /** Identifier of the node to highlight. */
             nodeId?: NodeId;
+            
             /** Identifier of the backend node to highlight. */
             backendNodeId?: BackendNodeId;
+            
             /** JavaScript object id of the node to be highlighted. */
             objectId?: Runtime.RemoteObjectId;
+            
         }
         
         export interface HighlightFrameRequest {
             /** Identifier of the frame to highlight. */
             frameId: Page.FrameId;
+            
             /** The content box highlight fill color (default: transparent). */
             contentColor?: RGBA;
+            
             /** The content box highlight outline color (default: transparent). */
             contentOutlineColor?: RGBA;
+            
         }
         
         export interface PushNodeByPathToFrontendRequest {
             /** Path to node in the proprietary format. */
             path: string;
+            
         }
         
         export interface PushNodeByPathToFrontendResponse {
             /** Id of the node for given path. */
             nodeId: NodeId;
+            
         }
         
         export interface PushNodesByBackendIdsToFrontendRequest {
             /** The array of backend node ids. */
             backendNodeIds: BackendNodeId[];
+            
         }
         
         export interface PushNodesByBackendIdsToFrontendResponse {
             /** The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds. */
             nodeIds: NodeId[];
+            
         }
         
         export interface SetInspectedNodeRequest {
             /** DOM node id to be accessible by means of $x command line API. */
             nodeId: NodeId;
+            
         }
         
         export interface ResolveNodeRequest {
             /** Id of the node to resolve. */
             nodeId: NodeId;
+            
             /** Symbolic group name that can be used to release multiple objects. */
             objectGroup?: string;
+            
         }
         
         export interface ResolveNodeResponse {
             /** JavaScript object wrapper for given node. */
             object: Runtime.RemoteObject;
+            
         }
         
         export interface GetAttributesRequest {
             /** Id of the node to retrieve attibutes for. */
             nodeId: NodeId;
+            
         }
         
         export interface GetAttributesResponse {
             /** An interleaved array of node attribute names and values. */
             attributes: string[];
+            
         }
         
         export interface CopyToRequest {
             /** Id of the node to copy. */
             nodeId: NodeId;
+            
             /** Id of the element to drop the copy into. */
             targetNodeId: NodeId;
+            
             /** Drop the copy before this node (if absent, the copy becomes the last child of 'targetNodeId'). */
             insertBeforeNodeId?: NodeId;
+            
         }
         
         export interface CopyToResponse {
             /** Id of the node clone. */
             nodeId: NodeId;
+            
         }
         
         export interface MoveToRequest {
             /** Id of the node to move. */
             nodeId: NodeId;
+            
             /** Id of the element to drop the moved node into. */
             targetNodeId: NodeId;
+            
             /** Drop node before this one (if absent, the moved node becomes the last child of 'targetNodeId'). */
             insertBeforeNodeId?: NodeId;
+            
         }
         
         export interface MoveToResponse {
             /** New id of the moved node. */
             nodeId: NodeId;
+            
         }
         
         export interface FocusRequest {
             /** Id of the node to focus. */
             nodeId: NodeId;
+            
         }
         
         export interface SetFileInputFilesRequest {
             /** Id of the file input node to set files for. */
             nodeId: NodeId;
+            
             /** Array of file paths to set. */
             files: string[];
+            
         }
         
         export interface GetBoxModelRequest {
             /** Id of the node to get box model for. */
             nodeId: NodeId;
+            
         }
         
         export interface GetBoxModelResponse {
             /** Box model for the node. */
             model: BoxModel;
+            
         }
         
         export interface GetNodeForLocationRequest {
             /** X coordinate. */
             x: integer;
+            
             /** Y coordinate. */
             y: integer;
+            
         }
         
         export interface GetNodeForLocationResponse {
             /** Id of the node at given coordinates. */
             nodeId: NodeId;
+            
         }
         
         export interface GetRelayoutBoundaryRequest {
             /** Id of the node. */
             nodeId: NodeId;
+            
         }
         
         export interface GetRelayoutBoundaryResponse {
             /** Relayout boundary node id for the given node. */
             nodeId: NodeId;
+            
         }
         
         export interface GetHighlightObjectForTestRequest {
             /** Id of the node to get highlight object for. */
             nodeId: NodeId;
+            
         }
         
         export interface GetHighlightObjectForTestResponse {
             /** Highlight data for the node. */
             highlight: any;
+            
         }
         
         export interface InspectNodeRequestedEvent {
             /** Id of the node to inspect. */
             backendNodeId: BackendNodeId;
+            
         }
         
         export interface SetChildNodesEvent {
             /** Parent node id to populate with children. */
             parentId: NodeId;
+            
             /** Child nodes array. */
             nodes: Node[];
+            
         }
         
         export interface AttributeModifiedEvent {
             /** Id of the node that has changed. */
             nodeId: NodeId;
+            
             /** Attribute name. */
             name: string;
+            
             /** Attribute value. */
             value: string;
+            
         }
         
         export interface AttributeRemovedEvent {
             /** Id of the node that has changed. */
             nodeId: NodeId;
+            
             /** A ttribute name. */
             name: string;
+            
         }
         
         export interface InlineStyleInvalidatedEvent {
             /** Ids of the nodes for which the inline styles have been invalidated. */
             nodeIds: NodeId[];
+            
         }
         
         export interface CharacterDataModifiedEvent {
             /** Id of the node that has changed. */
             nodeId: NodeId;
+            
             /** New text value. */
             characterData: string;
+            
         }
         
         export interface ChildNodeCountUpdatedEvent {
             /** Id of the node that has changed. */
             nodeId: NodeId;
+            
             /** New node count. */
             childNodeCount: integer;
+            
         }
         
         export interface ChildNodeInsertedEvent {
             /** Id of the node that has changed. */
             parentNodeId: NodeId;
+            
             /** If of the previous siblint. */
             previousNodeId: NodeId;
+            
             /** Inserted node data. */
             node: Node;
+            
         }
         
         export interface ChildNodeRemovedEvent {
             /** Parent id. */
             parentNodeId: NodeId;
+            
             /** Id of the node that has been removed. */
             nodeId: NodeId;
+            
         }
         
         export interface ShadowRootPushedEvent {
             /** Host element id. */
             hostId: NodeId;
+            
             /** Shadow root. */
             root: Node;
+            
         }
         
         export interface ShadowRootPoppedEvent {
             /** Host element id. */
             hostId: NodeId;
+            
             /** Shadow root id. */
             rootId: NodeId;
+            
         }
         
         export interface PseudoElementAddedEvent {
             /** Pseudo element's parent element id. */
             parentId: NodeId;
+            
             /** The added pseudo element. */
             pseudoElement: Node;
+            
         }
         
         export interface PseudoElementRemovedEvent {
             /** Pseudo element's parent element id. */
             parentId: NodeId;
+            
             /** The removed pseudo element id. */
             pseudoElementId: NodeId;
+            
         }
         
         export interface DistributedNodesUpdatedEvent {
             /** Insertion point where distrubuted nodes were updated. */
             insertionPointId: NodeId;
+            
             /** Distributed nodes for given insertion point. */
             distributedNodes: BackendNode[];
+            
         }
         
         export interface NodeHighlightRequestedEvent {
             nodeId: NodeId;
+            
         }
-    }
-    
-    export interface DOMClient {
-        /** Enables DOM agent for the given page. */
-        enable: () => Promise<{}>;
-        /** Disables DOM agent for the given page. */
-        disable: () => Promise<{}>;
-        /** Returns the root DOM node to the caller. */
-        getDocument: () => Promise<DOM.GetDocumentResponse>;
-        /** Requests that children of the node with given id are returned to the caller in form of 'setChildNodes' events where not only immediate children are retrieved, but all children down to the specified depth. */
-        requestChildNodes: (request: DOM.RequestChildNodesRequest) => Promise<{}>;
-        /** Executes 'querySelector' on a given node. */
-        querySelector: (request: DOM.QuerySelectorRequest) => Promise<DOM.QuerySelectorResponse>;
-        /** Executes 'querySelectorAll' on a given node. */
-        querySelectorAll: (request: DOM.QuerySelectorAllRequest) => Promise<DOM.QuerySelectorAllResponse>;
-        /** Sets node name for a node with given id. */
-        setNodeName: (request: DOM.SetNodeNameRequest) => Promise<DOM.SetNodeNameResponse>;
-        /** Sets node value for a node with given id. */
-        setNodeValue: (request: DOM.SetNodeValueRequest) => Promise<{}>;
-        /** Removes node with given id. */
-        removeNode: (request: DOM.RemoveNodeRequest) => Promise<{}>;
-        /** Sets attribute for an element with given id. */
-        setAttributeValue: (request: DOM.SetAttributeValueRequest) => Promise<{}>;
-        /** Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs. */
-        setAttributesAsText: (request: DOM.SetAttributesAsTextRequest) => Promise<{}>;
-        /** Removes attribute with given name from an element with given id. */
-        removeAttribute: (request: DOM.RemoveAttributeRequest) => Promise<{}>;
-        /** Returns node's HTML markup. */
-        getOuterHTML: (request: DOM.GetOuterHTMLRequest) => Promise<DOM.GetOuterHTMLResponse>;
-        /** Sets node HTML markup, returns new node id. */
-        setOuterHTML: (request: DOM.SetOuterHTMLRequest) => Promise<{}>;
-        /** Searches for a given string in the DOM tree. Use 'getSearchResults</code> to access search results or <code>cancelSearch' to end this search session. */
-        performSearch: (request: DOM.PerformSearchRequest) => Promise<DOM.PerformSearchResponse>;
-        /** Returns search results from given 'fromIndex</code> to given <code>toIndex' from the sarch with the given identifier. */
-        getSearchResults: (request: DOM.GetSearchResultsRequest) => Promise<DOM.GetSearchResultsResponse>;
-        /** Discards search results from the session with the given id. 'getSearchResults' should no longer be called for that search. */
-        discardSearchResults: (request: DOM.DiscardSearchResultsRequest) => Promise<{}>;
-        /** Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of 'setChildNodes' notifications. */
-        requestNode: (request: DOM.RequestNodeRequest) => Promise<DOM.RequestNodeResponse>;
-        /** Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection. */
-        setInspectMode: (request: DOM.SetInspectModeRequest) => Promise<{}>;
-        /** Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport. */
-        highlightRect: (request: DOM.HighlightRectRequest) => Promise<{}>;
-        /** Highlights given quad. Coordinates are absolute with respect to the main frame viewport. */
-        highlightQuad: (request: DOM.HighlightQuadRequest) => Promise<{}>;
-        /** Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified. */
-        highlightNode: (request: DOM.HighlightNodeRequest) => Promise<{}>;
-        /** Hides DOM node highlight. */
-        hideHighlight: () => Promise<{}>;
-        /** Highlights owner element of the frame with given id. */
-        highlightFrame: (request: DOM.HighlightFrameRequest) => Promise<{}>;
-        /** Requests that the node is sent to the caller given its path. // FIXME, use XPath */
-        pushNodeByPathToFrontend: (request: DOM.PushNodeByPathToFrontendRequest) => Promise<DOM.PushNodeByPathToFrontendResponse>;
-        /** Requests that a batch of nodes is sent to the caller given their backend node ids. */
-        pushNodesByBackendIdsToFrontend: (request: DOM.PushNodesByBackendIdsToFrontendRequest) => Promise<DOM.PushNodesByBackendIdsToFrontendResponse>;
-        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
-        setInspectedNode: (request: DOM.SetInspectedNodeRequest) => Promise<{}>;
-        /** Resolves JavaScript node object for given node id. */
-        resolveNode: (request: DOM.ResolveNodeRequest) => Promise<DOM.ResolveNodeResponse>;
-        /** Returns attributes for the specified node. */
-        getAttributes: (request: DOM.GetAttributesRequest) => Promise<DOM.GetAttributesResponse>;
-        /** Creates a deep copy of the specified node and places it into the target container before the given anchor. */
-        copyTo: (request: DOM.CopyToRequest) => Promise<DOM.CopyToResponse>;
-        /** Moves node into the new container, places it before the given anchor. */
-        moveTo: (request: DOM.MoveToRequest) => Promise<DOM.MoveToResponse>;
-        /** Undoes the last performed action. */
-        undo: () => Promise<{}>;
-        /** Re-does the last undone action. */
-        redo: () => Promise<{}>;
-        /** Marks last undoable state. */
-        markUndoableState: () => Promise<{}>;
-        /** Focuses the given element. */
-        focus: (request: DOM.FocusRequest) => Promise<{}>;
-        /** Sets files for the given file input element. */
-        setFileInputFiles: (request: DOM.SetFileInputFilesRequest) => Promise<{}>;
-        /** Returns boxes for the currently selected nodes. */
-        getBoxModel: (request: DOM.GetBoxModelRequest) => Promise<DOM.GetBoxModelResponse>;
-        /** Returns node id at given location. */
-        getNodeForLocation: (request: DOM.GetNodeForLocationRequest) => Promise<DOM.GetNodeForLocationResponse>;
-        /** Returns the id of the nearest ancestor that is a relayout boundary. */
-        getRelayoutBoundary: (request: DOM.GetRelayoutBoundaryRequest) => Promise<DOM.GetRelayoutBoundaryResponse>;
-        /** For testing. */
-        getHighlightObjectForTest: (request: DOM.GetHighlightObjectForTestRequest) => Promise<DOM.GetHighlightObjectForTestResponse>;
-        /** Fired when 'Document' has been totally updated. Node ids are no longer valid. */
-        onDocumentUpdated: (handler: () => void) => void;
-        /** Fired when the node should be inspected. This happens after call to 'setInspectMode'. */
-        onInspectNodeRequested: (handler: (event: DOM.InspectNodeRequestedEvent) => void) => void;
-        /** Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids. */
-        onSetChildNodes: (handler: (event: DOM.SetChildNodesEvent) => void) => void;
-        /** Fired when 'Element''s attribute is modified. */
-        onAttributeModified: (handler: (event: DOM.AttributeModifiedEvent) => void) => void;
-        /** Fired when 'Element''s attribute is removed. */
-        onAttributeRemoved: (handler: (event: DOM.AttributeRemovedEvent) => void) => void;
-        /** Fired when 'Element''s inline style is modified via a CSS property modification. */
-        onInlineStyleInvalidated: (handler: (event: DOM.InlineStyleInvalidatedEvent) => void) => void;
-        /** Mirrors 'DOMCharacterDataModified' event. */
-        onCharacterDataModified: (handler: (event: DOM.CharacterDataModifiedEvent) => void) => void;
-        /** Fired when 'Container''s child node count has changed. */
-        onChildNodeCountUpdated: (handler: (event: DOM.ChildNodeCountUpdatedEvent) => void) => void;
-        /** Mirrors 'DOMNodeInserted' event. */
-        onChildNodeInserted: (handler: (event: DOM.ChildNodeInsertedEvent) => void) => void;
-        /** Mirrors 'DOMNodeRemoved' event. */
-        onChildNodeRemoved: (handler: (event: DOM.ChildNodeRemovedEvent) => void) => void;
-        /** Called when shadow root is pushed into the element. */
-        onShadowRootPushed: (handler: (event: DOM.ShadowRootPushedEvent) => void) => void;
-        /** Called when shadow root is popped from the element. */
-        onShadowRootPopped: (handler: (event: DOM.ShadowRootPoppedEvent) => void) => void;
-        /** Called when a pseudo element is added to an element. */
-        onPseudoElementAdded: (handler: (event: DOM.PseudoElementAddedEvent) => void) => void;
-        /** Called when a pseudo element is removed from an element. */
-        onPseudoElementRemoved: (handler: (event: DOM.PseudoElementRemovedEvent) => void) => void;
-        /** Called when distrubution is changed. */
-        onDistributedNodesUpdated: (handler: (event: DOM.DistributedNodesUpdatedEvent) => void) => void;
-        onNodeHighlightRequested: (handler: (event: DOM.NodeHighlightRequestedEvent) => void) => void;
-    }
-    
-    export interface DOMAdapter {
-        /** Enables DOM agent for the given page. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables DOM agent for the given page. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Returns the root DOM node to the caller. */
-        onGetDocument: (handler: () => PromiseOrNot<DOM.GetDocumentResponse>) => void;
-        /** Requests that children of the node with given id are returned to the caller in form of 'setChildNodes' events where not only immediate children are retrieved, but all children down to the specified depth. */
-        onRequestChildNodes: (handler: (request: DOM.RequestChildNodesRequest) => PromiseOrNot<{}>) => void;
-        /** Executes 'querySelector' on a given node. */
-        onQuerySelector: (handler: (request: DOM.QuerySelectorRequest) => PromiseOrNot<DOM.QuerySelectorResponse>) => void;
-        /** Executes 'querySelectorAll' on a given node. */
-        onQuerySelectorAll: (handler: (request: DOM.QuerySelectorAllRequest) => PromiseOrNot<DOM.QuerySelectorAllResponse>) => void;
-        /** Sets node name for a node with given id. */
-        onSetNodeName: (handler: (request: DOM.SetNodeNameRequest) => PromiseOrNot<DOM.SetNodeNameResponse>) => void;
-        /** Sets node value for a node with given id. */
-        onSetNodeValue: (handler: (request: DOM.SetNodeValueRequest) => PromiseOrNot<{}>) => void;
-        /** Removes node with given id. */
-        onRemoveNode: (handler: (request: DOM.RemoveNodeRequest) => PromiseOrNot<{}>) => void;
-        /** Sets attribute for an element with given id. */
-        onSetAttributeValue: (handler: (request: DOM.SetAttributeValueRequest) => PromiseOrNot<{}>) => void;
-        /** Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs. */
-        onSetAttributesAsText: (handler: (request: DOM.SetAttributesAsTextRequest) => PromiseOrNot<{}>) => void;
-        /** Removes attribute with given name from an element with given id. */
-        onRemoveAttribute: (handler: (request: DOM.RemoveAttributeRequest) => PromiseOrNot<{}>) => void;
-        /** Returns node's HTML markup. */
-        onGetOuterHTML: (handler: (request: DOM.GetOuterHTMLRequest) => PromiseOrNot<DOM.GetOuterHTMLResponse>) => void;
-        /** Sets node HTML markup, returns new node id. */
-        onSetOuterHTML: (handler: (request: DOM.SetOuterHTMLRequest) => PromiseOrNot<{}>) => void;
-        /** Searches for a given string in the DOM tree. Use 'getSearchResults</code> to access search results or <code>cancelSearch' to end this search session. */
-        onPerformSearch: (handler: (request: DOM.PerformSearchRequest) => PromiseOrNot<DOM.PerformSearchResponse>) => void;
-        /** Returns search results from given 'fromIndex</code> to given <code>toIndex' from the sarch with the given identifier. */
-        onGetSearchResults: (handler: (request: DOM.GetSearchResultsRequest) => PromiseOrNot<DOM.GetSearchResultsResponse>) => void;
-        /** Discards search results from the session with the given id. 'getSearchResults' should no longer be called for that search. */
-        onDiscardSearchResults: (handler: (request: DOM.DiscardSearchResultsRequest) => PromiseOrNot<{}>) => void;
-        /** Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of 'setChildNodes' notifications. */
-        onRequestNode: (handler: (request: DOM.RequestNodeRequest) => PromiseOrNot<DOM.RequestNodeResponse>) => void;
-        /** Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection. */
-        onSetInspectMode: (handler: (request: DOM.SetInspectModeRequest) => PromiseOrNot<{}>) => void;
-        /** Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport. */
-        onHighlightRect: (handler: (request: DOM.HighlightRectRequest) => PromiseOrNot<{}>) => void;
-        /** Highlights given quad. Coordinates are absolute with respect to the main frame viewport. */
-        onHighlightQuad: (handler: (request: DOM.HighlightQuadRequest) => PromiseOrNot<{}>) => void;
-        /** Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified. */
-        onHighlightNode: (handler: (request: DOM.HighlightNodeRequest) => PromiseOrNot<{}>) => void;
-        /** Hides DOM node highlight. */
-        onHideHighlight: (handler: () => PromiseOrNot<{}>) => void;
-        /** Highlights owner element of the frame with given id. */
-        onHighlightFrame: (handler: (request: DOM.HighlightFrameRequest) => PromiseOrNot<{}>) => void;
-        /** Requests that the node is sent to the caller given its path. // FIXME, use XPath */
-        onPushNodeByPathToFrontend: (handler: (request: DOM.PushNodeByPathToFrontendRequest) => PromiseOrNot<DOM.PushNodeByPathToFrontendResponse>) => void;
-        /** Requests that a batch of nodes is sent to the caller given their backend node ids. */
-        onPushNodesByBackendIdsToFrontend: (handler: (request: DOM.PushNodesByBackendIdsToFrontendRequest) => PromiseOrNot<DOM.PushNodesByBackendIdsToFrontendResponse>) => void;
-        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
-        onSetInspectedNode: (handler: (request: DOM.SetInspectedNodeRequest) => PromiseOrNot<{}>) => void;
-        /** Resolves JavaScript node object for given node id. */
-        onResolveNode: (handler: (request: DOM.ResolveNodeRequest) => PromiseOrNot<DOM.ResolveNodeResponse>) => void;
-        /** Returns attributes for the specified node. */
-        onGetAttributes: (handler: (request: DOM.GetAttributesRequest) => PromiseOrNot<DOM.GetAttributesResponse>) => void;
-        /** Creates a deep copy of the specified node and places it into the target container before the given anchor. */
-        onCopyTo: (handler: (request: DOM.CopyToRequest) => PromiseOrNot<DOM.CopyToResponse>) => void;
-        /** Moves node into the new container, places it before the given anchor. */
-        onMoveTo: (handler: (request: DOM.MoveToRequest) => PromiseOrNot<DOM.MoveToResponse>) => void;
-        /** Undoes the last performed action. */
-        onUndo: (handler: () => PromiseOrNot<{}>) => void;
-        /** Re-does the last undone action. */
-        onRedo: (handler: () => PromiseOrNot<{}>) => void;
-        /** Marks last undoable state. */
-        onMarkUndoableState: (handler: () => PromiseOrNot<{}>) => void;
-        /** Focuses the given element. */
-        onFocus: (handler: (request: DOM.FocusRequest) => PromiseOrNot<{}>) => void;
-        /** Sets files for the given file input element. */
-        onSetFileInputFiles: (handler: (request: DOM.SetFileInputFilesRequest) => PromiseOrNot<{}>) => void;
-        /** Returns boxes for the currently selected nodes. */
-        onGetBoxModel: (handler: (request: DOM.GetBoxModelRequest) => PromiseOrNot<DOM.GetBoxModelResponse>) => void;
-        /** Returns node id at given location. */
-        onGetNodeForLocation: (handler: (request: DOM.GetNodeForLocationRequest) => PromiseOrNot<DOM.GetNodeForLocationResponse>) => void;
-        /** Returns the id of the nearest ancestor that is a relayout boundary. */
-        onGetRelayoutBoundary: (handler: (request: DOM.GetRelayoutBoundaryRequest) => PromiseOrNot<DOM.GetRelayoutBoundaryResponse>) => void;
-        /** For testing. */
-        onGetHighlightObjectForTest: (handler: (request: DOM.GetHighlightObjectForTestRequest) => PromiseOrNot<DOM.GetHighlightObjectForTestResponse>) => void;
-        /** Fired when 'Document' has been totally updated. Node ids are no longer valid. */
-        fireDocumentUpdated: () => void;
-        /** Fired when the node should be inspected. This happens after call to 'setInspectMode'. */
-        fireInspectNodeRequested: (event: DOM.InspectNodeRequestedEvent) => void;
-        /** Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids. */
-        fireSetChildNodes: (event: DOM.SetChildNodesEvent) => void;
-        /** Fired when 'Element''s attribute is modified. */
-        fireAttributeModified: (event: DOM.AttributeModifiedEvent) => void;
-        /** Fired when 'Element''s attribute is removed. */
-        fireAttributeRemoved: (event: DOM.AttributeRemovedEvent) => void;
-        /** Fired when 'Element''s inline style is modified via a CSS property modification. */
-        fireInlineStyleInvalidated: (event: DOM.InlineStyleInvalidatedEvent) => void;
-        /** Mirrors 'DOMCharacterDataModified' event. */
-        fireCharacterDataModified: (event: DOM.CharacterDataModifiedEvent) => void;
-        /** Fired when 'Container''s child node count has changed. */
-        fireChildNodeCountUpdated: (event: DOM.ChildNodeCountUpdatedEvent) => void;
-        /** Mirrors 'DOMNodeInserted' event. */
-        fireChildNodeInserted: (event: DOM.ChildNodeInsertedEvent) => void;
-        /** Mirrors 'DOMNodeRemoved' event. */
-        fireChildNodeRemoved: (event: DOM.ChildNodeRemovedEvent) => void;
-        /** Called when shadow root is pushed into the element. */
-        fireShadowRootPushed: (event: DOM.ShadowRootPushedEvent) => void;
-        /** Called when shadow root is popped from the element. */
-        fireShadowRootPopped: (event: DOM.ShadowRootPoppedEvent) => void;
-        /** Called when a pseudo element is added to an element. */
-        firePseudoElementAdded: (event: DOM.PseudoElementAddedEvent) => void;
-        /** Called when a pseudo element is removed from an element. */
-        firePseudoElementRemoved: (event: DOM.PseudoElementRemovedEvent) => void;
-        /** Called when distrubution is changed. */
-        fireDistributedNodesUpdated: (event: DOM.DistributedNodesUpdatedEvent) => void;
-        fireNodeHighlightRequested: (event: DOM.NodeHighlightRequestedEvent) => void;
     }
     
     /** This domain exposes CSS read/write operations. All CSS objects (stylesheets, rules, and styles) have an associated 'id</code> used in subsequent operations on the related object. Each object type has a specific <code>id</code> structure, and those are not interchangeable between objects of different kinds. CSS objects can be loaded using the <code>get*ForNode()</code> calls (which accept a DOM node id). A client can also discover all the existing stylesheets with the <code>getAllStyleSheets()</code> method (or keeping track of the <code>styleSheetAdded</code>/<code>styleSheetRemoved</code> events) and subsequently load the required stylesheet contents using the <code>getStyleSheet[Text]()' methods. */
@@ -4220,499 +3952,531 @@ export module Crdi {
         export interface PseudoElementMatches {
             /** Pseudo element type. */
             pseudoType: DOM.PseudoType;
+            
             /** Matches of CSS rules applicable to the pseudo style. */
             matches: RuleMatch[];
+            
         }
         
         /** Inherited CSS rule collection from ancestor node. */
         export interface InheritedStyleEntry {
             /** The ancestor node's inline style, if any, in the style inheritance chain. */
             inlineStyle?: CSSStyle;
+            
             /** Matches of CSS rules matching the ancestor node in the style inheritance chain. */
             matchedCSSRules: RuleMatch[];
+            
         }
         
         /** Match data for a CSS rule. */
         export interface RuleMatch {
             /** CSS rule in the match. */
             rule: CSSRule;
+            
             /** Matching selector indices in the rule's selectorList selectors (0-based). */
             matchingSelectors: integer[];
+            
         }
         
         /** Data for a simple selector (these are delimited by commas in a selector list). */
         export interface Value {
             /** Value text. */
             text: string;
+            
             /** Value range in the underlying resource (if available). */
             range?: SourceRange;
+            
         }
         
         /** Selector list data. */
         export interface SelectorList {
             /** Selectors in the list. */
             selectors: Value[];
+            
             /** Rule selector text. */
             text: string;
+            
         }
         
         /** CSS stylesheet metainformation. */
         export interface CSSStyleSheetHeader {
             /** The stylesheet identifier. */
             styleSheetId: StyleSheetId;
+            
             /** Owner frame identifier. */
             frameId: Page.FrameId;
+            
             /** Stylesheet resource URL. */
             sourceURL: string;
+            
             /** URL of source map associated with the stylesheet (if any). */
             sourceMapURL?: string;
+            
             /** Stylesheet origin. */
             origin: StyleSheetOrigin;
+            
             /** Stylesheet title. */
             title: string;
+            
             /** The backend id for the owner node of the stylesheet. */
             ownerNode?: DOM.BackendNodeId;
+            
             /** Denotes whether the stylesheet is disabled. */
             disabled: boolean;
+            
             /** Whether the sourceURL field value comes from the sourceURL comment. */
             hasSourceURL?: boolean;
+            
             /** Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags. */
             isInline: boolean;
+            
             /** Line offset of the stylesheet within the resource (zero based). */
             startLine: number;
+            
             /** Column offset of the stylesheet within the resource (zero based). */
             startColumn: number;
+            
         }
         
         /** CSS rule representation. */
         export interface CSSRule {
             /** The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from. */
             styleSheetId?: StyleSheetId;
+            
             /** Rule selector data. */
             selectorList: SelectorList;
+            
             /** Parent stylesheet's origin. */
             origin: StyleSheetOrigin;
+            
             /** Associated style declaration. */
             style: CSSStyle;
+            
             /** Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards. */
             media?: CSSMedia[];
+            
         }
         
         /** Text range within a resource. All numbers are zero-based. */
         export interface SourceRange {
             /** Start line of range. */
             startLine: integer;
+            
             /** Start column of range (inclusive). */
             startColumn: integer;
+            
             /** End line of range */
             endLine: integer;
+            
             /** End column of range (exclusive). */
             endColumn: integer;
+            
         }
         
         export interface ShorthandEntry {
             /** Shorthand name. */
             name: string;
+            
             /** Shorthand value. */
             value: string;
+            
             /** Whether the property has "!important" annotation (implies 'false' if absent). */
             important?: boolean;
+            
         }
         
         export interface CSSComputedStyleProperty {
             /** Computed style property name. */
             name: string;
+            
             /** Computed style property value. */
             value: string;
+            
         }
         
         /** CSS style representation. */
         export interface CSSStyle {
             /** The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from. */
             styleSheetId?: StyleSheetId;
+            
             /** CSS properties in the style. */
             cssProperties: CSSProperty[];
+            
             /** Computed values for all shorthands found in the style. */
             shorthandEntries: ShorthandEntry[];
+            
             /** Style declaration text (if available). */
             cssText?: string;
+            
             /** Style declaration range in the enclosing stylesheet (if available). */
             range?: SourceRange;
+            
         }
         
         /** CSS property declaration data. */
         export interface CSSProperty {
             /** The property name. */
             name: string;
+            
             /** The property value. */
             value: string;
+            
             /** Whether the property has "!important" annotation (implies 'false' if absent). */
             important?: boolean;
+            
             /** Whether the property is implicit (implies 'false' if absent). */
             implicit?: boolean;
+            
             /** The full property text as specified in the style. */
             text?: string;
+            
             /** Whether the property is understood by the browser (implies 'true' if absent). */
             parsedOk?: boolean;
+            
             /** Whether the property is disabled by the user (present for source-based properties only). */
             disabled?: boolean;
+            
             /** The entire property range in the enclosing style declaration (if available). */
             range?: SourceRange;
+            
         }
         
         /** CSS media rule descriptor. */
         export interface CSSMedia {
             /** Media query text. */
             text: string;
+            
             /** Source of the media query: "mediaRule" if specified by a @media rule, "importRule" if specified by an @import rule, "linkedSheet" if specified by a "media" attribute in a linked stylesheet's LINK tag, "inlineSheet" if specified by a "media" attribute in an inline stylesheet's STYLE tag. */
             source: 'mediaRule' | 'importRule' | 'linkedSheet' | 'inlineSheet';
+            
             /** URL of the document containing the media query description. */
             sourceURL?: string;
+            
             /** The associated rule (@media or @import) header range in the enclosing stylesheet (if available). */
             range?: SourceRange;
+            
             /** Identifier of the stylesheet containing this object (if exists). */
             styleSheetId?: StyleSheetId;
+            
             /** Array of media queries. */
             mediaList?: MediaQuery[];
+            
         }
         
         /** Media query descriptor. */
         export interface MediaQuery {
             /** Array of media query expressions. */
             expressions: MediaQueryExpression[];
+            
             /** Whether the media query condition is satisfied. */
             active: boolean;
+            
         }
         
         /** Media query expression descriptor. */
         export interface MediaQueryExpression {
             /** Media query expression value. */
             value: number;
+            
             /** Media query expression units. */
             unit: string;
+            
             /** Media query expression feature. */
             feature: string;
+            
             /** The associated range of the value text in the enclosing stylesheet (if available). */
             valueRange?: SourceRange;
+            
             /** Computed length of media query expression (if applicable). */
             computedLength?: number;
+            
         }
         
         /** Information about amount of glyphs that were rendered with given font. */
         export interface PlatformFontUsage {
             /** Font's family name reported by platform. */
             familyName: string;
+            
             /** Indicates if the font was downloaded or resolved locally. */
             isCustomFont: boolean;
+            
             /** Amount of glyphs that were rendered with this font. */
             glyphCount: number;
+            
         }
         
         /** CSS keyframes rule representation. */
         export interface CSSKeyframesRule {
             /** Animation name. */
             animationName: Value;
+            
             /** List of keyframes. */
             keyframes: CSSKeyframeRule[];
+            
         }
         
         /** CSS keyframe rule representation. */
         export interface CSSKeyframeRule {
             /** The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from. */
             styleSheetId?: StyleSheetId;
+            
             /** Parent stylesheet's origin. */
             origin: StyleSheetOrigin;
+            
             /** Associated key text. */
             keyText: Value;
+            
             /** Associated style declaration. */
             style: CSSStyle;
+            
         }
         
         /** A descriptor of operation to mutate style declaration text. */
         export interface StyleDeclarationEdit {
             /** The css style sheet identifier. */
             styleSheetId: StyleSheetId;
+            
             /** The range of the style text in the enclosing stylesheet. */
             range: SourceRange;
+            
             /** New style text. */
             text: string;
+            
         }
         
         export interface GetMatchedStylesForNodeRequest {
             nodeId: DOM.NodeId;
+            
         }
         
         export interface GetMatchedStylesForNodeResponse {
             /** Inline style for the specified DOM node. */
             inlineStyle?: CSSStyle;
+            
             /** Attribute-defined element style (e.g. resulting from "width=20 height=100%"). */
             attributesStyle?: CSSStyle;
+            
             /** CSS rules matching this node, from all applicable stylesheets. */
             matchedCSSRules?: RuleMatch[];
+            
             /** Pseudo style matches for this node. */
             pseudoElements?: PseudoElementMatches[];
+            
             /** A chain of inherited styles (from the immediate node parent up to the DOM tree root). */
             inherited?: InheritedStyleEntry[];
+            
             /** A list of CSS keyframed animations matching this node. */
             cssKeyframesRules?: CSSKeyframesRule[];
+            
         }
         
         export interface GetInlineStylesForNodeRequest {
             nodeId: DOM.NodeId;
+            
         }
         
         export interface GetInlineStylesForNodeResponse {
             /** Inline style for the specified DOM node. */
             inlineStyle?: CSSStyle;
+            
             /** Attribute-defined element style (e.g. resulting from "width=20 height=100%"). */
             attributesStyle?: CSSStyle;
+            
         }
         
         export interface GetComputedStyleForNodeRequest {
             nodeId: DOM.NodeId;
+            
         }
         
         export interface GetComputedStyleForNodeResponse {
             /** Computed style for the specified DOM node. */
             computedStyle: CSSComputedStyleProperty[];
+            
         }
         
         export interface GetPlatformFontsForNodeRequest {
             nodeId: DOM.NodeId;
+            
         }
         
         export interface GetPlatformFontsForNodeResponse {
             /** Usage statistics for every employed platform font. */
             fonts: PlatformFontUsage[];
+            
         }
         
         export interface GetStyleSheetTextRequest {
             styleSheetId: StyleSheetId;
+            
         }
         
         export interface GetStyleSheetTextResponse {
             /** The stylesheet text. */
             text: string;
+            
         }
         
         export interface SetStyleSheetTextRequest {
             styleSheetId: StyleSheetId;
+            
             text: string;
+            
         }
         
         export interface SetStyleSheetTextResponse {
             /** URL of source map associated with script (if any). */
             sourceMapURL?: string;
+            
         }
         
         export interface SetRuleSelectorRequest {
             styleSheetId: StyleSheetId;
+            
             range: SourceRange;
+            
             selector: string;
+            
         }
         
         export interface SetRuleSelectorResponse {
             /** The resulting selector list after modification. */
             selectorList: SelectorList;
+            
         }
         
         export interface SetKeyframeKeyRequest {
             styleSheetId: StyleSheetId;
+            
             range: SourceRange;
+            
             keyText: string;
+            
         }
         
         export interface SetKeyframeKeyResponse {
             /** The resulting key text after modification. */
             keyText: Value;
+            
         }
         
         export interface SetStyleTextsRequest {
             edits: StyleDeclarationEdit[];
+            
         }
         
         export interface SetStyleTextsResponse {
             /** The resulting styles after modification. */
             styles: CSSStyle[];
+            
         }
         
         export interface SetMediaTextRequest {
             styleSheetId: StyleSheetId;
+            
             range: SourceRange;
+            
             text: string;
+            
         }
         
         export interface SetMediaTextResponse {
             /** The resulting CSS media rule after modification. */
             media: CSSMedia;
+            
         }
         
         export interface CreateStyleSheetRequest {
             /** Identifier of the frame where "via-inspector" stylesheet should be created. */
             frameId: Page.FrameId;
+            
         }
         
         export interface CreateStyleSheetResponse {
             /** Identifier of the created "via-inspector" stylesheet. */
             styleSheetId: StyleSheetId;
+            
         }
         
         export interface AddRuleRequest {
             /** The css style sheet identifier where a new rule should be inserted. */
             styleSheetId: StyleSheetId;
+            
             /** The text of a new rule. */
             ruleText: string;
+            
             /** Text position of a new rule in the target style sheet. */
             location: SourceRange;
+            
         }
         
         export interface AddRuleResponse {
             /** The newly created rule. */
             rule: CSSRule;
+            
         }
         
         export interface ForcePseudoStateRequest {
             /** The element id for which to force the pseudo state. */
             nodeId: DOM.NodeId;
+            
             /** Element pseudo classes to force when computing the element's style. */
             forcedPseudoClasses: 'active' | 'focus' | 'hover' | 'visited'[];
+            
         }
         
         export interface GetMediaQueriesResponse {
             medias: CSSMedia[];
+            
         }
         
         export interface SetEffectivePropertyValueForNodeRequest {
             /** The element id for which to set property. */
             nodeId: DOM.NodeId;
+            
             propertyName: string;
+            
             value: string;
+            
         }
         
         export interface GetBackgroundColorsRequest {
             /** Id of the node to get background colors for. */
             nodeId: DOM.NodeId;
+            
         }
         
         export interface GetBackgroundColorsResponse {
             /** The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). */
             backgroundColors?: string[];
+            
         }
         
         export interface StyleSheetChangedEvent {
             styleSheetId: StyleSheetId;
+            
         }
         
         export interface StyleSheetAddedEvent {
             /** Added stylesheet metainfo. */
             header: CSSStyleSheetHeader;
+            
         }
         
         export interface StyleSheetRemovedEvent {
             /** Identifier of the removed stylesheet. */
             styleSheetId: StyleSheetId;
+            
         }
         
         export interface LayoutEditorChangeEvent {
             /** Identifier of the stylesheet where the modification occurred. */
             styleSheetId: StyleSheetId;
+            
             /** Range where the modification occurred. */
             changeRange: SourceRange;
+            
         }
-    }
-    
-    export interface CSSClient {
-        /** Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received. */
-        enable: () => Promise<{}>;
-        /** Disables the CSS agent for the given page. */
-        disable: () => Promise<{}>;
-        /** Returns requested styles for a DOM node identified by 'nodeId'. */
-        getMatchedStylesForNode: (request: CSS.GetMatchedStylesForNodeRequest) => Promise<CSS.GetMatchedStylesForNodeResponse>;
-        /** Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by 'nodeId'. */
-        getInlineStylesForNode: (request: CSS.GetInlineStylesForNodeRequest) => Promise<CSS.GetInlineStylesForNodeResponse>;
-        /** Returns the computed style for a DOM node identified by 'nodeId'. */
-        getComputedStyleForNode: (request: CSS.GetComputedStyleForNodeRequest) => Promise<CSS.GetComputedStyleForNodeResponse>;
-        /** Requests information about platform fonts which we used to render child TextNodes in the given node. */
-        getPlatformFontsForNode: (request: CSS.GetPlatformFontsForNodeRequest) => Promise<CSS.GetPlatformFontsForNodeResponse>;
-        /** Returns the current textual content and the URL for a stylesheet. */
-        getStyleSheetText: (request: CSS.GetStyleSheetTextRequest) => Promise<CSS.GetStyleSheetTextResponse>;
-        /** Sets the new stylesheet text. */
-        setStyleSheetText: (request: CSS.SetStyleSheetTextRequest) => Promise<CSS.SetStyleSheetTextResponse>;
-        /** Modifies the rule selector. */
-        setRuleSelector: (request: CSS.SetRuleSelectorRequest) => Promise<CSS.SetRuleSelectorResponse>;
-        /** Modifies the keyframe rule key text. */
-        setKeyframeKey: (request: CSS.SetKeyframeKeyRequest) => Promise<CSS.SetKeyframeKeyResponse>;
-        /** Applies specified style edits one after another in the given order. */
-        setStyleTexts: (request: CSS.SetStyleTextsRequest) => Promise<CSS.SetStyleTextsResponse>;
-        /** Modifies the rule selector. */
-        setMediaText: (request: CSS.SetMediaTextRequest) => Promise<CSS.SetMediaTextResponse>;
-        /** Creates a new special "via-inspector" stylesheet in the frame with given 'frameId'. */
-        createStyleSheet: (request: CSS.CreateStyleSheetRequest) => Promise<CSS.CreateStyleSheetResponse>;
-        /** Inserts a new rule with the given 'ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location'. */
-        addRule: (request: CSS.AddRuleRequest) => Promise<CSS.AddRuleResponse>;
-        /** Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser. */
-        forcePseudoState: (request: CSS.ForcePseudoStateRequest) => Promise<{}>;
-        /** Returns all media queries parsed by the rendering engine. */
-        getMediaQueries: () => Promise<CSS.GetMediaQueriesResponse>;
-        /** Find a rule with the given active property for the given node and set the new value for this property */
-        setEffectivePropertyValueForNode: (request: CSS.SetEffectivePropertyValueForNodeRequest) => Promise<{}>;
-        getBackgroundColors: (request: CSS.GetBackgroundColorsRequest) => Promise<CSS.GetBackgroundColorsResponse>;
-        /** Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features. */
-        onMediaQueryResultChanged: (handler: () => void) => void;
-        /** Fired whenever a stylesheet is changed as a result of the client operation. */
-        onStyleSheetChanged: (handler: (event: CSS.StyleSheetChangedEvent) => void) => void;
-        /** Fired whenever an active document stylesheet is added. */
-        onStyleSheetAdded: (handler: (event: CSS.StyleSheetAddedEvent) => void) => void;
-        /** Fired whenever an active document stylesheet is removed. */
-        onStyleSheetRemoved: (handler: (event: CSS.StyleSheetRemovedEvent) => void) => void;
-        onLayoutEditorChange: (handler: (event: CSS.LayoutEditorChangeEvent) => void) => void;
-    }
-    
-    export interface CSSAdapter {
-        /** Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables the CSS agent for the given page. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Returns requested styles for a DOM node identified by 'nodeId'. */
-        onGetMatchedStylesForNode: (handler: (request: CSS.GetMatchedStylesForNodeRequest) => PromiseOrNot<CSS.GetMatchedStylesForNodeResponse>) => void;
-        /** Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by 'nodeId'. */
-        onGetInlineStylesForNode: (handler: (request: CSS.GetInlineStylesForNodeRequest) => PromiseOrNot<CSS.GetInlineStylesForNodeResponse>) => void;
-        /** Returns the computed style for a DOM node identified by 'nodeId'. */
-        onGetComputedStyleForNode: (handler: (request: CSS.GetComputedStyleForNodeRequest) => PromiseOrNot<CSS.GetComputedStyleForNodeResponse>) => void;
-        /** Requests information about platform fonts which we used to render child TextNodes in the given node. */
-        onGetPlatformFontsForNode: (handler: (request: CSS.GetPlatformFontsForNodeRequest) => PromiseOrNot<CSS.GetPlatformFontsForNodeResponse>) => void;
-        /** Returns the current textual content and the URL for a stylesheet. */
-        onGetStyleSheetText: (handler: (request: CSS.GetStyleSheetTextRequest) => PromiseOrNot<CSS.GetStyleSheetTextResponse>) => void;
-        /** Sets the new stylesheet text. */
-        onSetStyleSheetText: (handler: (request: CSS.SetStyleSheetTextRequest) => PromiseOrNot<CSS.SetStyleSheetTextResponse>) => void;
-        /** Modifies the rule selector. */
-        onSetRuleSelector: (handler: (request: CSS.SetRuleSelectorRequest) => PromiseOrNot<CSS.SetRuleSelectorResponse>) => void;
-        /** Modifies the keyframe rule key text. */
-        onSetKeyframeKey: (handler: (request: CSS.SetKeyframeKeyRequest) => PromiseOrNot<CSS.SetKeyframeKeyResponse>) => void;
-        /** Applies specified style edits one after another in the given order. */
-        onSetStyleTexts: (handler: (request: CSS.SetStyleTextsRequest) => PromiseOrNot<CSS.SetStyleTextsResponse>) => void;
-        /** Modifies the rule selector. */
-        onSetMediaText: (handler: (request: CSS.SetMediaTextRequest) => PromiseOrNot<CSS.SetMediaTextResponse>) => void;
-        /** Creates a new special "via-inspector" stylesheet in the frame with given 'frameId'. */
-        onCreateStyleSheet: (handler: (request: CSS.CreateStyleSheetRequest) => PromiseOrNot<CSS.CreateStyleSheetResponse>) => void;
-        /** Inserts a new rule with the given 'ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location'. */
-        onAddRule: (handler: (request: CSS.AddRuleRequest) => PromiseOrNot<CSS.AddRuleResponse>) => void;
-        /** Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser. */
-        onForcePseudoState: (handler: (request: CSS.ForcePseudoStateRequest) => PromiseOrNot<{}>) => void;
-        /** Returns all media queries parsed by the rendering engine. */
-        onGetMediaQueries: (handler: () => PromiseOrNot<CSS.GetMediaQueriesResponse>) => void;
-        /** Find a rule with the given active property for the given node and set the new value for this property */
-        onSetEffectivePropertyValueForNode: (handler: (request: CSS.SetEffectivePropertyValueForNodeRequest) => PromiseOrNot<{}>) => void;
-        onGetBackgroundColors: (handler: (request: CSS.GetBackgroundColorsRequest) => PromiseOrNot<CSS.GetBackgroundColorsResponse>) => void;
-        /** Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features. */
-        fireMediaQueryResultChanged: () => void;
-        /** Fired whenever a stylesheet is changed as a result of the client operation. */
-        fireStyleSheetChanged: (event: CSS.StyleSheetChangedEvent) => void;
-        /** Fired whenever an active document stylesheet is added. */
-        fireStyleSheetAdded: (event: CSS.StyleSheetAddedEvent) => void;
-        /** Fired whenever an active document stylesheet is removed. */
-        fireStyleSheetRemoved: (event: CSS.StyleSheetRemovedEvent) => void;
-        fireLayoutEditorChange: (event: CSS.LayoutEditorChangeEvent) => void;
     }
     
     /** Input/Output operations for streams produced by DevTools. */
@@ -4723,37 +4487,29 @@ export module Crdi {
         export interface ReadRequest {
             /** Handle of the stream to read. */
             handle: StreamHandle;
+            
             /** Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). */
             offset?: integer;
+            
             /** Maximum number of bytes to read (left upon the agent discretion if not specified). */
             size?: integer;
+            
         }
         
         export interface ReadResponse {
             /** Data that were read. */
             data: string;
+            
             /** Set if the end-of-file condition occured while reading. */
             eof: boolean;
+            
         }
         
         export interface CloseRequest {
             /** Handle of the stream to close. */
             handle: StreamHandle;
+            
         }
-    }
-    
-    export interface IOClient {
-        /** Read a chunk of the stream */
-        read: (request: IO.ReadRequest) => Promise<IO.ReadResponse>;
-        /** Close the stream, discard any temporary backing storage. */
-        close: (request: IO.CloseRequest) => Promise<{}>;
-    }
-    
-    export interface IOAdapter {
-        /** Read a chunk of the stream */
-        onRead: (handler: (request: IO.ReadRequest) => PromiseOrNot<IO.ReadResponse>) => void;
-        /** Close the stream, discard any temporary backing storage. */
-        onClose: (handler: (request: IO.CloseRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** DOM debugging allows setting breakpoints on particular DOM operations and events. JavaScript execution will stop on these operations as if there was a regular breakpoint set. */
@@ -4766,166 +4522,134 @@ export module Crdi {
         export interface EventListener {
             /** 'EventListener''s type. */
             type: string;
+            
             /** 'EventListener''s useCapture. */
             useCapture: boolean;
+            
             /** 'EventListener''s passive flag. */
             passive: boolean;
+            
             /** Handler code location. */
             location: Debugger.Location;
+            
             /** Event handler function value. */
             handler?: Runtime.RemoteObject;
+            
             /** Event original handler function value. */
             originalHandler?: Runtime.RemoteObject;
+            
             /** Event listener remove function. */
             removeFunction?: Runtime.RemoteObject;
+            
         }
         
         export interface SetDOMBreakpointRequest {
             /** Identifier of the node to set breakpoint on. */
             nodeId: DOM.NodeId;
+            
             /** Type of the operation to stop upon. */
             type: DOMBreakpointType;
+            
         }
         
         export interface RemoveDOMBreakpointRequest {
             /** Identifier of the node to remove breakpoint from. */
             nodeId: DOM.NodeId;
+            
             /** Type of the breakpoint to remove. */
             type: DOMBreakpointType;
+            
         }
         
         export interface SetEventListenerBreakpointRequest {
             /** DOM Event name to stop on (any DOM event will do). */
             eventName: string;
+            
             /** EventTarget interface name to stop on. If equal to '"*"' or not provided, will stop on any EventTarget. */
             targetName?: string;
+            
         }
         
         export interface RemoveEventListenerBreakpointRequest {
             /** Event name. */
             eventName: string;
+            
             /** EventTarget interface name. */
             targetName?: string;
+            
         }
         
         export interface SetInstrumentationBreakpointRequest {
             /** Instrumentation name to stop on. */
             eventName: string;
+            
         }
         
         export interface RemoveInstrumentationBreakpointRequest {
             /** Instrumentation name to stop on. */
             eventName: string;
+            
         }
         
         export interface SetXHRBreakpointRequest {
             /** Resource URL substring. All XHRs having this substring in the URL will get stopped upon. */
             url: string;
+            
         }
         
         export interface RemoveXHRBreakpointRequest {
             /** Resource URL substring. */
             url: string;
+            
         }
         
         export interface GetEventListenersRequest {
             /** Identifier of the object to return listeners for. */
             objectId: Runtime.RemoteObjectId;
+            
         }
         
         export interface GetEventListenersResponse {
             /** Array of relevant listeners. */
             listeners: EventListener[];
+            
         }
-    }
-    
-    export interface DOMDebuggerClient {
-        /** Sets breakpoint on particular operation with DOM. */
-        setDOMBreakpoint: (request: DOMDebugger.SetDOMBreakpointRequest) => Promise<{}>;
-        /** Removes DOM breakpoint that was set using 'setDOMBreakpoint'. */
-        removeDOMBreakpoint: (request: DOMDebugger.RemoveDOMBreakpointRequest) => Promise<{}>;
-        /** Sets breakpoint on particular DOM event. */
-        setEventListenerBreakpoint: (request: DOMDebugger.SetEventListenerBreakpointRequest) => Promise<{}>;
-        /** Removes breakpoint on particular DOM event. */
-        removeEventListenerBreakpoint: (request: DOMDebugger.RemoveEventListenerBreakpointRequest) => Promise<{}>;
-        /** Sets breakpoint on particular native event. */
-        setInstrumentationBreakpoint: (request: DOMDebugger.SetInstrumentationBreakpointRequest) => Promise<{}>;
-        /** Removes breakpoint on particular native event. */
-        removeInstrumentationBreakpoint: (request: DOMDebugger.RemoveInstrumentationBreakpointRequest) => Promise<{}>;
-        /** Sets breakpoint on XMLHttpRequest. */
-        setXHRBreakpoint: (request: DOMDebugger.SetXHRBreakpointRequest) => Promise<{}>;
-        /** Removes breakpoint from XMLHttpRequest. */
-        removeXHRBreakpoint: (request: DOMDebugger.RemoveXHRBreakpointRequest) => Promise<{}>;
-        /** Returns event listeners of the given object. */
-        getEventListeners: (request: DOMDebugger.GetEventListenersRequest) => Promise<DOMDebugger.GetEventListenersResponse>;
-    }
-    
-    export interface DOMDebuggerAdapter {
-        /** Sets breakpoint on particular operation with DOM. */
-        onSetDOMBreakpoint: (handler: (request: DOMDebugger.SetDOMBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Removes DOM breakpoint that was set using 'setDOMBreakpoint'. */
-        onRemoveDOMBreakpoint: (handler: (request: DOMDebugger.RemoveDOMBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Sets breakpoint on particular DOM event. */
-        onSetEventListenerBreakpoint: (handler: (request: DOMDebugger.SetEventListenerBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Removes breakpoint on particular DOM event. */
-        onRemoveEventListenerBreakpoint: (handler: (request: DOMDebugger.RemoveEventListenerBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Sets breakpoint on particular native event. */
-        onSetInstrumentationBreakpoint: (handler: (request: DOMDebugger.SetInstrumentationBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Removes breakpoint on particular native event. */
-        onRemoveInstrumentationBreakpoint: (handler: (request: DOMDebugger.RemoveInstrumentationBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Sets breakpoint on XMLHttpRequest. */
-        onSetXHRBreakpoint: (handler: (request: DOMDebugger.SetXHRBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Removes breakpoint from XMLHttpRequest. */
-        onRemoveXHRBreakpoint: (handler: (request: DOMDebugger.RemoveXHRBreakpointRequest) => PromiseOrNot<{}>) => void;
-        /** Returns event listeners of the given object. */
-        onGetEventListeners: (handler: (request: DOMDebugger.GetEventListenersRequest) => PromiseOrNot<DOMDebugger.GetEventListenersResponse>) => void;
     }
     
     export module Worker {
         
         export interface SendMessageToWorkerRequest {
             workerId: string;
+            
             message: string;
+            
         }
         
         export interface SetWaitForDebuggerOnStartRequest {
             value: boolean;
+            
         }
         
         export interface WorkerCreatedEvent {
             workerId: string;
+            
             url: string;
+            
             waitingForDebugger: boolean;
+            
         }
         
         export interface WorkerTerminatedEvent {
             workerId: string;
+            
         }
         
         export interface DispatchMessageFromWorkerEvent {
             workerId: string;
+            
             message: string;
+            
         }
-    }
-    
-    export interface WorkerClient {
-        enable: () => Promise<{}>;
-        disable: () => Promise<{}>;
-        sendMessageToWorker: (request: Worker.SendMessageToWorkerRequest) => Promise<{}>;
-        setWaitForDebuggerOnStart: (request: Worker.SetWaitForDebuggerOnStartRequest) => Promise<{}>;
-        onWorkerCreated: (handler: (event: Worker.WorkerCreatedEvent) => void) => void;
-        onWorkerTerminated: (handler: (event: Worker.WorkerTerminatedEvent) => void) => void;
-        onDispatchMessageFromWorker: (handler: (event: Worker.DispatchMessageFromWorkerEvent) => void) => void;
-    }
-    
-    export interface WorkerAdapter {
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onSendMessageToWorker: (handler: (request: Worker.SendMessageToWorkerRequest) => PromiseOrNot<{}>) => void;
-        onSetWaitForDebuggerOnStart: (handler: (request: Worker.SetWaitForDebuggerOnStartRequest) => PromiseOrNot<{}>) => void;
-        fireWorkerCreated: (event: Worker.WorkerCreatedEvent) => void;
-        fireWorkerTerminated: (event: Worker.WorkerTerminatedEvent) => void;
-        fireDispatchMessageFromWorker: (event: Worker.DispatchMessageFromWorkerEvent) => void;
     }
     
     export module ServiceWorker {
@@ -4933,8 +4657,11 @@ export module Crdi {
         /** ServiceWorker registration. */
         export interface ServiceWorkerRegistration {
             registrationId: string;
+            
             scopeURL: string;
+            
             isDeleted: boolean;
+            
         }
         
         export type ServiceWorkerVersionRunningStatus = 'stopped' | 'starting' | 'running' | 'stopping';
@@ -4946,170 +4673,169 @@ export module Crdi {
         /** ServiceWorker version. */
         export interface ServiceWorkerVersion {
             versionId: string;
+            
             registrationId: string;
+            
             scriptURL: string;
+            
             runningStatus: ServiceWorkerVersionRunningStatus;
+            
             status: ServiceWorkerVersionStatus;
+            
             /** The Last-Modified header value of the main script. */
             scriptLastModified?: number;
+            
             /** The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated. */
             scriptResponseTime?: number;
+            
             controlledClients?: TargetID[];
+            
         }
         
         /** ServiceWorker error message. */
         export interface ServiceWorkerErrorMessage {
             errorMessage: string;
+            
             registrationId: string;
+            
             versionId: string;
+            
             sourceURL: string;
+            
             lineNumber: integer;
+            
             columnNumber: integer;
+            
         }
         
         export interface TargetInfo {
             id: TargetID;
+            
             type: string;
+            
             title: string;
+            
             url: string;
+            
         }
         
         export interface SendMessageRequest {
             workerId: string;
+            
             message: string;
+            
         }
         
         export interface StopRequest {
             workerId: string;
+            
         }
         
         export interface UnregisterRequest {
             scopeURL: string;
+            
         }
         
         export interface UpdateRegistrationRequest {
             scopeURL: string;
+            
         }
         
         export interface StartWorkerRequest {
             scopeURL: string;
+            
         }
         
         export interface SkipWaitingRequest {
             scopeURL: string;
+            
         }
         
         export interface StopWorkerRequest {
             versionId: string;
+            
         }
         
         export interface InspectWorkerRequest {
             versionId: string;
+            
         }
         
         export interface SetForceUpdateOnPageLoadRequest {
             forceUpdateOnPageLoad: boolean;
+            
         }
         
         export interface DeliverPushMessageRequest {
             origin: string;
+            
             registrationId: string;
+            
             data: string;
+            
         }
         
         export interface DispatchSyncEventRequest {
             origin: string;
+            
             registrationId: string;
+            
             tag: string;
+            
             lastChance: boolean;
+            
         }
         
         export interface GetTargetInfoRequest {
             targetId: TargetID;
+            
         }
         
         export interface GetTargetInfoResponse {
             targetInfo: TargetInfo;
+            
         }
         
         export interface ActivateTargetRequest {
             targetId: TargetID;
+            
         }
         
         export interface WorkerCreatedEvent {
             workerId: string;
+            
             url: string;
+            
             versionId: string;
+            
         }
         
         export interface WorkerTerminatedEvent {
             workerId: string;
+            
         }
         
         export interface DispatchMessageEvent {
             workerId: string;
+            
             message: string;
+            
         }
         
         export interface WorkerRegistrationUpdatedEvent {
             registrations: ServiceWorkerRegistration[];
+            
         }
         
         export interface WorkerVersionUpdatedEvent {
             versions: ServiceWorkerVersion[];
+            
         }
         
         export interface WorkerErrorReportedEvent {
             errorMessage: ServiceWorkerErrorMessage;
+            
         }
-    }
-    
-    export interface ServiceWorkerClient {
-        enable: () => Promise<{}>;
-        disable: () => Promise<{}>;
-        sendMessage: (request: ServiceWorker.SendMessageRequest) => Promise<{}>;
-        stop: (request: ServiceWorker.StopRequest) => Promise<{}>;
-        unregister: (request: ServiceWorker.UnregisterRequest) => Promise<{}>;
-        updateRegistration: (request: ServiceWorker.UpdateRegistrationRequest) => Promise<{}>;
-        startWorker: (request: ServiceWorker.StartWorkerRequest) => Promise<{}>;
-        skipWaiting: (request: ServiceWorker.SkipWaitingRequest) => Promise<{}>;
-        stopWorker: (request: ServiceWorker.StopWorkerRequest) => Promise<{}>;
-        inspectWorker: (request: ServiceWorker.InspectWorkerRequest) => Promise<{}>;
-        setForceUpdateOnPageLoad: (request: ServiceWorker.SetForceUpdateOnPageLoadRequest) => Promise<{}>;
-        deliverPushMessage: (request: ServiceWorker.DeliverPushMessageRequest) => Promise<{}>;
-        dispatchSyncEvent: (request: ServiceWorker.DispatchSyncEventRequest) => Promise<{}>;
-        getTargetInfo: (request: ServiceWorker.GetTargetInfoRequest) => Promise<ServiceWorker.GetTargetInfoResponse>;
-        activateTarget: (request: ServiceWorker.ActivateTargetRequest) => Promise<{}>;
-        onWorkerCreated: (handler: (event: ServiceWorker.WorkerCreatedEvent) => void) => void;
-        onWorkerTerminated: (handler: (event: ServiceWorker.WorkerTerminatedEvent) => void) => void;
-        onDispatchMessage: (handler: (event: ServiceWorker.DispatchMessageEvent) => void) => void;
-        onWorkerRegistrationUpdated: (handler: (event: ServiceWorker.WorkerRegistrationUpdatedEvent) => void) => void;
-        onWorkerVersionUpdated: (handler: (event: ServiceWorker.WorkerVersionUpdatedEvent) => void) => void;
-        onWorkerErrorReported: (handler: (event: ServiceWorker.WorkerErrorReportedEvent) => void) => void;
-    }
-    
-    export interface ServiceWorkerAdapter {
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        onSendMessage: (handler: (request: ServiceWorker.SendMessageRequest) => PromiseOrNot<{}>) => void;
-        onStop: (handler: (request: ServiceWorker.StopRequest) => PromiseOrNot<{}>) => void;
-        onUnregister: (handler: (request: ServiceWorker.UnregisterRequest) => PromiseOrNot<{}>) => void;
-        onUpdateRegistration: (handler: (request: ServiceWorker.UpdateRegistrationRequest) => PromiseOrNot<{}>) => void;
-        onStartWorker: (handler: (request: ServiceWorker.StartWorkerRequest) => PromiseOrNot<{}>) => void;
-        onSkipWaiting: (handler: (request: ServiceWorker.SkipWaitingRequest) => PromiseOrNot<{}>) => void;
-        onStopWorker: (handler: (request: ServiceWorker.StopWorkerRequest) => PromiseOrNot<{}>) => void;
-        onInspectWorker: (handler: (request: ServiceWorker.InspectWorkerRequest) => PromiseOrNot<{}>) => void;
-        onSetForceUpdateOnPageLoad: (handler: (request: ServiceWorker.SetForceUpdateOnPageLoadRequest) => PromiseOrNot<{}>) => void;
-        onDeliverPushMessage: (handler: (request: ServiceWorker.DeliverPushMessageRequest) => PromiseOrNot<{}>) => void;
-        onDispatchSyncEvent: (handler: (request: ServiceWorker.DispatchSyncEventRequest) => PromiseOrNot<{}>) => void;
-        onGetTargetInfo: (handler: (request: ServiceWorker.GetTargetInfoRequest) => PromiseOrNot<ServiceWorker.GetTargetInfoResponse>) => void;
-        onActivateTarget: (handler: (request: ServiceWorker.ActivateTargetRequest) => PromiseOrNot<{}>) => void;
-        fireWorkerCreated: (event: ServiceWorker.WorkerCreatedEvent) => void;
-        fireWorkerTerminated: (event: ServiceWorker.WorkerTerminatedEvent) => void;
-        fireDispatchMessage: (event: ServiceWorker.DispatchMessageEvent) => void;
-        fireWorkerRegistrationUpdated: (event: ServiceWorker.WorkerRegistrationUpdatedEvent) => void;
-        fireWorkerVersionUpdated: (event: ServiceWorker.WorkerVersionUpdatedEvent) => void;
-        fireWorkerErrorReported: (event: ServiceWorker.WorkerErrorReportedEvent) => void;
     }
     
     export module Input {
@@ -5117,20 +4843,28 @@ export module Crdi {
         export interface TouchPoint {
             /** State of the touch point. */
             state: 'touchPressed' | 'touchReleased' | 'touchMoved' | 'touchStationary' | 'touchCancelled';
+            
             /** X coordinate of the event relative to the main frame's viewport. */
             x: integer;
+            
             /** Y coordinate of the event relative to the main frame's viewport. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport. */
             y: integer;
+            
             /** X radius of the touch area (default: 1). */
             radiusX?: integer;
+            
             /** Y radius of the touch area (default: 1). */
             radiusY?: integer;
+            
             /** Rotation angle (default: 0.0). */
             rotationAngle?: number;
+            
             /** Force (default: 1.0). */
             force?: number;
+            
             /** Identifier used to track touch sources between events, must be unique within an event. */
             id?: number;
+            
         }
         
         export type GestureSourceType = 'default' | 'touch' | 'mouse';
@@ -5138,167 +4872,188 @@ export module Crdi {
         export interface DispatchKeyEventRequest {
             /** Type of the key event. */
             type: 'keyDown' | 'keyUp' | 'rawKeyDown' | 'char';
+            
             /** Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0). */
             modifiers?: integer;
+            
             /** Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time). */
             timestamp?: number;
+            
             /** Text as generated by processing a virtual key code with a keyboard layout. Not needed for for 'keyUp</code> and <code>rawKeyDown' events (default: "") */
             text?: string;
+            
             /** Text that would have been generated by the keyboard if no modifiers were pressed (except for shift). Useful for shortcut (accelerator) key handling (default: ""). */
             unmodifiedText?: string;
+            
             /** Unique key identifier (e.g., 'U+0041') (default: ""). */
             keyIdentifier?: string;
+            
             /** Unique DOM defined string value for each physical key (e.g., 'KeyA') (default: ""). */
             code?: string;
+            
             /** Unique DOM defined string value describing the meaning of the key in the context of active modifiers, keyboard layout, etc (e.g., 'AltGr') (default: ""). */
             key?: string;
+            
             /** Windows virtual key code (default: 0). */
             windowsVirtualKeyCode?: integer;
+            
             /** Native virtual key code (default: 0). */
             nativeVirtualKeyCode?: integer;
+            
             /** Whether the event was generated from auto repeat (default: false). */
             autoRepeat?: boolean;
+            
             /** Whether the event was generated from the keypad (default: false). */
             isKeypad?: boolean;
+            
             /** Whether the event was a system key event (default: false). */
             isSystemKey?: boolean;
+            
         }
         
         export interface DispatchMouseEventRequest {
             /** Type of the mouse event. */
             type: 'mousePressed' | 'mouseReleased' | 'mouseMoved';
+            
             /** X coordinate of the event relative to the main frame's viewport. */
             x: integer;
+            
             /** Y coordinate of the event relative to the main frame's viewport. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport. */
             y: integer;
+            
             /** Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0). */
             modifiers?: integer;
+            
             /** Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time). */
             timestamp?: number;
+            
             /** Mouse button (default: "none"). */
             button?: 'none' | 'left' | 'middle' | 'right';
+            
             /** Number of times the mouse button was clicked (default: 0). */
             clickCount?: integer;
+            
         }
         
         export interface DispatchTouchEventRequest {
             /** Type of the touch event. */
             type: 'touchStart' | 'touchEnd' | 'touchMove';
+            
             /** Touch points. */
             touchPoints: TouchPoint[];
+            
             /** Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0). */
             modifiers?: integer;
+            
             /** Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time). */
             timestamp?: number;
+            
         }
         
         export interface EmulateTouchFromMouseEventRequest {
             /** Type of the mouse event. */
             type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel';
+            
             /** X coordinate of the mouse pointer in DIP. */
             x: integer;
+            
             /** Y coordinate of the mouse pointer in DIP. */
             y: integer;
+            
             /** Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970. */
             timestamp: number;
+            
             /** Mouse button. */
             button: 'none' | 'left' | 'middle' | 'right';
+            
             /** X delta in DIP for mouse wheel event (default: 0). */
             deltaX?: number;
+            
             /** Y delta in DIP for mouse wheel event (default: 0). */
             deltaY?: number;
+            
             /** Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0). */
             modifiers?: integer;
+            
             /** Number of times the mouse button was clicked (default: 0). */
             clickCount?: integer;
+            
         }
         
         export interface SynthesizePinchGestureRequest {
             /** X coordinate of the start of the gesture in CSS pixels. */
             x: integer;
+            
             /** Y coordinate of the start of the gesture in CSS pixels. */
             y: integer;
+            
             /** Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out). */
             scaleFactor: number;
+            
             /** Relative pointer speed in pixels per second (default: 800). */
             relativeSpeed?: integer;
+            
             /** Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). */
             gestureSourceType?: GestureSourceType;
+            
         }
         
         export interface SynthesizeScrollGestureRequest {
             /** X coordinate of the start of the gesture in CSS pixels. */
             x: integer;
+            
             /** Y coordinate of the start of the gesture in CSS pixels. */
             y: integer;
+            
             /** The distance to scroll along the X axis (positive to scroll left). */
             xDistance?: integer;
+            
             /** The distance to scroll along the Y axis (positive to scroll up). */
             yDistance?: integer;
+            
             /** The number of additional pixels to scroll back along the X axis, in addition to the given distance. */
             xOverscroll?: integer;
+            
             /** The number of additional pixels to scroll back along the Y axis, in addition to the given distance. */
             yOverscroll?: integer;
+            
             /** Prevent fling (default: true). */
             preventFling?: boolean;
+            
             /** Swipe speed in pixels per second (default: 800). */
             speed?: integer;
+            
             /** Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). */
             gestureSourceType?: GestureSourceType;
+            
             /** The number of times to repeat the gesture (default: 0). */
             repeatCount?: integer;
+            
             /** The number of milliseconds delay between each repeat. (default: 250). */
             repeatDelayMs?: integer;
+            
             /** The name of the interaction markers to generate, if not empty (default: ""). */
             interactionMarkerName?: string;
+            
         }
         
         export interface SynthesizeTapGestureRequest {
             /** X coordinate of the start of the gesture in CSS pixels. */
             x: integer;
+            
             /** Y coordinate of the start of the gesture in CSS pixels. */
             y: integer;
+            
             /** Duration between touchdown and touchup events in ms (default: 50). */
             duration?: integer;
+            
             /** Number of times to perform the tap (e.g. 2 for double tap, default: 1). */
             tapCount?: integer;
+            
             /** Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). */
             gestureSourceType?: GestureSourceType;
+            
         }
-    }
-    
-    export interface InputClient {
-        /** Dispatches a key event to the page. */
-        dispatchKeyEvent: (request: Input.DispatchKeyEventRequest) => Promise<{}>;
-        /** Dispatches a mouse event to the page. */
-        dispatchMouseEvent: (request: Input.DispatchMouseEventRequest) => Promise<{}>;
-        /** Dispatches a touch event to the page. */
-        dispatchTouchEvent: (request: Input.DispatchTouchEventRequest) => Promise<{}>;
-        /** Emulates touch event from the mouse event parameters. */
-        emulateTouchFromMouseEvent: (request: Input.EmulateTouchFromMouseEventRequest) => Promise<{}>;
-        /** Synthesizes a pinch gesture over a time period by issuing appropriate touch events. */
-        synthesizePinchGesture: (request: Input.SynthesizePinchGestureRequest) => Promise<{}>;
-        /** Synthesizes a scroll gesture over a time period by issuing appropriate touch events. */
-        synthesizeScrollGesture: (request: Input.SynthesizeScrollGestureRequest) => Promise<{}>;
-        /** Synthesizes a tap gesture over a time period by issuing appropriate touch events. */
-        synthesizeTapGesture: (request: Input.SynthesizeTapGestureRequest) => Promise<{}>;
-    }
-    
-    export interface InputAdapter {
-        /** Dispatches a key event to the page. */
-        onDispatchKeyEvent: (handler: (request: Input.DispatchKeyEventRequest) => PromiseOrNot<{}>) => void;
-        /** Dispatches a mouse event to the page. */
-        onDispatchMouseEvent: (handler: (request: Input.DispatchMouseEventRequest) => PromiseOrNot<{}>) => void;
-        /** Dispatches a touch event to the page. */
-        onDispatchTouchEvent: (handler: (request: Input.DispatchTouchEventRequest) => PromiseOrNot<{}>) => void;
-        /** Emulates touch event from the mouse event parameters. */
-        onEmulateTouchFromMouseEvent: (handler: (request: Input.EmulateTouchFromMouseEventRequest) => PromiseOrNot<{}>) => void;
-        /** Synthesizes a pinch gesture over a time period by issuing appropriate touch events. */
-        onSynthesizePinchGesture: (handler: (request: Input.SynthesizePinchGestureRequest) => PromiseOrNot<{}>) => void;
-        /** Synthesizes a scroll gesture over a time period by issuing appropriate touch events. */
-        onSynthesizeScrollGesture: (handler: (request: Input.SynthesizeScrollGestureRequest) => PromiseOrNot<{}>) => void;
-        /** Synthesizes a tap gesture over a time period by issuing appropriate touch events. */
-        onSynthesizeTapGesture: (handler: (request: Input.SynthesizeTapGestureRequest) => PromiseOrNot<{}>) => void;
     }
     
     export module LayerTree {
@@ -5313,52 +5068,72 @@ export module Crdi {
         export interface ScrollRect {
             /** Rectangle itself. */
             rect: DOM.Rect;
+            
             /** Reason for rectangle to force scrolling on the main thread */
             type: 'RepaintsOnScroll' | 'TouchEventHandler' | 'WheelEventHandler';
+            
         }
         
         /** Serialized fragment of layer picture along with its offset within the layer. */
         export interface PictureTile {
             /** Offset from owning layer left boundary */
             x: number;
+            
             /** Offset from owning layer top boundary */
             y: number;
+            
             /** Base64-encoded snapshot data. */
             picture: string;
+            
         }
         
         /** Information about a compositing layer. */
         export interface Layer {
             /** The unique id for this layer. */
             layerId: LayerId;
+            
             /** The id of parent (not present for root). */
             parentLayerId?: LayerId;
+            
             /** The backend id for the node associated with this layer. */
             backendNodeId?: DOM.BackendNodeId;
+            
             /** Offset from parent layer, X coordinate. */
             offsetX: number;
+            
             /** Offset from parent layer, Y coordinate. */
             offsetY: number;
+            
             /** Layer width. */
             width: number;
+            
             /** Layer height. */
             height: number;
+            
             /** Transformation matrix for layer, default is identity matrix */
             transform?: number[];
+            
             /** Transform anchor point X, absent if no transform specified */
             anchorX?: number;
+            
             /** Transform anchor point Y, absent if no transform specified */
             anchorY?: number;
+            
             /** Transform anchor point Z, absent if no transform specified */
             anchorZ?: number;
+            
             /** Indicates how many time this layer has painted. */
             paintCount: integer;
+            
             /** Indicates whether this layer hosts any content, rather than being used for transform/scrolling purposes only. */
             drawsContent: boolean;
+            
             /** Set if layer is not visible. */
             invisible?: boolean;
+            
             /** Rectangles scrolling on main thread only. */
             scrollRects?: ScrollRect[];
+            
         }
         
         /** Array of timings, one per paint step. */
@@ -5367,135 +5142,113 @@ export module Crdi {
         export interface CompositingReasonsRequest {
             /** The id of the layer for which we want to get the reasons it was composited. */
             layerId: LayerId;
+            
         }
         
         export interface CompositingReasonsResponse {
             /** A list of strings specifying reasons for the given layer to become composited. */
             compositingReasons: string[];
+            
         }
         
         export interface MakeSnapshotRequest {
             /** The id of the layer. */
             layerId: LayerId;
+            
         }
         
         export interface MakeSnapshotResponse {
             /** The id of the layer snapshot. */
             snapshotId: SnapshotId;
+            
         }
         
         export interface LoadSnapshotRequest {
             /** An array of tiles composing the snapshot. */
             tiles: PictureTile[];
+            
         }
         
         export interface LoadSnapshotResponse {
             /** The id of the snapshot. */
             snapshotId: SnapshotId;
+            
         }
         
         export interface ReleaseSnapshotRequest {
             /** The id of the layer snapshot. */
             snapshotId: SnapshotId;
+            
         }
         
         export interface ProfileSnapshotRequest {
             /** The id of the layer snapshot. */
             snapshotId: SnapshotId;
+            
             /** The maximum number of times to replay the snapshot (1, if not specified). */
             minRepeatCount?: integer;
+            
             /** The minimum duration (in seconds) to replay the snapshot. */
             minDuration?: number;
+            
             /** The clip rectangle to apply when replaying the snapshot. */
             clipRect?: DOM.Rect;
+            
         }
         
         export interface ProfileSnapshotResponse {
             /** The array of paint profiles, one per run. */
             timings: PaintProfile[];
+            
         }
         
         export interface ReplaySnapshotRequest {
             /** The id of the layer snapshot. */
             snapshotId: SnapshotId;
+            
             /** The first step to replay from (replay from the very start if not specified). */
             fromStep?: integer;
+            
             /** The last step to replay to (replay till the end if not specified). */
             toStep?: integer;
+            
             /** The scale to apply while replaying (defaults to 1). */
             scale?: number;
+            
         }
         
         export interface ReplaySnapshotResponse {
             /** A data: URL for resulting image. */
             dataURL: string;
+            
         }
         
         export interface SnapshotCommandLogRequest {
             /** The id of the layer snapshot. */
             snapshotId: SnapshotId;
+            
         }
         
         export interface SnapshotCommandLogResponse {
             /** The array of canvas function calls. */
             commandLog: any[];
+            
         }
         
         export interface LayerTreeDidChangeEvent {
             /** Layer tree, absent if not in the comspositing mode. */
             layers?: Layer[];
+            
         }
         
         export interface LayerPaintedEvent {
             /** The id of the painted layer. */
             layerId: LayerId;
+            
             /** Clip rectangle. */
             clip: DOM.Rect;
+            
         }
-    }
-    
-    export interface LayerTreeClient {
-        /** Enables compositing tree inspection. */
-        enable: () => Promise<{}>;
-        /** Disables compositing tree inspection. */
-        disable: () => Promise<{}>;
-        /** Provides the reasons why the given layer was composited. */
-        compositingReasons: (request: LayerTree.CompositingReasonsRequest) => Promise<LayerTree.CompositingReasonsResponse>;
-        /** Returns the layer snapshot identifier. */
-        makeSnapshot: (request: LayerTree.MakeSnapshotRequest) => Promise<LayerTree.MakeSnapshotResponse>;
-        /** Returns the snapshot identifier. */
-        loadSnapshot: (request: LayerTree.LoadSnapshotRequest) => Promise<LayerTree.LoadSnapshotResponse>;
-        /** Releases layer snapshot captured by the back-end. */
-        releaseSnapshot: (request: LayerTree.ReleaseSnapshotRequest) => Promise<{}>;
-        profileSnapshot: (request: LayerTree.ProfileSnapshotRequest) => Promise<LayerTree.ProfileSnapshotResponse>;
-        /** Replays the layer snapshot and returns the resulting bitmap. */
-        replaySnapshot: (request: LayerTree.ReplaySnapshotRequest) => Promise<LayerTree.ReplaySnapshotResponse>;
-        /** Replays the layer snapshot and returns canvas log. */
-        snapshotCommandLog: (request: LayerTree.SnapshotCommandLogRequest) => Promise<LayerTree.SnapshotCommandLogResponse>;
-        onLayerTreeDidChange: (handler: (event: LayerTree.LayerTreeDidChangeEvent) => void) => void;
-        onLayerPainted: (handler: (event: LayerTree.LayerPaintedEvent) => void) => void;
-    }
-    
-    export interface LayerTreeAdapter {
-        /** Enables compositing tree inspection. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables compositing tree inspection. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Provides the reasons why the given layer was composited. */
-        onCompositingReasons: (handler: (request: LayerTree.CompositingReasonsRequest) => PromiseOrNot<LayerTree.CompositingReasonsResponse>) => void;
-        /** Returns the layer snapshot identifier. */
-        onMakeSnapshot: (handler: (request: LayerTree.MakeSnapshotRequest) => PromiseOrNot<LayerTree.MakeSnapshotResponse>) => void;
-        /** Returns the snapshot identifier. */
-        onLoadSnapshot: (handler: (request: LayerTree.LoadSnapshotRequest) => PromiseOrNot<LayerTree.LoadSnapshotResponse>) => void;
-        /** Releases layer snapshot captured by the back-end. */
-        onReleaseSnapshot: (handler: (request: LayerTree.ReleaseSnapshotRequest) => PromiseOrNot<{}>) => void;
-        onProfileSnapshot: (handler: (request: LayerTree.ProfileSnapshotRequest) => PromiseOrNot<LayerTree.ProfileSnapshotResponse>) => void;
-        /** Replays the layer snapshot and returns the resulting bitmap. */
-        onReplaySnapshot: (handler: (request: LayerTree.ReplaySnapshotRequest) => PromiseOrNot<LayerTree.ReplaySnapshotResponse>) => void;
-        /** Replays the layer snapshot and returns canvas log. */
-        onSnapshotCommandLog: (handler: (request: LayerTree.SnapshotCommandLogRequest) => PromiseOrNot<LayerTree.SnapshotCommandLogResponse>) => void;
-        fireLayerTreeDidChange: (event: LayerTree.LayerTreeDidChangeEvent) => void;
-        fireLayerPainted: (event: LayerTree.LayerPaintedEvent) => void;
     }
     
     export module DeviceOrientation {
@@ -5503,25 +5256,14 @@ export module Crdi {
         export interface SetDeviceOrientationOverrideRequest {
             /** Mock alpha */
             alpha: number;
+            
             /** Mock beta */
             beta: number;
+            
             /** Mock gamma */
             gamma: number;
+            
         }
-    }
-    
-    export interface DeviceOrientationClient {
-        /** Overrides the Device Orientation. */
-        setDeviceOrientationOverride: (request: DeviceOrientation.SetDeviceOrientationOverrideRequest) => Promise<{}>;
-        /** Clears the overridden Device Orientation. */
-        clearDeviceOrientationOverride: () => Promise<{}>;
-    }
-    
-    export interface DeviceOrientationAdapter {
-        /** Overrides the Device Orientation. */
-        onSetDeviceOrientationOverride: (handler: (request: DeviceOrientation.SetDeviceOrientationOverrideRequest) => PromiseOrNot<{}>) => void;
-        /** Clears the overridden Device Orientation. */
-        onClearDeviceOrientationOverride: (handler: () => PromiseOrNot<{}>) => void;
     }
     
     export module Tracing {
@@ -5534,104 +5276,90 @@ export module Crdi {
         export interface TraceConfig {
             /** Controls how the trace buffer stores data. */
             recordMode?: 'recordUntilFull' | 'recordContinuously' | 'recordAsMuchAsPossible' | 'echoToConsole';
+            
             /** Turns on JavaScript stack sampling. */
             enableSampling?: boolean;
+            
             /** Turns on system tracing. */
             enableSystrace?: boolean;
+            
             /** Turns on argument filter. */
             enableArgumentFilter?: boolean;
+            
             /** Included category filters. */
             includedCategories?: string[];
+            
             /** Excluded category filters. */
             excludedCategories?: string[];
+            
             /** Configuration to synthesize the delays in tracing. */
             syntheticDelays?: string[];
+            
             /** Configuration for memory dump triggers. Used only when "memory-infra" category is enabled. */
             memoryDumpConfig?: MemoryDumpConfig;
+            
         }
         
         export interface StartRequest {
             /** Category/tag filter */
             categories?: string;
+            
             /** Tracing options */
             options?: string;
+            
             /** If set, the agent will issue bufferUsage events at this interval, specified in milliseconds */
             bufferUsageReportingInterval?: number;
+            
             /** Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to 'ReportEvents'). */
             transferMode?: 'ReportEvents' | 'ReturnAsStream';
+            
             traceConfig?: TraceConfig;
+            
         }
         
         export interface GetCategoriesResponse {
             /** A list of supported tracing categories. */
             categories: string[];
+            
         }
         
         export interface RequestMemoryDumpResponse {
             /** GUID of the resulting global memory dump. */
             dumpGuid: string;
+            
             /** True iff the global memory dump succeeded. */
             success: boolean;
+            
         }
         
         export interface RecordClockSyncMarkerRequest {
             /** The ID of this clock sync marker */
             syncId: string;
+            
         }
         
         export interface DataCollectedEvent {
             value: any[];
+            
         }
         
         export interface TracingCompleteEvent {
             /** A handle of the stream that holds resulting trace data. */
             stream?: IO.StreamHandle;
+            
         }
         
         export interface BufferUsageEvent {
             /** A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size. */
             percentFull?: number;
+            
             /** An approximate number of events in the trace log. */
             eventCount?: number;
+            
             /** A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size. */
             value?: number;
+            
         }
-    }
-    
-    export interface TracingClient {
-        /** Start trace events collection. */
-        start: (request: Tracing.StartRequest) => Promise<{}>;
-        /** Stop trace events collection. */
-        end: () => Promise<{}>;
-        /** Gets supported tracing categories. */
-        getCategories: () => Promise<Tracing.GetCategoriesResponse>;
-        /** Request a global memory dump. */
-        requestMemoryDump: () => Promise<Tracing.RequestMemoryDumpResponse>;
-        /** Record a clock sync marker in the trace. */
-        recordClockSyncMarker: (request: Tracing.RecordClockSyncMarkerRequest) => Promise<{}>;
-        /** Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event. */
-        onDataCollected: (handler: (event: Tracing.DataCollectedEvent) => void) => void;
-        /** Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events. */
-        onTracingComplete: (handler: (event: Tracing.TracingCompleteEvent) => void) => void;
-        onBufferUsage: (handler: (event: Tracing.BufferUsageEvent) => void) => void;
-    }
-    
-    export interface TracingAdapter {
-        /** Start trace events collection. */
-        onStart: (handler: (request: Tracing.StartRequest) => PromiseOrNot<{}>) => void;
-        /** Stop trace events collection. */
-        onEnd: (handler: () => PromiseOrNot<{}>) => void;
-        /** Gets supported tracing categories. */
-        onGetCategories: (handler: () => PromiseOrNot<Tracing.GetCategoriesResponse>) => void;
-        /** Request a global memory dump. */
-        onRequestMemoryDump: (handler: () => PromiseOrNot<Tracing.RequestMemoryDumpResponse>) => void;
-        /** Record a clock sync marker in the trace. */
-        onRecordClockSyncMarker: (handler: (request: Tracing.RecordClockSyncMarkerRequest) => PromiseOrNot<{}>) => void;
-        /** Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event. */
-        fireDataCollected: (event: Tracing.DataCollectedEvent) => void;
-        /** Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events. */
-        fireTracingComplete: (event: Tracing.TracingCompleteEvent) => void;
-        fireBufferUsage: (event: Tracing.BufferUsageEvent) => void;
     }
     
     export module Animation {
@@ -5640,198 +5368,182 @@ export module Crdi {
         export interface Animation {
             /** 'Animation''s id. */
             id: string;
+            
             /** 'Animation''s name. */
             name: string;
+            
             /** 'Animation''s internal paused state. */
             pausedState: boolean;
+            
             /** 'Animation''s play state. */
             playState: string;
+            
             /** 'Animation''s playback rate. */
             playbackRate: number;
+            
             /** 'Animation''s start time. */
             startTime: number;
+            
             /** 'Animation''s current time. */
             currentTime: number;
+            
             /** 'Animation''s source animation node. */
             source: AnimationEffect;
+            
             /** Animation type of 'Animation'. */
             type: 'CSSTransition' | 'CSSAnimation' | 'WebAnimation';
+            
             /** A unique ID for 'Animation' representing the sources that triggered this CSS animation/transition. */
             cssId?: string;
+            
         }
         
         /** AnimationEffect instance */
         export interface AnimationEffect {
             /** 'AnimationEffect''s delay. */
             delay: number;
+            
             /** 'AnimationEffect''s end delay. */
             endDelay: number;
+            
             /** 'AnimationEffect''s playbackRate. */
             playbackRate: number;
+            
             /** 'AnimationEffect''s iteration start. */
             iterationStart: number;
+            
             /** 'AnimationEffect''s iterations. */
             iterations: number;
+            
             /** 'AnimationEffect''s iteration duration. */
             duration: number;
+            
             /** 'AnimationEffect''s playback direction. */
             direction: string;
+            
             /** 'AnimationEffect''s fill mode. */
             fill: string;
+            
             /** 'AnimationEffect''s target node. */
             backendNodeId: DOM.BackendNodeId;
+            
             /** 'AnimationEffect''s keyframes. */
             keyframesRule?: KeyframesRule;
+            
             /** 'AnimationEffect''s timing function. */
             easing: string;
+            
         }
         
         /** Keyframes Rule */
         export interface KeyframesRule {
             /** CSS keyframed animation's name. */
             name?: string;
+            
             /** List of animation keyframes. */
             keyframes: KeyframeStyle[];
+            
         }
         
         /** Keyframe Style */
         export interface KeyframeStyle {
             /** Keyframe's time offset. */
             offset: string;
+            
             /** 'AnimationEffect''s timing function. */
             easing: string;
+            
         }
         
         export interface GetPlaybackRateResponse {
             /** Playback rate for animations on page. */
             playbackRate: number;
+            
         }
         
         export interface SetPlaybackRateRequest {
             /** Playback rate for animations on page */
             playbackRate: number;
+            
         }
         
         export interface GetCurrentTimeRequest {
             /** Id of animation. */
             id: string;
+            
         }
         
         export interface GetCurrentTimeResponse {
             /** Current time of the page. */
             currentTime: number;
+            
         }
         
         export interface SetPausedRequest {
             /** Animations to set the pause state of. */
             animations: string[];
+            
             /** Paused state to set to. */
             paused: boolean;
+            
         }
         
         export interface SetTimingRequest {
             /** Animation id. */
             animationId: string;
+            
             /** Duration of the animation. */
             duration: number;
+            
             /** Delay of the animation. */
             delay: number;
+            
         }
         
         export interface SeekAnimationsRequest {
             /** List of animation ids to seek. */
             animations: string[];
+            
             /** Set the current time of each animation. */
             currentTime: number;
+            
         }
         
         export interface ReleaseAnimationsRequest {
             /** List of animation ids to seek. */
             animations: string[];
+            
         }
         
         export interface ResolveAnimationRequest {
             /** Animation id. */
             animationId: string;
+            
         }
         
         export interface ResolveAnimationResponse {
             /** Corresponding remote object. */
             remoteObject: Runtime.RemoteObject;
+            
         }
         
         export interface AnimationCreatedEvent {
             /** Id of the animation that was created. */
             id: string;
+            
         }
         
         export interface AnimationStartedEvent {
             /** Animation that was started. */
             animation: Animation;
+            
         }
         
         export interface AnimationCanceledEvent {
             /** Id of the animation that was cancelled. */
             id: string;
+            
         }
-    }
-    
-    export interface AnimationClient {
-        /** Enables animation domain notifications. */
-        enable: () => Promise<{}>;
-        /** Disables animation domain notifications. */
-        disable: () => Promise<{}>;
-        /** Gets the playback rate of the document timeline. */
-        getPlaybackRate: () => Promise<Animation.GetPlaybackRateResponse>;
-        /** Sets the playback rate of the document timeline. */
-        setPlaybackRate: (request: Animation.SetPlaybackRateRequest) => Promise<{}>;
-        /** Returns the current time of the an animation. */
-        getCurrentTime: (request: Animation.GetCurrentTimeRequest) => Promise<Animation.GetCurrentTimeResponse>;
-        /** Sets the paused state of a set of animations. */
-        setPaused: (request: Animation.SetPausedRequest) => Promise<{}>;
-        /** Sets the timing of an animation node. */
-        setTiming: (request: Animation.SetTimingRequest) => Promise<{}>;
-        /** Seek a set of animations to a particular time within each animation. */
-        seekAnimations: (request: Animation.SeekAnimationsRequest) => Promise<{}>;
-        /** Releases a set of animations to no longer be manipulated. */
-        releaseAnimations: (request: Animation.ReleaseAnimationsRequest) => Promise<{}>;
-        /** Gets the remote object of the Animation. */
-        resolveAnimation: (request: Animation.ResolveAnimationRequest) => Promise<Animation.ResolveAnimationResponse>;
-        /** Event for each animation that has been created. */
-        onAnimationCreated: (handler: (event: Animation.AnimationCreatedEvent) => void) => void;
-        /** Event for animation that has been started. */
-        onAnimationStarted: (handler: (event: Animation.AnimationStartedEvent) => void) => void;
-        /** Event for when an animation has been cancelled. */
-        onAnimationCanceled: (handler: (event: Animation.AnimationCanceledEvent) => void) => void;
-    }
-    
-    export interface AnimationAdapter {
-        /** Enables animation domain notifications. */
-        onEnable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Disables animation domain notifications. */
-        onDisable: (handler: () => PromiseOrNot<{}>) => void;
-        /** Gets the playback rate of the document timeline. */
-        onGetPlaybackRate: (handler: () => PromiseOrNot<Animation.GetPlaybackRateResponse>) => void;
-        /** Sets the playback rate of the document timeline. */
-        onSetPlaybackRate: (handler: (request: Animation.SetPlaybackRateRequest) => PromiseOrNot<{}>) => void;
-        /** Returns the current time of the an animation. */
-        onGetCurrentTime: (handler: (request: Animation.GetCurrentTimeRequest) => PromiseOrNot<Animation.GetCurrentTimeResponse>) => void;
-        /** Sets the paused state of a set of animations. */
-        onSetPaused: (handler: (request: Animation.SetPausedRequest) => PromiseOrNot<{}>) => void;
-        /** Sets the timing of an animation node. */
-        onSetTiming: (handler: (request: Animation.SetTimingRequest) => PromiseOrNot<{}>) => void;
-        /** Seek a set of animations to a particular time within each animation. */
-        onSeekAnimations: (handler: (request: Animation.SeekAnimationsRequest) => PromiseOrNot<{}>) => void;
-        /** Releases a set of animations to no longer be manipulated. */
-        onReleaseAnimations: (handler: (request: Animation.ReleaseAnimationsRequest) => PromiseOrNot<{}>) => void;
-        /** Gets the remote object of the Animation. */
-        onResolveAnimation: (handler: (request: Animation.ResolveAnimationRequest) => PromiseOrNot<Animation.ResolveAnimationResponse>) => void;
-        /** Event for each animation that has been created. */
-        fireAnimationCreated: (event: Animation.AnimationCreatedEvent) => void;
-        /** Event for animation that has been started. */
-        fireAnimationStarted: (event: Animation.AnimationStartedEvent) => void;
-        /** Event for when an animation has been cancelled. */
-        fireAnimationCanceled: (event: Animation.AnimationCanceledEvent) => void;
     }
     
     export module Accessibility {
@@ -5852,50 +5564,68 @@ export module Crdi {
         export interface AXValueSource {
             /** What type of source this is. */
             type: AXValueSourceType;
+            
             /** The value of this property source. */
             value?: AXValue;
+            
             /** The name of the relevant attribute, if any. */
             attribute?: string;
+            
             /** The value of the relevant attribute, if any. */
             attributeValue?: AXValue;
+            
             /** Whether this source is superseded by a higher priority source. */
             superseded?: boolean;
+            
             /** The native markup source for this value, e.g. a <label> element. */
             nativeSource?: AXValueNativeSourceType;
+            
             /** The value, such as a node or node list, of the native source. */
             nativeSourceValue?: AXValue;
+            
             /** Whether the value for this property is invalid. */
             invalid?: boolean;
+            
             /** Reason for the value being invalid, if it is. */
             invalidReason?: string;
+            
         }
         
         export interface AXRelatedNode {
             /** The BackendNodeId of the related node. */
             backendNodeId: DOM.BackendNodeId;
+            
             /** The IDRef value provided, if any. */
             idref?: string;
+            
             /** The text alternative of this node in the current context. */
             text?: string;
+            
         }
         
         export interface AXProperty {
             /** The name of this property. */
             name: string;
+            
             /** The value of this property. */
             value: AXValue;
+            
         }
         
         /** A single computed AX property. */
         export interface AXValue {
             /** The type of this value. */
             type: AXValueType;
+            
             /** The computed value of this property. */
             value?: any;
+            
             /** One or more related nodes, if applicable. */
             relatedNodes?: AXRelatedNode[];
+            
             /** The sources which contributed to the computation of this property. */
             sources?: AXValueSource[];
+            
         }
         
         /** States which apply to every AX node. */
@@ -5917,41 +5647,41 @@ export module Crdi {
         export interface AXNode {
             /** Unique identifier for this node. */
             nodeId: AXNodeId;
+            
             /** Whether this node is ignored for accessibility */
             ignored: boolean;
+            
             /** Collection of reasons why this node is hidden. */
             ignoredReasons?: AXProperty[];
+            
             /** This 'Node''s role, whether explicit or implicit. */
             role?: AXValue;
+            
             /** The accessible name for this 'Node'. */
             name?: AXValue;
+            
             /** The accessible description for this 'Node'. */
             description?: AXValue;
+            
             /** The value for this 'Node'. */
             value?: AXValue;
+            
             /** All other properties */
             properties?: AXProperty[];
+            
         }
         
         export interface GetAXNodeRequest {
             /** ID of node to get accessibility node for. */
             nodeId: DOM.NodeId;
+            
         }
         
         export interface GetAXNodeResponse {
             /** The 'Accessibility.AXNode' for this DOM node, if it exists. */
             accessibilityNode?: AXNode;
+            
         }
-    }
-    
-    export interface AccessibilityClient {
-        /** Fetches the accessibility node for this DOM node, if it exists. */
-        getAXNode: (request: Accessibility.GetAXNodeRequest) => Promise<Accessibility.GetAXNodeResponse>;
-    }
-    
-    export interface AccessibilityAdapter {
-        /** Fetches the accessibility node for this DOM node, if it exists. */
-        onGetAXNode: (handler: (request: Accessibility.GetAXNodeRequest) => PromiseOrNot<Accessibility.GetAXNodeResponse>) => void;
     }
     
     export module Storage {
@@ -5962,19 +5692,11 @@ export module Crdi {
         export interface ClearDataForOriginRequest {
             /** Security origin. */
             origin: string;
+            
             /** Comma separated origin names. */
             storageTypes: string;
+            
         }
-    }
-    
-    export interface StorageClient {
-        /** Clears storage for origin. */
-        clearDataForOrigin: (request: Storage.ClearDataForOriginRequest) => Promise<{}>;
-    }
-    
-    export interface StorageAdapter {
-        /** Clears storage for origin. */
-        onClearDataForOrigin: (handler: (request: Storage.ClearDataForOriginRequest) => PromiseOrNot<{}>) => void;
     }
     
     /** The Browser domain allows listing, creating, activating and attaching to the targets. */
@@ -5986,112 +5708,91 @@ export module Crdi {
         
         export interface TargetInfo {
             targetId: TargetID;
+            
             type: string;
+            
             title: string;
+            
             url: string;
+            
         }
         
         export interface CreateBrowserContextResponse {
             /** The id of the context created. */
             browserContextId: BrowserContextID;
+            
         }
         
         export interface DisposeBrowserContextRequest {
             browserContextId: BrowserContextID;
+            
         }
         
         export interface DisposeBrowserContextResponse {
             success: boolean;
+            
         }
         
         export interface CreateTargetRequest {
             /** The initial URL the page will be navigated to. */
             url: string;
+            
             /** Window width (headless chrome only). */
             width?: integer;
+            
             /** Window height (headless chrome only). */
             height?: integer;
+            
             /** The browser context to create the page in (headless chrome only). */
             browserContextId?: BrowserContextID;
+            
         }
         
         export interface CreateTargetResponse {
             /** The id of the page opened. */
             targetId: TargetID;
+            
         }
         
         export interface CloseTargetRequest {
             targetId: TargetID;
+            
         }
         
         export interface CloseTargetResponse {
             success: boolean;
+            
         }
         
         export interface GetTargetsResponse {
             targetInfo: TargetInfo[];
+            
         }
         
         export interface AttachRequest {
             /** Target id. */
             targetId: TargetID;
+            
         }
         
         export interface DetachRequest {
             targetId: TargetID;
+            
         }
         
         export interface SendMessageRequest {
             targetId: TargetID;
+            
             message: string;
+            
         }
         
         export interface DispatchMessageEvent {
             targetId: TargetID;
+            
             message: string;
+            
         }
-    }
-    
-    export interface BrowserClient {
-        /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
-        createBrowserContext: () => Promise<Browser.CreateBrowserContextResponse>;
-        /** Deletes a BrowserContext, will fail of any open page uses it. */
-        disposeBrowserContext: (request: Browser.DisposeBrowserContextRequest) => Promise<Browser.DisposeBrowserContextResponse>;
-        /** Creates a new page. */
-        createTarget: (request: Browser.CreateTargetRequest) => Promise<Browser.CreateTargetResponse>;
-        /** Closes the target. If the target is a page that gets closed too. */
-        closeTarget: (request: Browser.CloseTargetRequest) => Promise<Browser.CloseTargetResponse>;
-        /** Returns target information for all potential targets. */
-        getTargets: () => Promise<Browser.GetTargetsResponse>;
-        /** Attaches to the target with given id. */
-        attach: (request: Browser.AttachRequest) => Promise<{}>;
-        /** Detaches from the target with given id. */
-        detach: (request: Browser.DetachRequest) => Promise<{}>;
-        /** Sends protocol message to the target with given id. */
-        sendMessage: (request: Browser.SendMessageRequest) => Promise<{}>;
-        /** Dispatches protocol message from the target with given id. */
-        onDispatchMessage: (handler: (event: Browser.DispatchMessageEvent) => void) => void;
-    }
-    
-    export interface BrowserAdapter {
-        /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
-        onCreateBrowserContext: (handler: () => PromiseOrNot<Browser.CreateBrowserContextResponse>) => void;
-        /** Deletes a BrowserContext, will fail of any open page uses it. */
-        onDisposeBrowserContext: (handler: (request: Browser.DisposeBrowserContextRequest) => PromiseOrNot<Browser.DisposeBrowserContextResponse>) => void;
-        /** Creates a new page. */
-        onCreateTarget: (handler: (request: Browser.CreateTargetRequest) => PromiseOrNot<Browser.CreateTargetResponse>) => void;
-        /** Closes the target. If the target is a page that gets closed too. */
-        onCloseTarget: (handler: (request: Browser.CloseTargetRequest) => PromiseOrNot<Browser.CloseTargetResponse>) => void;
-        /** Returns target information for all potential targets. */
-        onGetTargets: (handler: () => PromiseOrNot<Browser.GetTargetsResponse>) => void;
-        /** Attaches to the target with given id. */
-        onAttach: (handler: (request: Browser.AttachRequest) => PromiseOrNot<{}>) => void;
-        /** Detaches from the target with given id. */
-        onDetach: (handler: (request: Browser.DetachRequest) => PromiseOrNot<{}>) => void;
-        /** Sends protocol message to the target with given id. */
-        onSendMessage: (handler: (request: Browser.SendMessageRequest) => PromiseOrNot<{}>) => void;
-        /** Dispatches protocol message from the target with given id. */
-        fireDispatchMessage: (event: Browser.DispatchMessageEvent) => void;
     }
     
     /** The SystemInfo domain defines methods and events for querying low-level system information. */
@@ -6101,44 +5802,45 @@ export module Crdi {
         export interface GPUDevice {
             /** PCI ID of the GPU vendor, if available; 0 otherwise. */
             vendorId: number;
+            
             /** PCI ID of the GPU device, if available; 0 otherwise. */
             deviceId: number;
+            
             /** String description of the GPU vendor, if the PCI ID is not available. */
             vendorString: string;
+            
             /** String description of the GPU device, if the PCI ID is not available. */
             deviceString: string;
+            
         }
         
         /** Provides information about the GPU(s) on the system. */
         export interface GPUInfo {
             /** The graphics devices on the system. Element 0 is the primary GPU. */
             devices: GPUDevice[];
+            
             /** An optional dictionary of additional GPU related attributes. */
             auxAttributes?: any;
+            
             /** An optional dictionary of graphics features and their status. */
             featureStatus?: any;
+            
             /** An optional array of GPU driver bug workarounds. */
             driverBugWorkarounds: string[];
+            
         }
         
         export interface GetInfoResponse {
             /** Information about the GPUs on the system. */
             gpu: GPUInfo;
+            
             /** A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported. */
             modelName: string;
+            
             /** A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported. */
             modelVersion: string;
+            
         }
-    }
-    
-    export interface SystemInfoClient {
-        /** Returns information about the system. */
-        getInfo: () => Promise<SystemInfo.GetInfoResponse>;
-    }
-    
-    export interface SystemInfoAdapter {
-        /** Returns information about the system. */
-        onGetInfo: (handler: () => PromiseOrNot<SystemInfo.GetInfoResponse>) => void;
     }
     
     /** The Tethering domain defines methods and events for browser port binding. */
@@ -6147,37 +5849,2271 @@ export module Crdi {
         export interface BindRequest {
             /** Port number to bind. */
             port: integer;
+            
         }
         
         export interface UnbindRequest {
             /** Port number to unbind. */
             port: integer;
+            
         }
         
         export interface AcceptedEvent {
             /** Port number that was successfully bound. */
             port: integer;
+            
             /** Connection id to be used. */
             connectionId: string;
+            
         }
     }
     
-    export interface TetheringClient {
+    export interface RpcClient {
+        /** Evaluates expression on global object. */
+        send(method: 'Runtime.evaluate', params: Runtime.EvaluateRequest): Promise<Runtime.EvaluateResponse>;
+        
+        /** Calls function with given declaration on the given object. Object group of the result is inherited from the target object. */
+        send(method: 'Runtime.callFunctionOn', params: Runtime.CallFunctionOnRequest): Promise<Runtime.CallFunctionOnResponse>;
+        
+        /** Returns properties of a given object. Object group of the result is inherited from the target object. */
+        send(method: 'Runtime.getProperties', params: Runtime.GetPropertiesRequest): Promise<Runtime.GetPropertiesResponse>;
+        
+        /** Releases remote object with given id. */
+        send(method: 'Runtime.releaseObject', params: Runtime.ReleaseObjectRequest): Promise<{}>;
+        
+        /** Releases all remote objects that belong to a given group. */
+        send(method: 'Runtime.releaseObjectGroup', params: Runtime.ReleaseObjectGroupRequest): Promise<{}>;
+        
+        /** Tells inspected instance(worker or page) that it can run in case it was started paused. */
+        send(method: 'Runtime.run'): Promise<{}>;
+        
+        /** Enables reporting of execution contexts creation by means of 'executionContextCreated' event. When the reporting gets enabled the event will be sent immediately for each existing execution context. */
+        send(method: 'Runtime.enable'): Promise<{}>;
+        
+        /** Disables reporting of execution contexts creation. */
+        send(method: 'Runtime.disable'): Promise<{}>;
+        
+        send(method: 'Runtime.setCustomObjectFormatterEnabled', params: Runtime.SetCustomObjectFormatterEnabledRequest): Promise<{}>;
+        
+        /** Compiles expression. */
+        send(method: 'Runtime.compileScript', params: Runtime.CompileScriptRequest): Promise<Runtime.CompileScriptResponse>;
+        
+        /** Runs script with given id in a given context. */
+        send(method: 'Runtime.runScript', params: Runtime.RunScriptRequest): Promise<Runtime.RunScriptResponse>;
+        
+        /** Issued when new execution context is created. */
+        on(method: 'Runtime.executionContextCreated', handler: (params: Runtime.ExecutionContextCreatedEvent) => void): void;
+        
+        /** Issued when execution context is destroyed. */
+        on(method: 'Runtime.executionContextDestroyed', handler: (params: Runtime.ExecutionContextDestroyedEvent) => void): void;
+        
+        /** Issued when all executionContexts were cleared in browser */
+        on(method: 'Runtime.executionContextsCleared', handler: () => void): void;
+        
+        /** Issued when exception was thrown and unhandled. */
+        on(method: 'Runtime.exceptionThrown', handler: (params: Runtime.ExceptionThrownEvent) => void): void;
+        
+        /** Issued when unhandled exception was revoked. */
+        on(method: 'Runtime.exceptionRevoked', handler: (params: Runtime.ExceptionRevokedEvent) => void): void;
+        
+        /** Issued when console API was called. */
+        on(method: 'Runtime.consoleAPICalled', handler: (params: Runtime.ConsoleAPICalledEvent) => void): void;
+        
+        on(method: 'Runtime.inspectRequested', handler: (params: Runtime.InspectRequestedEvent) => void): void;
+        
+        /** Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received. */
+        send(method: 'Debugger.enable'): Promise<{}>;
+        
+        /** Disables debugger for given page. */
+        send(method: 'Debugger.disable'): Promise<{}>;
+        
+        /** Activates / deactivates all breakpoints on the page. */
+        send(method: 'Debugger.setBreakpointsActive', params: Debugger.SetBreakpointsActiveRequest): Promise<{}>;
+        
+        /** Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc). */
+        send(method: 'Debugger.setSkipAllPauses', params: Debugger.SetSkipAllPausesRequest): Promise<{}>;
+        
+        /** Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in 'locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved' events issued. This logical breakpoint will survive page reloads. */
+        send(method: 'Debugger.setBreakpointByUrl', params: Debugger.SetBreakpointByUrlRequest): Promise<Debugger.SetBreakpointByUrlResponse>;
+        
+        /** Sets JavaScript breakpoint at a given location. */
+        send(method: 'Debugger.setBreakpoint', params: Debugger.SetBreakpointRequest): Promise<Debugger.SetBreakpointResponse>;
+        
+        /** Removes JavaScript breakpoint. */
+        send(method: 'Debugger.removeBreakpoint', params: Debugger.RemoveBreakpointRequest): Promise<{}>;
+        
+        /** Continues execution until specific location is reached. */
+        send(method: 'Debugger.continueToLocation', params: Debugger.ContinueToLocationRequest): Promise<{}>;
+        
+        /** Steps over the statement. */
+        send(method: 'Debugger.stepOver'): Promise<{}>;
+        
+        /** Steps into the function call. */
+        send(method: 'Debugger.stepInto'): Promise<{}>;
+        
+        /** Steps out of the function call. */
+        send(method: 'Debugger.stepOut'): Promise<{}>;
+        
+        /** Stops on the next JavaScript statement. */
+        send(method: 'Debugger.pause'): Promise<{}>;
+        
+        /** Resumes JavaScript execution. */
+        send(method: 'Debugger.resume'): Promise<{}>;
+        
+        /** Searches for given string in script content. */
+        send(method: 'Debugger.searchInContent', params: Debugger.SearchInContentRequest): Promise<Debugger.SearchInContentResponse>;
+        
+        /** Always returns true. */
+        send(method: 'Debugger.canSetScriptSource'): Promise<Debugger.CanSetScriptSourceResponse>;
+        
+        /** Edits JavaScript source live. */
+        send(method: 'Debugger.setScriptSource', params: Debugger.SetScriptSourceRequest): Promise<Debugger.SetScriptSourceResponse>;
+        
+        /** Restarts particular call frame from the beginning. */
+        send(method: 'Debugger.restartFrame', params: Debugger.RestartFrameRequest): Promise<Debugger.RestartFrameResponse>;
+        
+        /** Returns source for the script with given id. */
+        send(method: 'Debugger.getScriptSource', params: Debugger.GetScriptSourceRequest): Promise<Debugger.GetScriptSourceResponse>;
+        
+        /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
+        send(method: 'Debugger.setPauseOnExceptions', params: Debugger.SetPauseOnExceptionsRequest): Promise<{}>;
+        
+        /** Evaluates expression on a given call frame. */
+        send(method: 'Debugger.evaluateOnCallFrame', params: Debugger.EvaluateOnCallFrameRequest): Promise<Debugger.EvaluateOnCallFrameResponse>;
+        
+        /** Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually. */
+        send(method: 'Debugger.setVariableValue', params: Debugger.SetVariableValueRequest): Promise<{}>;
+        
+        /** Returns call stack including variables changed since VM was paused. VM must be paused. */
+        send(method: 'Debugger.getBacktrace'): Promise<Debugger.GetBacktraceResponse>;
+        
+        /** Enables or disables async call stacks tracking. */
+        send(method: 'Debugger.setAsyncCallStackDepth', params: Debugger.SetAsyncCallStackDepthRequest): Promise<{}>;
+        
+        /** Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. */
+        send(method: 'Debugger.setBlackboxPatterns', params: Debugger.SetBlackboxPatternsRequest): Promise<{}>;
+        
+        /** Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted. */
+        send(method: 'Debugger.setBlackboxedRanges', params: Debugger.SetBlackboxedRangesRequest): Promise<{}>;
+        
+        /** Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger. */
+        on(method: 'Debugger.scriptParsed', handler: (params: Debugger.ScriptParsedEvent) => void): void;
+        
+        /** Fired when virtual machine fails to parse the script. */
+        on(method: 'Debugger.scriptFailedToParse', handler: (params: Debugger.ScriptFailedToParseEvent) => void): void;
+        
+        /** Fired when breakpoint is resolved to an actual script and location. */
+        on(method: 'Debugger.breakpointResolved', handler: (params: Debugger.BreakpointResolvedEvent) => void): void;
+        
+        /** Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria. */
+        on(method: 'Debugger.paused', handler: (params: Debugger.PausedEvent) => void): void;
+        
+        /** Fired when the virtual machine resumed execution. */
+        on(method: 'Debugger.resumed', handler: () => void): void;
+        
+        /** Enables console domain, sends the messages collected so far to the client by means of the 'messageAdded' notification. */
+        send(method: 'Console.enable'): Promise<{}>;
+        
+        /** Disables console domain, prevents further console messages from being reported to the client. */
+        send(method: 'Console.disable'): Promise<{}>;
+        
+        /** Clears console messages collected in the browser. */
+        send(method: 'Console.clearMessages'): Promise<{}>;
+        
+        /** Issued when new console message is added. */
+        on(method: 'Console.messageAdded', handler: (params: Console.MessageAddedEvent) => void): void;
+        
+        /** Is not issued. Will be gone in the future versions of the protocol. */
+        on(method: 'Console.messageRepeatCountUpdated', handler: (params: Console.MessageRepeatCountUpdatedEvent) => void): void;
+        
+        /** Not issued. */
+        on(method: 'Console.messagesCleared', handler: () => void): void;
+        
+        send(method: 'Profiler.enable'): Promise<{}>;
+        
+        send(method: 'Profiler.disable'): Promise<{}>;
+        
+        /** Changes CPU profiler sampling interval. Must be called before CPU profiles recording started. */
+        send(method: 'Profiler.setSamplingInterval', params: Profiler.SetSamplingIntervalRequest): Promise<{}>;
+        
+        send(method: 'Profiler.start'): Promise<{}>;
+        
+        send(method: 'Profiler.stop'): Promise<Profiler.StopResponse>;
+        
+        /** Sent when new profile recodring is started using console.profile() call. */
+        on(method: 'Profiler.consoleProfileStarted', handler: (params: Profiler.ConsoleProfileStartedEvent) => void): void;
+        
+        on(method: 'Profiler.consoleProfileFinished', handler: (params: Profiler.ConsoleProfileFinishedEvent) => void): void;
+        
+        send(method: 'HeapProfiler.enable'): Promise<{}>;
+        
+        send(method: 'HeapProfiler.disable'): Promise<{}>;
+        
+        send(method: 'HeapProfiler.startTrackingHeapObjects', params: HeapProfiler.StartTrackingHeapObjectsRequest): Promise<{}>;
+        
+        send(method: 'HeapProfiler.stopTrackingHeapObjects', params: HeapProfiler.StopTrackingHeapObjectsRequest): Promise<{}>;
+        
+        send(method: 'HeapProfiler.takeHeapSnapshot', params: HeapProfiler.TakeHeapSnapshotRequest): Promise<{}>;
+        
+        send(method: 'HeapProfiler.collectGarbage'): Promise<{}>;
+        
+        send(method: 'HeapProfiler.getObjectByHeapObjectId', params: HeapProfiler.GetObjectByHeapObjectIdRequest): Promise<HeapProfiler.GetObjectByHeapObjectIdResponse>;
+        
+        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
+        send(method: 'HeapProfiler.addInspectedHeapObject', params: HeapProfiler.AddInspectedHeapObjectRequest): Promise<{}>;
+        
+        send(method: 'HeapProfiler.getHeapObjectId', params: HeapProfiler.GetHeapObjectIdRequest): Promise<HeapProfiler.GetHeapObjectIdResponse>;
+        
+        send(method: 'HeapProfiler.startSampling', params: HeapProfiler.StartSamplingRequest): Promise<{}>;
+        
+        send(method: 'HeapProfiler.stopSampling'): Promise<HeapProfiler.StopSamplingResponse>;
+        
+        on(method: 'HeapProfiler.addHeapSnapshotChunk', handler: (params: HeapProfiler.AddHeapSnapshotChunkEvent) => void): void;
+        
+        on(method: 'HeapProfiler.resetProfiles', handler: () => void): void;
+        
+        on(method: 'HeapProfiler.reportHeapSnapshotProgress', handler: (params: HeapProfiler.ReportHeapSnapshotProgressEvent) => void): void;
+        
+        /** If heap objects tracking has been started then backend regulary sends a current value for last seen object id and corresponding timestamp. If the were changes in the heap since last event then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event. */
+        on(method: 'HeapProfiler.lastSeenObjectId', handler: (params: HeapProfiler.LastSeenObjectIdEvent) => void): void;
+        
+        /** If heap objects tracking has been started then backend may send update for one or more fragments */
+        on(method: 'HeapProfiler.heapStatsUpdate', handler: (params: HeapProfiler.HeapStatsUpdateEvent) => void): void;
+        
+        /** Enables inspector domain notifications. */
+        send(method: 'Inspector.enable'): Promise<{}>;
+        
+        /** Disables inspector domain notifications. */
+        send(method: 'Inspector.disable'): Promise<{}>;
+        
+        /** Fired when remote debugging connection is about to be terminated. Contains detach reason. */
+        on(method: 'Inspector.detached', handler: (params: Inspector.DetachedEvent) => void): void;
+        
+        /** Fired when debugging target has crashed */
+        on(method: 'Inspector.targetCrashed', handler: () => void): void;
+        
+        send(method: 'Memory.getDOMCounters'): Promise<Memory.GetDOMCountersResponse>;
+        
+        /** Enable/disable suppressing memory pressure notifications in all processes. */
+        send(method: 'Memory.setPressureNotificationsSuppressed', params: Memory.SetPressureNotificationsSuppressedRequest): Promise<{}>;
+        
+        /** Simulate a memory pressure notification in all processes. */
+        send(method: 'Memory.simulatePressureNotification', params: Memory.SimulatePressureNotificationRequest): Promise<{}>;
+        
+        /** Enables page domain notifications. */
+        send(method: 'Page.enable'): Promise<{}>;
+        
+        /** Disables page domain notifications. */
+        send(method: 'Page.disable'): Promise<{}>;
+        
+        send(method: 'Page.addScriptToEvaluateOnLoad', params: Page.AddScriptToEvaluateOnLoadRequest): Promise<Page.AddScriptToEvaluateOnLoadResponse>;
+        
+        send(method: 'Page.removeScriptToEvaluateOnLoad', params: Page.RemoveScriptToEvaluateOnLoadRequest): Promise<{}>;
+        
+        /** Controls whether browser will open a new inspector window for connected pages. */
+        send(method: 'Page.setAutoAttachToCreatedPages', params: Page.SetAutoAttachToCreatedPagesRequest): Promise<{}>;
+        
+        /** Reloads given page optionally ignoring the cache. */
+        send(method: 'Page.reload', params: Page.ReloadRequest): Promise<{}>;
+        
+        /** Navigates current page to the given URL. */
+        send(method: 'Page.navigate', params: Page.NavigateRequest): Promise<Page.NavigateResponse>;
+        
+        /** Returns navigation history for the current page. */
+        send(method: 'Page.getNavigationHistory'): Promise<Page.GetNavigationHistoryResponse>;
+        
+        /** Navigates current page to the given history entry. */
+        send(method: 'Page.navigateToHistoryEntry', params: Page.NavigateToHistoryEntryRequest): Promise<{}>;
+        
+        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
+        send(method: 'Page.getCookies'): Promise<Page.GetCookiesResponse>;
+        
+        /** Deletes browser cookie with given name, domain and path. */
+        send(method: 'Page.deleteCookie', params: Page.DeleteCookieRequest): Promise<{}>;
+        
+        /** Returns present frame / resource tree structure. */
+        send(method: 'Page.getResourceTree'): Promise<Page.GetResourceTreeResponse>;
+        
+        /** Returns content of the given resource. */
+        send(method: 'Page.getResourceContent', params: Page.GetResourceContentRequest): Promise<Page.GetResourceContentResponse>;
+        
+        /** Searches for given string in resource content. */
+        send(method: 'Page.searchInResource', params: Page.SearchInResourceRequest): Promise<Page.SearchInResourceResponse>;
+        
+        /** Sets given markup as the document's HTML. */
+        send(method: 'Page.setDocumentContent', params: Page.SetDocumentContentRequest): Promise<{}>;
+        
+        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
+        send(method: 'Page.setDeviceMetricsOverride', params: Page.SetDeviceMetricsOverrideRequest): Promise<{}>;
+        
+        /** Clears the overriden device metrics. */
+        send(method: 'Page.clearDeviceMetricsOverride'): Promise<{}>;
+        
+        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
+        send(method: 'Page.setGeolocationOverride', params: Page.SetGeolocationOverrideRequest): Promise<{}>;
+        
+        /** Clears the overriden Geolocation Position and Error. */
+        send(method: 'Page.clearGeolocationOverride'): Promise<{}>;
+        
+        /** Overrides the Device Orientation. */
+        send(method: 'Page.setDeviceOrientationOverride', params: Page.SetDeviceOrientationOverrideRequest): Promise<{}>;
+        
+        /** Clears the overridden Device Orientation. */
+        send(method: 'Page.clearDeviceOrientationOverride'): Promise<{}>;
+        
+        /** Toggles mouse event-based touch event emulation. */
+        send(method: 'Page.setTouchEmulationEnabled', params: Page.SetTouchEmulationEnabledRequest): Promise<{}>;
+        
+        /** Capture page screenshot. */
+        send(method: 'Page.captureScreenshot'): Promise<Page.CaptureScreenshotResponse>;
+        
+        /** Starts sending each frame using the 'screencastFrame' event. */
+        send(method: 'Page.startScreencast', params: Page.StartScreencastRequest): Promise<{}>;
+        
+        /** Stops sending each frame in the 'screencastFrame'. */
+        send(method: 'Page.stopScreencast'): Promise<{}>;
+        
+        /** Acknowledges that a screencast frame has been received by the frontend. */
+        send(method: 'Page.screencastFrameAck', params: Page.ScreencastFrameAckRequest): Promise<{}>;
+        
+        /** Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload). */
+        send(method: 'Page.handleJavaScriptDialog', params: Page.HandleJavaScriptDialogRequest): Promise<{}>;
+        
+        /** Shows / hides color picker */
+        send(method: 'Page.setColorPickerEnabled', params: Page.SetColorPickerEnabledRequest): Promise<{}>;
+        
+        /** Sets overlay message. */
+        send(method: 'Page.setOverlayMessage', params: Page.SetOverlayMessageRequest): Promise<{}>;
+        
+        send(method: 'Page.getAppManifest'): Promise<Page.GetAppManifestResponse>;
+        
+        send(method: 'Page.requestAppBanner'): Promise<{}>;
+        
+        send(method: 'Page.setBlockedEventsWarningThreshold', params: Page.SetBlockedEventsWarningThresholdRequest): Promise<{}>;
+        
+        /** Toggles navigation throttling which allows programatic control over navigation and redirect response. */
+        send(method: 'Page.setControlNavigations', params: Page.SetControlNavigationsRequest): Promise<{}>;
+        
+        /** Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation. */
+        send(method: 'Page.processNavigation', params: Page.ProcessNavigationRequest): Promise<{}>;
+        
+        on(method: 'Page.domContentEventFired', handler: (params: Page.DomContentEventFiredEvent) => void): void;
+        
+        on(method: 'Page.loadEventFired', handler: (params: Page.LoadEventFiredEvent) => void): void;
+        
+        /** Fired when frame has been attached to its parent. */
+        on(method: 'Page.frameAttached', handler: (params: Page.FrameAttachedEvent) => void): void;
+        
+        /** Fired once navigation of the frame has completed. Frame is now associated with the new loader. */
+        on(method: 'Page.frameNavigated', handler: (params: Page.FrameNavigatedEvent) => void): void;
+        
+        /** Fired when frame has been detached from its parent. */
+        on(method: 'Page.frameDetached', handler: (params: Page.FrameDetachedEvent) => void): void;
+        
+        /** Fired when frame has started loading. */
+        on(method: 'Page.frameStartedLoading', handler: (params: Page.FrameStartedLoadingEvent) => void): void;
+        
+        /** Fired when frame has stopped loading. */
+        on(method: 'Page.frameStoppedLoading', handler: (params: Page.FrameStoppedLoadingEvent) => void): void;
+        
+        /** Fired when frame schedules a potential navigation. */
+        on(method: 'Page.frameScheduledNavigation', handler: (params: Page.FrameScheduledNavigationEvent) => void): void;
+        
+        /** Fired when frame no longer has a scheduled navigation. */
+        on(method: 'Page.frameClearedScheduledNavigation', handler: (params: Page.FrameClearedScheduledNavigationEvent) => void): void;
+        
+        on(method: 'Page.frameResized', handler: () => void): void;
+        
+        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open. */
+        on(method: 'Page.javascriptDialogOpening', handler: (params: Page.JavascriptDialogOpeningEvent) => void): void;
+        
+        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed. */
+        on(method: 'Page.javascriptDialogClosed', handler: (params: Page.JavascriptDialogClosedEvent) => void): void;
+        
+        /** Compressed image data requested by the 'startScreencast'. */
+        on(method: 'Page.screencastFrame', handler: (params: Page.ScreencastFrameEvent) => void): void;
+        
+        /** Fired when the page with currently enabled screencast was shown or hidden </code>. */
+        on(method: 'Page.screencastVisibilityChanged', handler: (params: Page.ScreencastVisibilityChangedEvent) => void): void;
+        
+        /** Fired when a color has been picked. */
+        on(method: 'Page.colorPicked', handler: (params: Page.ColorPickedEvent) => void): void;
+        
+        /** Fired when interstitial page was shown */
+        on(method: 'Page.interstitialShown', handler: () => void): void;
+        
+        /** Fired when interstitial page was hidden */
+        on(method: 'Page.interstitialHidden', handler: () => void): void;
+        
+        /** Fired when a navigation is started if navigation throttles are enabled.  The navigation will be deferred until processNavigation is called. */
+        on(method: 'Page.navigationRequested', handler: (params: Page.NavigationRequestedEvent) => void): void;
+        
+        /** Requests that backend shows paint rectangles */
+        send(method: 'Rendering.setShowPaintRects', params: Rendering.SetShowPaintRectsRequest): Promise<{}>;
+        
+        /** Requests that backend shows debug borders on layers */
+        send(method: 'Rendering.setShowDebugBorders', params: Rendering.SetShowDebugBordersRequest): Promise<{}>;
+        
+        /** Requests that backend shows the FPS counter */
+        send(method: 'Rendering.setShowFPSCounter', params: Rendering.SetShowFPSCounterRequest): Promise<{}>;
+        
+        /** Requests that backend shows scroll bottleneck rects */
+        send(method: 'Rendering.setShowScrollBottleneckRects', params: Rendering.SetShowScrollBottleneckRectsRequest): Promise<{}>;
+        
+        /** Paints viewport size upon main frame resize. */
+        send(method: 'Rendering.setShowViewportSizeOnResize', params: Rendering.SetShowViewportSizeOnResizeRequest): Promise<{}>;
+        
+        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
+        send(method: 'Emulation.setDeviceMetricsOverride', params: Emulation.SetDeviceMetricsOverrideRequest): Promise<{}>;
+        
+        /** Clears the overriden device metrics. */
+        send(method: 'Emulation.clearDeviceMetricsOverride'): Promise<{}>;
+        
+        /** Requests that page scale factor is reset to initial values. */
+        send(method: 'Emulation.resetPageScaleFactor'): Promise<{}>;
+        
+        /** Sets a specified page scale factor. */
+        send(method: 'Emulation.setPageScaleFactor', params: Emulation.SetPageScaleFactorRequest): Promise<{}>;
+        
+        /** Switches script execution in the page. */
+        send(method: 'Emulation.setScriptExecutionDisabled', params: Emulation.SetScriptExecutionDisabledRequest): Promise<{}>;
+        
+        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
+        send(method: 'Emulation.setGeolocationOverride', params: Emulation.SetGeolocationOverrideRequest): Promise<{}>;
+        
+        /** Clears the overriden Geolocation Position and Error. */
+        send(method: 'Emulation.clearGeolocationOverride'): Promise<{}>;
+        
+        /** Toggles mouse event-based touch event emulation. */
+        send(method: 'Emulation.setTouchEmulationEnabled', params: Emulation.SetTouchEmulationEnabledRequest): Promise<{}>;
+        
+        /** Emulates the given media for CSS media queries. */
+        send(method: 'Emulation.setEmulatedMedia', params: Emulation.SetEmulatedMediaRequest): Promise<{}>;
+        
+        /** Enables CPU throttling to emulate slow CPUs. */
+        send(method: 'Emulation.setCPUThrottlingRate', params: Emulation.SetCPUThrottlingRateRequest): Promise<{}>;
+        
+        /** Tells whether emulation is supported. */
+        send(method: 'Emulation.canEmulate'): Promise<Emulation.CanEmulateResponse>;
+        
+        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
+        send(method: 'Emulation.setVirtualTimePolicy', params: Emulation.SetVirtualTimePolicyRequest): Promise<{}>;
+        
+        /** Enables tracking security state changes. */
+        send(method: 'Security.enable'): Promise<{}>;
+        
+        /** Disables tracking security state changes. */
+        send(method: 'Security.disable'): Promise<{}>;
+        
+        /** The security state of the page changed. */
+        on(method: 'Security.securityStateChanged', handler: (params: Security.SecurityStateChangedEvent) => void): void;
+        
+        /** Enables network tracking, network events will now be delivered to the client. */
+        send(method: 'Network.enable', params: Network.EnableRequest): Promise<{}>;
+        
+        /** Disables network tracking, prevents network events from being sent to the client. */
+        send(method: 'Network.disable'): Promise<{}>;
+        
+        /** Allows overriding user agent with the given string. */
+        send(method: 'Network.setUserAgentOverride', params: Network.SetUserAgentOverrideRequest): Promise<{}>;
+        
+        /** Specifies whether to always send extra HTTP headers with the requests from this page. */
+        send(method: 'Network.setExtraHTTPHeaders', params: Network.SetExtraHTTPHeadersRequest): Promise<{}>;
+        
+        /** Returns content served for the given request. */
+        send(method: 'Network.getResponseBody', params: Network.GetResponseBodyRequest): Promise<Network.GetResponseBodyResponse>;
+        
+        /** Blocks specific URL from loading. */
+        send(method: 'Network.addBlockedURL', params: Network.AddBlockedURLRequest): Promise<{}>;
+        
+        /** Cancels blocking of a specific URL from loading. */
+        send(method: 'Network.removeBlockedURL', params: Network.RemoveBlockedURLRequest): Promise<{}>;
+        
+        /** This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password. */
+        send(method: 'Network.replayXHR', params: Network.ReplayXHRRequest): Promise<{}>;
+        
+        /** Toggles monitoring of XMLHttpRequest. If 'true', console will receive messages upon each XHR issued. */
+        send(method: 'Network.setMonitoringXHREnabled', params: Network.SetMonitoringXHREnabledRequest): Promise<{}>;
+        
+        /** Tells whether clearing browser cache is supported. */
+        send(method: 'Network.canClearBrowserCache'): Promise<Network.CanClearBrowserCacheResponse>;
+        
+        /** Clears browser cache. */
+        send(method: 'Network.clearBrowserCache'): Promise<{}>;
+        
+        /** Tells whether clearing browser cookies is supported. */
+        send(method: 'Network.canClearBrowserCookies'): Promise<Network.CanClearBrowserCookiesResponse>;
+        
+        /** Clears browser cookies. */
+        send(method: 'Network.clearBrowserCookies'): Promise<{}>;
+        
+        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
+        send(method: 'Network.getCookies'): Promise<Network.GetCookiesResponse>;
+        
+        /** Deletes browser cookie with given name, domain and path. */
+        send(method: 'Network.deleteCookie', params: Network.DeleteCookieRequest): Promise<{}>;
+        
+        /** Tells whether emulation of network conditions is supported. */
+        send(method: 'Network.canEmulateNetworkConditions'): Promise<Network.CanEmulateNetworkConditionsResponse>;
+        
+        /** Activates emulation of network conditions. */
+        send(method: 'Network.emulateNetworkConditions', params: Network.EmulateNetworkConditionsRequest): Promise<{}>;
+        
+        /** Toggles ignoring cache for each request. If 'true', cache will not be used. */
+        send(method: 'Network.setCacheDisabled', params: Network.SetCacheDisabledRequest): Promise<{}>;
+        
+        /** Toggles ignoring of service worker for each request. */
+        send(method: 'Network.setBypassServiceWorker', params: Network.SetBypassServiceWorkerRequest): Promise<{}>;
+        
+        /** For testing. */
+        send(method: 'Network.setDataSizeLimitsForTest', params: Network.SetDataSizeLimitsForTestRequest): Promise<{}>;
+        
+        /** Returns details for the given certificate. */
+        send(method: 'Network.getCertificateDetails', params: Network.GetCertificateDetailsRequest): Promise<Network.GetCertificateDetailsResponse>;
+        
+        /** Displays native dialog with the certificate details. */
+        send(method: 'Network.showCertificateViewer', params: Network.ShowCertificateViewerRequest): Promise<{}>;
+        
+        /** Fired when resource loading priority is changed */
+        on(method: 'Network.resourceChangedPriority', handler: (params: Network.ResourceChangedPriorityEvent) => void): void;
+        
+        /** Fired when page is about to send HTTP request. */
+        on(method: 'Network.requestWillBeSent', handler: (params: Network.RequestWillBeSentEvent) => void): void;
+        
+        /** Fired if request ended up loading from cache. */
+        on(method: 'Network.requestServedFromCache', handler: (params: Network.RequestServedFromCacheEvent) => void): void;
+        
+        /** Fired when HTTP response is available. */
+        on(method: 'Network.responseReceived', handler: (params: Network.ResponseReceivedEvent) => void): void;
+        
+        /** Fired when data chunk was received over the network. */
+        on(method: 'Network.dataReceived', handler: (params: Network.DataReceivedEvent) => void): void;
+        
+        /** Fired when HTTP request has finished loading. */
+        on(method: 'Network.loadingFinished', handler: (params: Network.LoadingFinishedEvent) => void): void;
+        
+        /** Fired when HTTP request has failed to load. */
+        on(method: 'Network.loadingFailed', handler: (params: Network.LoadingFailedEvent) => void): void;
+        
+        /** Fired when WebSocket is about to initiate handshake. */
+        on(method: 'Network.webSocketWillSendHandshakeRequest', handler: (params: Network.WebSocketWillSendHandshakeRequestEvent) => void): void;
+        
+        /** Fired when WebSocket handshake response becomes available. */
+        on(method: 'Network.webSocketHandshakeResponseReceived', handler: (params: Network.WebSocketHandshakeResponseReceivedEvent) => void): void;
+        
+        /** Fired upon WebSocket creation. */
+        on(method: 'Network.webSocketCreated', handler: (params: Network.WebSocketCreatedEvent) => void): void;
+        
+        /** Fired when WebSocket is closed. */
+        on(method: 'Network.webSocketClosed', handler: (params: Network.WebSocketClosedEvent) => void): void;
+        
+        /** Fired when WebSocket frame is received. */
+        on(method: 'Network.webSocketFrameReceived', handler: (params: Network.WebSocketFrameReceivedEvent) => void): void;
+        
+        /** Fired when WebSocket frame error occurs. */
+        on(method: 'Network.webSocketFrameError', handler: (params: Network.WebSocketFrameErrorEvent) => void): void;
+        
+        /** Fired when WebSocket frame is sent. */
+        on(method: 'Network.webSocketFrameSent', handler: (params: Network.WebSocketFrameSentEvent) => void): void;
+        
+        /** Fired when EventSource message is received. */
+        on(method: 'Network.eventSourceMessageReceived', handler: (params: Network.EventSourceMessageReceivedEvent) => void): void;
+        
+        /** Enables database tracking, database events will now be delivered to the client. */
+        send(method: 'Database.enable'): Promise<{}>;
+        
+        /** Disables database tracking, prevents database events from being sent to the client. */
+        send(method: 'Database.disable'): Promise<{}>;
+        
+        send(method: 'Database.getDatabaseTableNames', params: Database.GetDatabaseTableNamesRequest): Promise<Database.GetDatabaseTableNamesResponse>;
+        
+        send(method: 'Database.executeSQL', params: Database.ExecuteSQLRequest): Promise<Database.ExecuteSQLResponse>;
+        
+        on(method: 'Database.addDatabase', handler: (params: Database.AddDatabaseEvent) => void): void;
+        
+        /** Enables events from backend. */
+        send(method: 'IndexedDB.enable'): Promise<{}>;
+        
+        /** Disables events from backend. */
+        send(method: 'IndexedDB.disable'): Promise<{}>;
+        
+        /** Requests database names for given security origin. */
+        send(method: 'IndexedDB.requestDatabaseNames', params: IndexedDB.RequestDatabaseNamesRequest): Promise<IndexedDB.RequestDatabaseNamesResponse>;
+        
+        /** Requests database with given name in given frame. */
+        send(method: 'IndexedDB.requestDatabase', params: IndexedDB.RequestDatabaseRequest): Promise<IndexedDB.RequestDatabaseResponse>;
+        
+        /** Requests data from object store or index. */
+        send(method: 'IndexedDB.requestData', params: IndexedDB.RequestDataRequest): Promise<IndexedDB.RequestDataResponse>;
+        
+        /** Clears all entries from an object store. */
+        send(method: 'IndexedDB.clearObjectStore', params: IndexedDB.ClearObjectStoreRequest): Promise<IndexedDB.ClearObjectStoreResponse>;
+        
+        /** Requests cache names. */
+        send(method: 'CacheStorage.requestCacheNames', params: CacheStorage.RequestCacheNamesRequest): Promise<CacheStorage.RequestCacheNamesResponse>;
+        
+        /** Requests data from cache. */
+        send(method: 'CacheStorage.requestEntries', params: CacheStorage.RequestEntriesRequest): Promise<CacheStorage.RequestEntriesResponse>;
+        
+        /** Deletes a cache. */
+        send(method: 'CacheStorage.deleteCache', params: CacheStorage.DeleteCacheRequest): Promise<{}>;
+        
+        /** Deletes a cache entry. */
+        send(method: 'CacheStorage.deleteEntry', params: CacheStorage.DeleteEntryRequest): Promise<{}>;
+        
+        /** Enables storage tracking, storage events will now be delivered to the client. */
+        send(method: 'DOMStorage.enable'): Promise<{}>;
+        
+        /** Disables storage tracking, prevents storage events from being sent to the client. */
+        send(method: 'DOMStorage.disable'): Promise<{}>;
+        
+        send(method: 'DOMStorage.getDOMStorageItems', params: DOMStorage.GetDOMStorageItemsRequest): Promise<DOMStorage.GetDOMStorageItemsResponse>;
+        
+        send(method: 'DOMStorage.setDOMStorageItem', params: DOMStorage.SetDOMStorageItemRequest): Promise<{}>;
+        
+        send(method: 'DOMStorage.removeDOMStorageItem', params: DOMStorage.RemoveDOMStorageItemRequest): Promise<{}>;
+        
+        on(method: 'DOMStorage.domStorageItemsCleared', handler: (params: DOMStorage.DomStorageItemsClearedEvent) => void): void;
+        
+        on(method: 'DOMStorage.domStorageItemRemoved', handler: (params: DOMStorage.DomStorageItemRemovedEvent) => void): void;
+        
+        on(method: 'DOMStorage.domStorageItemAdded', handler: (params: DOMStorage.DomStorageItemAddedEvent) => void): void;
+        
+        on(method: 'DOMStorage.domStorageItemUpdated', handler: (params: DOMStorage.DomStorageItemUpdatedEvent) => void): void;
+        
+        /** Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache. */
+        send(method: 'ApplicationCache.getFramesWithManifests'): Promise<ApplicationCache.GetFramesWithManifestsResponse>;
+        
+        /** Enables application cache domain notifications. */
+        send(method: 'ApplicationCache.enable'): Promise<{}>;
+        
+        /** Returns manifest URL for document in the given frame. */
+        send(method: 'ApplicationCache.getManifestForFrame', params: ApplicationCache.GetManifestForFrameRequest): Promise<ApplicationCache.GetManifestForFrameResponse>;
+        
+        /** Returns relevant application cache data for the document in given frame. */
+        send(method: 'ApplicationCache.getApplicationCacheForFrame', params: ApplicationCache.GetApplicationCacheForFrameRequest): Promise<ApplicationCache.GetApplicationCacheForFrameResponse>;
+        
+        on(method: 'ApplicationCache.applicationCacheStatusUpdated', handler: (params: ApplicationCache.ApplicationCacheStatusUpdatedEvent) => void): void;
+        
+        on(method: 'ApplicationCache.networkStateUpdated', handler: (params: ApplicationCache.NetworkStateUpdatedEvent) => void): void;
+        
+        /** Enables DOM agent for the given page. */
+        send(method: 'DOM.enable'): Promise<{}>;
+        
+        /** Disables DOM agent for the given page. */
+        send(method: 'DOM.disable'): Promise<{}>;
+        
+        /** Returns the root DOM node to the caller. */
+        send(method: 'DOM.getDocument'): Promise<DOM.GetDocumentResponse>;
+        
+        /** Requests that children of the node with given id are returned to the caller in form of 'setChildNodes' events where not only immediate children are retrieved, but all children down to the specified depth. */
+        send(method: 'DOM.requestChildNodes', params: DOM.RequestChildNodesRequest): Promise<{}>;
+        
+        /** Executes 'querySelector' on a given node. */
+        send(method: 'DOM.querySelector', params: DOM.QuerySelectorRequest): Promise<DOM.QuerySelectorResponse>;
+        
+        /** Executes 'querySelectorAll' on a given node. */
+        send(method: 'DOM.querySelectorAll', params: DOM.QuerySelectorAllRequest): Promise<DOM.QuerySelectorAllResponse>;
+        
+        /** Sets node name for a node with given id. */
+        send(method: 'DOM.setNodeName', params: DOM.SetNodeNameRequest): Promise<DOM.SetNodeNameResponse>;
+        
+        /** Sets node value for a node with given id. */
+        send(method: 'DOM.setNodeValue', params: DOM.SetNodeValueRequest): Promise<{}>;
+        
+        /** Removes node with given id. */
+        send(method: 'DOM.removeNode', params: DOM.RemoveNodeRequest): Promise<{}>;
+        
+        /** Sets attribute for an element with given id. */
+        send(method: 'DOM.setAttributeValue', params: DOM.SetAttributeValueRequest): Promise<{}>;
+        
+        /** Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs. */
+        send(method: 'DOM.setAttributesAsText', params: DOM.SetAttributesAsTextRequest): Promise<{}>;
+        
+        /** Removes attribute with given name from an element with given id. */
+        send(method: 'DOM.removeAttribute', params: DOM.RemoveAttributeRequest): Promise<{}>;
+        
+        /** Returns node's HTML markup. */
+        send(method: 'DOM.getOuterHTML', params: DOM.GetOuterHTMLRequest): Promise<DOM.GetOuterHTMLResponse>;
+        
+        /** Sets node HTML markup, returns new node id. */
+        send(method: 'DOM.setOuterHTML', params: DOM.SetOuterHTMLRequest): Promise<{}>;
+        
+        /** Searches for a given string in the DOM tree. Use 'getSearchResults</code> to access search results or <code>cancelSearch' to end this search session. */
+        send(method: 'DOM.performSearch', params: DOM.PerformSearchRequest): Promise<DOM.PerformSearchResponse>;
+        
+        /** Returns search results from given 'fromIndex</code> to given <code>toIndex' from the sarch with the given identifier. */
+        send(method: 'DOM.getSearchResults', params: DOM.GetSearchResultsRequest): Promise<DOM.GetSearchResultsResponse>;
+        
+        /** Discards search results from the session with the given id. 'getSearchResults' should no longer be called for that search. */
+        send(method: 'DOM.discardSearchResults', params: DOM.DiscardSearchResultsRequest): Promise<{}>;
+        
+        /** Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of 'setChildNodes' notifications. */
+        send(method: 'DOM.requestNode', params: DOM.RequestNodeRequest): Promise<DOM.RequestNodeResponse>;
+        
+        /** Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection. */
+        send(method: 'DOM.setInspectMode', params: DOM.SetInspectModeRequest): Promise<{}>;
+        
+        /** Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport. */
+        send(method: 'DOM.highlightRect', params: DOM.HighlightRectRequest): Promise<{}>;
+        
+        /** Highlights given quad. Coordinates are absolute with respect to the main frame viewport. */
+        send(method: 'DOM.highlightQuad', params: DOM.HighlightQuadRequest): Promise<{}>;
+        
+        /** Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified. */
+        send(method: 'DOM.highlightNode', params: DOM.HighlightNodeRequest): Promise<{}>;
+        
+        /** Hides DOM node highlight. */
+        send(method: 'DOM.hideHighlight'): Promise<{}>;
+        
+        /** Highlights owner element of the frame with given id. */
+        send(method: 'DOM.highlightFrame', params: DOM.HighlightFrameRequest): Promise<{}>;
+        
+        /** Requests that the node is sent to the caller given its path. // FIXME, use XPath */
+        send(method: 'DOM.pushNodeByPathToFrontend', params: DOM.PushNodeByPathToFrontendRequest): Promise<DOM.PushNodeByPathToFrontendResponse>;
+        
+        /** Requests that a batch of nodes is sent to the caller given their backend node ids. */
+        send(method: 'DOM.pushNodesByBackendIdsToFrontend', params: DOM.PushNodesByBackendIdsToFrontendRequest): Promise<DOM.PushNodesByBackendIdsToFrontendResponse>;
+        
+        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
+        send(method: 'DOM.setInspectedNode', params: DOM.SetInspectedNodeRequest): Promise<{}>;
+        
+        /** Resolves JavaScript node object for given node id. */
+        send(method: 'DOM.resolveNode', params: DOM.ResolveNodeRequest): Promise<DOM.ResolveNodeResponse>;
+        
+        /** Returns attributes for the specified node. */
+        send(method: 'DOM.getAttributes', params: DOM.GetAttributesRequest): Promise<DOM.GetAttributesResponse>;
+        
+        /** Creates a deep copy of the specified node and places it into the target container before the given anchor. */
+        send(method: 'DOM.copyTo', params: DOM.CopyToRequest): Promise<DOM.CopyToResponse>;
+        
+        /** Moves node into the new container, places it before the given anchor. */
+        send(method: 'DOM.moveTo', params: DOM.MoveToRequest): Promise<DOM.MoveToResponse>;
+        
+        /** Undoes the last performed action. */
+        send(method: 'DOM.undo'): Promise<{}>;
+        
+        /** Re-does the last undone action. */
+        send(method: 'DOM.redo'): Promise<{}>;
+        
+        /** Marks last undoable state. */
+        send(method: 'DOM.markUndoableState'): Promise<{}>;
+        
+        /** Focuses the given element. */
+        send(method: 'DOM.focus', params: DOM.FocusRequest): Promise<{}>;
+        
+        /** Sets files for the given file input element. */
+        send(method: 'DOM.setFileInputFiles', params: DOM.SetFileInputFilesRequest): Promise<{}>;
+        
+        /** Returns boxes for the currently selected nodes. */
+        send(method: 'DOM.getBoxModel', params: DOM.GetBoxModelRequest): Promise<DOM.GetBoxModelResponse>;
+        
+        /** Returns node id at given location. */
+        send(method: 'DOM.getNodeForLocation', params: DOM.GetNodeForLocationRequest): Promise<DOM.GetNodeForLocationResponse>;
+        
+        /** Returns the id of the nearest ancestor that is a relayout boundary. */
+        send(method: 'DOM.getRelayoutBoundary', params: DOM.GetRelayoutBoundaryRequest): Promise<DOM.GetRelayoutBoundaryResponse>;
+        
+        /** For testing. */
+        send(method: 'DOM.getHighlightObjectForTest', params: DOM.GetHighlightObjectForTestRequest): Promise<DOM.GetHighlightObjectForTestResponse>;
+        
+        /** Fired when 'Document' has been totally updated. Node ids are no longer valid. */
+        on(method: 'DOM.documentUpdated', handler: () => void): void;
+        
+        /** Fired when the node should be inspected. This happens after call to 'setInspectMode'. */
+        on(method: 'DOM.inspectNodeRequested', handler: (params: DOM.InspectNodeRequestedEvent) => void): void;
+        
+        /** Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids. */
+        on(method: 'DOM.setChildNodes', handler: (params: DOM.SetChildNodesEvent) => void): void;
+        
+        /** Fired when 'Element''s attribute is modified. */
+        on(method: 'DOM.attributeModified', handler: (params: DOM.AttributeModifiedEvent) => void): void;
+        
+        /** Fired when 'Element''s attribute is removed. */
+        on(method: 'DOM.attributeRemoved', handler: (params: DOM.AttributeRemovedEvent) => void): void;
+        
+        /** Fired when 'Element''s inline style is modified via a CSS property modification. */
+        on(method: 'DOM.inlineStyleInvalidated', handler: (params: DOM.InlineStyleInvalidatedEvent) => void): void;
+        
+        /** Mirrors 'DOMCharacterDataModified' event. */
+        on(method: 'DOM.characterDataModified', handler: (params: DOM.CharacterDataModifiedEvent) => void): void;
+        
+        /** Fired when 'Container''s child node count has changed. */
+        on(method: 'DOM.childNodeCountUpdated', handler: (params: DOM.ChildNodeCountUpdatedEvent) => void): void;
+        
+        /** Mirrors 'DOMNodeInserted' event. */
+        on(method: 'DOM.childNodeInserted', handler: (params: DOM.ChildNodeInsertedEvent) => void): void;
+        
+        /** Mirrors 'DOMNodeRemoved' event. */
+        on(method: 'DOM.childNodeRemoved', handler: (params: DOM.ChildNodeRemovedEvent) => void): void;
+        
+        /** Called when shadow root is pushed into the element. */
+        on(method: 'DOM.shadowRootPushed', handler: (params: DOM.ShadowRootPushedEvent) => void): void;
+        
+        /** Called when shadow root is popped from the element. */
+        on(method: 'DOM.shadowRootPopped', handler: (params: DOM.ShadowRootPoppedEvent) => void): void;
+        
+        /** Called when a pseudo element is added to an element. */
+        on(method: 'DOM.pseudoElementAdded', handler: (params: DOM.PseudoElementAddedEvent) => void): void;
+        
+        /** Called when a pseudo element is removed from an element. */
+        on(method: 'DOM.pseudoElementRemoved', handler: (params: DOM.PseudoElementRemovedEvent) => void): void;
+        
+        /** Called when distrubution is changed. */
+        on(method: 'DOM.distributedNodesUpdated', handler: (params: DOM.DistributedNodesUpdatedEvent) => void): void;
+        
+        on(method: 'DOM.nodeHighlightRequested', handler: (params: DOM.NodeHighlightRequestedEvent) => void): void;
+        
+        /** Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received. */
+        send(method: 'CSS.enable'): Promise<{}>;
+        
+        /** Disables the CSS agent for the given page. */
+        send(method: 'CSS.disable'): Promise<{}>;
+        
+        /** Returns requested styles for a DOM node identified by 'nodeId'. */
+        send(method: 'CSS.getMatchedStylesForNode', params: CSS.GetMatchedStylesForNodeRequest): Promise<CSS.GetMatchedStylesForNodeResponse>;
+        
+        /** Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by 'nodeId'. */
+        send(method: 'CSS.getInlineStylesForNode', params: CSS.GetInlineStylesForNodeRequest): Promise<CSS.GetInlineStylesForNodeResponse>;
+        
+        /** Returns the computed style for a DOM node identified by 'nodeId'. */
+        send(method: 'CSS.getComputedStyleForNode', params: CSS.GetComputedStyleForNodeRequest): Promise<CSS.GetComputedStyleForNodeResponse>;
+        
+        /** Requests information about platform fonts which we used to render child TextNodes in the given node. */
+        send(method: 'CSS.getPlatformFontsForNode', params: CSS.GetPlatformFontsForNodeRequest): Promise<CSS.GetPlatformFontsForNodeResponse>;
+        
+        /** Returns the current textual content and the URL for a stylesheet. */
+        send(method: 'CSS.getStyleSheetText', params: CSS.GetStyleSheetTextRequest): Promise<CSS.GetStyleSheetTextResponse>;
+        
+        /** Sets the new stylesheet text. */
+        send(method: 'CSS.setStyleSheetText', params: CSS.SetStyleSheetTextRequest): Promise<CSS.SetStyleSheetTextResponse>;
+        
+        /** Modifies the rule selector. */
+        send(method: 'CSS.setRuleSelector', params: CSS.SetRuleSelectorRequest): Promise<CSS.SetRuleSelectorResponse>;
+        
+        /** Modifies the keyframe rule key text. */
+        send(method: 'CSS.setKeyframeKey', params: CSS.SetKeyframeKeyRequest): Promise<CSS.SetKeyframeKeyResponse>;
+        
+        /** Applies specified style edits one after another in the given order. */
+        send(method: 'CSS.setStyleTexts', params: CSS.SetStyleTextsRequest): Promise<CSS.SetStyleTextsResponse>;
+        
+        /** Modifies the rule selector. */
+        send(method: 'CSS.setMediaText', params: CSS.SetMediaTextRequest): Promise<CSS.SetMediaTextResponse>;
+        
+        /** Creates a new special "via-inspector" stylesheet in the frame with given 'frameId'. */
+        send(method: 'CSS.createStyleSheet', params: CSS.CreateStyleSheetRequest): Promise<CSS.CreateStyleSheetResponse>;
+        
+        /** Inserts a new rule with the given 'ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location'. */
+        send(method: 'CSS.addRule', params: CSS.AddRuleRequest): Promise<CSS.AddRuleResponse>;
+        
+        /** Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser. */
+        send(method: 'CSS.forcePseudoState', params: CSS.ForcePseudoStateRequest): Promise<{}>;
+        
+        /** Returns all media queries parsed by the rendering engine. */
+        send(method: 'CSS.getMediaQueries'): Promise<CSS.GetMediaQueriesResponse>;
+        
+        /** Find a rule with the given active property for the given node and set the new value for this property */
+        send(method: 'CSS.setEffectivePropertyValueForNode', params: CSS.SetEffectivePropertyValueForNodeRequest): Promise<{}>;
+        
+        send(method: 'CSS.getBackgroundColors', params: CSS.GetBackgroundColorsRequest): Promise<CSS.GetBackgroundColorsResponse>;
+        
+        /** Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features. */
+        on(method: 'CSS.mediaQueryResultChanged', handler: () => void): void;
+        
+        /** Fired whenever a stylesheet is changed as a result of the client operation. */
+        on(method: 'CSS.styleSheetChanged', handler: (params: CSS.StyleSheetChangedEvent) => void): void;
+        
+        /** Fired whenever an active document stylesheet is added. */
+        on(method: 'CSS.styleSheetAdded', handler: (params: CSS.StyleSheetAddedEvent) => void): void;
+        
+        /** Fired whenever an active document stylesheet is removed. */
+        on(method: 'CSS.styleSheetRemoved', handler: (params: CSS.StyleSheetRemovedEvent) => void): void;
+        
+        on(method: 'CSS.layoutEditorChange', handler: (params: CSS.LayoutEditorChangeEvent) => void): void;
+        
+        /** Read a chunk of the stream */
+        send(method: 'IO.read', params: IO.ReadRequest): Promise<IO.ReadResponse>;
+        
+        /** Close the stream, discard any temporary backing storage. */
+        send(method: 'IO.close', params: IO.CloseRequest): Promise<{}>;
+        
+        /** Sets breakpoint on particular operation with DOM. */
+        send(method: 'DOMDebugger.setDOMBreakpoint', params: DOMDebugger.SetDOMBreakpointRequest): Promise<{}>;
+        
+        /** Removes DOM breakpoint that was set using 'setDOMBreakpoint'. */
+        send(method: 'DOMDebugger.removeDOMBreakpoint', params: DOMDebugger.RemoveDOMBreakpointRequest): Promise<{}>;
+        
+        /** Sets breakpoint on particular DOM event. */
+        send(method: 'DOMDebugger.setEventListenerBreakpoint', params: DOMDebugger.SetEventListenerBreakpointRequest): Promise<{}>;
+        
+        /** Removes breakpoint on particular DOM event. */
+        send(method: 'DOMDebugger.removeEventListenerBreakpoint', params: DOMDebugger.RemoveEventListenerBreakpointRequest): Promise<{}>;
+        
+        /** Sets breakpoint on particular native event. */
+        send(method: 'DOMDebugger.setInstrumentationBreakpoint', params: DOMDebugger.SetInstrumentationBreakpointRequest): Promise<{}>;
+        
+        /** Removes breakpoint on particular native event. */
+        send(method: 'DOMDebugger.removeInstrumentationBreakpoint', params: DOMDebugger.RemoveInstrumentationBreakpointRequest): Promise<{}>;
+        
+        /** Sets breakpoint on XMLHttpRequest. */
+        send(method: 'DOMDebugger.setXHRBreakpoint', params: DOMDebugger.SetXHRBreakpointRequest): Promise<{}>;
+        
+        /** Removes breakpoint from XMLHttpRequest. */
+        send(method: 'DOMDebugger.removeXHRBreakpoint', params: DOMDebugger.RemoveXHRBreakpointRequest): Promise<{}>;
+        
+        /** Returns event listeners of the given object. */
+        send(method: 'DOMDebugger.getEventListeners', params: DOMDebugger.GetEventListenersRequest): Promise<DOMDebugger.GetEventListenersResponse>;
+        
+        send(method: 'Worker.enable'): Promise<{}>;
+        
+        send(method: 'Worker.disable'): Promise<{}>;
+        
+        send(method: 'Worker.sendMessageToWorker', params: Worker.SendMessageToWorkerRequest): Promise<{}>;
+        
+        send(method: 'Worker.setWaitForDebuggerOnStart', params: Worker.SetWaitForDebuggerOnStartRequest): Promise<{}>;
+        
+        on(method: 'Worker.workerCreated', handler: (params: Worker.WorkerCreatedEvent) => void): void;
+        
+        on(method: 'Worker.workerTerminated', handler: (params: Worker.WorkerTerminatedEvent) => void): void;
+        
+        on(method: 'Worker.dispatchMessageFromWorker', handler: (params: Worker.DispatchMessageFromWorkerEvent) => void): void;
+        
+        send(method: 'ServiceWorker.enable'): Promise<{}>;
+        
+        send(method: 'ServiceWorker.disable'): Promise<{}>;
+        
+        send(method: 'ServiceWorker.sendMessage', params: ServiceWorker.SendMessageRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.stop', params: ServiceWorker.StopRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.unregister', params: ServiceWorker.UnregisterRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.updateRegistration', params: ServiceWorker.UpdateRegistrationRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.startWorker', params: ServiceWorker.StartWorkerRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.skipWaiting', params: ServiceWorker.SkipWaitingRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.stopWorker', params: ServiceWorker.StopWorkerRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.inspectWorker', params: ServiceWorker.InspectWorkerRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.setForceUpdateOnPageLoad', params: ServiceWorker.SetForceUpdateOnPageLoadRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.deliverPushMessage', params: ServiceWorker.DeliverPushMessageRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.dispatchSyncEvent', params: ServiceWorker.DispatchSyncEventRequest): Promise<{}>;
+        
+        send(method: 'ServiceWorker.getTargetInfo', params: ServiceWorker.GetTargetInfoRequest): Promise<ServiceWorker.GetTargetInfoResponse>;
+        
+        send(method: 'ServiceWorker.activateTarget', params: ServiceWorker.ActivateTargetRequest): Promise<{}>;
+        
+        on(method: 'ServiceWorker.workerCreated', handler: (params: ServiceWorker.WorkerCreatedEvent) => void): void;
+        
+        on(method: 'ServiceWorker.workerTerminated', handler: (params: ServiceWorker.WorkerTerminatedEvent) => void): void;
+        
+        on(method: 'ServiceWorker.dispatchMessage', handler: (params: ServiceWorker.DispatchMessageEvent) => void): void;
+        
+        on(method: 'ServiceWorker.workerRegistrationUpdated', handler: (params: ServiceWorker.WorkerRegistrationUpdatedEvent) => void): void;
+        
+        on(method: 'ServiceWorker.workerVersionUpdated', handler: (params: ServiceWorker.WorkerVersionUpdatedEvent) => void): void;
+        
+        on(method: 'ServiceWorker.workerErrorReported', handler: (params: ServiceWorker.WorkerErrorReportedEvent) => void): void;
+        
+        /** Dispatches a key event to the page. */
+        send(method: 'Input.dispatchKeyEvent', params: Input.DispatchKeyEventRequest): Promise<{}>;
+        
+        /** Dispatches a mouse event to the page. */
+        send(method: 'Input.dispatchMouseEvent', params: Input.DispatchMouseEventRequest): Promise<{}>;
+        
+        /** Dispatches a touch event to the page. */
+        send(method: 'Input.dispatchTouchEvent', params: Input.DispatchTouchEventRequest): Promise<{}>;
+        
+        /** Emulates touch event from the mouse event parameters. */
+        send(method: 'Input.emulateTouchFromMouseEvent', params: Input.EmulateTouchFromMouseEventRequest): Promise<{}>;
+        
+        /** Synthesizes a pinch gesture over a time period by issuing appropriate touch events. */
+        send(method: 'Input.synthesizePinchGesture', params: Input.SynthesizePinchGestureRequest): Promise<{}>;
+        
+        /** Synthesizes a scroll gesture over a time period by issuing appropriate touch events. */
+        send(method: 'Input.synthesizeScrollGesture', params: Input.SynthesizeScrollGestureRequest): Promise<{}>;
+        
+        /** Synthesizes a tap gesture over a time period by issuing appropriate touch events. */
+        send(method: 'Input.synthesizeTapGesture', params: Input.SynthesizeTapGestureRequest): Promise<{}>;
+        
+        /** Enables compositing tree inspection. */
+        send(method: 'LayerTree.enable'): Promise<{}>;
+        
+        /** Disables compositing tree inspection. */
+        send(method: 'LayerTree.disable'): Promise<{}>;
+        
+        /** Provides the reasons why the given layer was composited. */
+        send(method: 'LayerTree.compositingReasons', params: LayerTree.CompositingReasonsRequest): Promise<LayerTree.CompositingReasonsResponse>;
+        
+        /** Returns the layer snapshot identifier. */
+        send(method: 'LayerTree.makeSnapshot', params: LayerTree.MakeSnapshotRequest): Promise<LayerTree.MakeSnapshotResponse>;
+        
+        /** Returns the snapshot identifier. */
+        send(method: 'LayerTree.loadSnapshot', params: LayerTree.LoadSnapshotRequest): Promise<LayerTree.LoadSnapshotResponse>;
+        
+        /** Releases layer snapshot captured by the back-end. */
+        send(method: 'LayerTree.releaseSnapshot', params: LayerTree.ReleaseSnapshotRequest): Promise<{}>;
+        
+        send(method: 'LayerTree.profileSnapshot', params: LayerTree.ProfileSnapshotRequest): Promise<LayerTree.ProfileSnapshotResponse>;
+        
+        /** Replays the layer snapshot and returns the resulting bitmap. */
+        send(method: 'LayerTree.replaySnapshot', params: LayerTree.ReplaySnapshotRequest): Promise<LayerTree.ReplaySnapshotResponse>;
+        
+        /** Replays the layer snapshot and returns canvas log. */
+        send(method: 'LayerTree.snapshotCommandLog', params: LayerTree.SnapshotCommandLogRequest): Promise<LayerTree.SnapshotCommandLogResponse>;
+        
+        on(method: 'LayerTree.layerTreeDidChange', handler: (params: LayerTree.LayerTreeDidChangeEvent) => void): void;
+        
+        on(method: 'LayerTree.layerPainted', handler: (params: LayerTree.LayerPaintedEvent) => void): void;
+        
+        /** Overrides the Device Orientation. */
+        send(method: 'DeviceOrientation.setDeviceOrientationOverride', params: DeviceOrientation.SetDeviceOrientationOverrideRequest): Promise<{}>;
+        
+        /** Clears the overridden Device Orientation. */
+        send(method: 'DeviceOrientation.clearDeviceOrientationOverride'): Promise<{}>;
+        
+        /** Start trace events collection. */
+        send(method: 'Tracing.start', params: Tracing.StartRequest): Promise<{}>;
+        
+        /** Stop trace events collection. */
+        send(method: 'Tracing.end'): Promise<{}>;
+        
+        /** Gets supported tracing categories. */
+        send(method: 'Tracing.getCategories'): Promise<Tracing.GetCategoriesResponse>;
+        
+        /** Request a global memory dump. */
+        send(method: 'Tracing.requestMemoryDump'): Promise<Tracing.RequestMemoryDumpResponse>;
+        
+        /** Record a clock sync marker in the trace. */
+        send(method: 'Tracing.recordClockSyncMarker', params: Tracing.RecordClockSyncMarkerRequest): Promise<{}>;
+        
+        /** Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event. */
+        on(method: 'Tracing.dataCollected', handler: (params: Tracing.DataCollectedEvent) => void): void;
+        
+        /** Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events. */
+        on(method: 'Tracing.tracingComplete', handler: (params: Tracing.TracingCompleteEvent) => void): void;
+        
+        on(method: 'Tracing.bufferUsage', handler: (params: Tracing.BufferUsageEvent) => void): void;
+        
+        /** Enables animation domain notifications. */
+        send(method: 'Animation.enable'): Promise<{}>;
+        
+        /** Disables animation domain notifications. */
+        send(method: 'Animation.disable'): Promise<{}>;
+        
+        /** Gets the playback rate of the document timeline. */
+        send(method: 'Animation.getPlaybackRate'): Promise<Animation.GetPlaybackRateResponse>;
+        
+        /** Sets the playback rate of the document timeline. */
+        send(method: 'Animation.setPlaybackRate', params: Animation.SetPlaybackRateRequest): Promise<{}>;
+        
+        /** Returns the current time of the an animation. */
+        send(method: 'Animation.getCurrentTime', params: Animation.GetCurrentTimeRequest): Promise<Animation.GetCurrentTimeResponse>;
+        
+        /** Sets the paused state of a set of animations. */
+        send(method: 'Animation.setPaused', params: Animation.SetPausedRequest): Promise<{}>;
+        
+        /** Sets the timing of an animation node. */
+        send(method: 'Animation.setTiming', params: Animation.SetTimingRequest): Promise<{}>;
+        
+        /** Seek a set of animations to a particular time within each animation. */
+        send(method: 'Animation.seekAnimations', params: Animation.SeekAnimationsRequest): Promise<{}>;
+        
+        /** Releases a set of animations to no longer be manipulated. */
+        send(method: 'Animation.releaseAnimations', params: Animation.ReleaseAnimationsRequest): Promise<{}>;
+        
+        /** Gets the remote object of the Animation. */
+        send(method: 'Animation.resolveAnimation', params: Animation.ResolveAnimationRequest): Promise<Animation.ResolveAnimationResponse>;
+        
+        /** Event for each animation that has been created. */
+        on(method: 'Animation.animationCreated', handler: (params: Animation.AnimationCreatedEvent) => void): void;
+        
+        /** Event for animation that has been started. */
+        on(method: 'Animation.animationStarted', handler: (params: Animation.AnimationStartedEvent) => void): void;
+        
+        /** Event for when an animation has been cancelled. */
+        on(method: 'Animation.animationCanceled', handler: (params: Animation.AnimationCanceledEvent) => void): void;
+        
+        /** Fetches the accessibility node for this DOM node, if it exists. */
+        send(method: 'Accessibility.getAXNode', params: Accessibility.GetAXNodeRequest): Promise<Accessibility.GetAXNodeResponse>;
+        
+        /** Clears storage for origin. */
+        send(method: 'Storage.clearDataForOrigin', params: Storage.ClearDataForOriginRequest): Promise<{}>;
+        
+        /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
+        send(method: 'Browser.createBrowserContext'): Promise<Browser.CreateBrowserContextResponse>;
+        
+        /** Deletes a BrowserContext, will fail of any open page uses it. */
+        send(method: 'Browser.disposeBrowserContext', params: Browser.DisposeBrowserContextRequest): Promise<Browser.DisposeBrowserContextResponse>;
+        
+        /** Creates a new page. */
+        send(method: 'Browser.createTarget', params: Browser.CreateTargetRequest): Promise<Browser.CreateTargetResponse>;
+        
+        /** Closes the target. If the target is a page that gets closed too. */
+        send(method: 'Browser.closeTarget', params: Browser.CloseTargetRequest): Promise<Browser.CloseTargetResponse>;
+        
+        /** Returns target information for all potential targets. */
+        send(method: 'Browser.getTargets'): Promise<Browser.GetTargetsResponse>;
+        
+        /** Attaches to the target with given id. */
+        send(method: 'Browser.attach', params: Browser.AttachRequest): Promise<{}>;
+        
+        /** Detaches from the target with given id. */
+        send(method: 'Browser.detach', params: Browser.DetachRequest): Promise<{}>;
+        
+        /** Sends protocol message to the target with given id. */
+        send(method: 'Browser.sendMessage', params: Browser.SendMessageRequest): Promise<{}>;
+        
+        /** Dispatches protocol message from the target with given id. */
+        on(method: 'Browser.dispatchMessage', handler: (params: Browser.DispatchMessageEvent) => void): void;
+        
+        /** Returns information about the system. */
+        send(method: 'SystemInfo.getInfo'): Promise<SystemInfo.GetInfoResponse>;
+        
         /** Request browser port binding. */
-        bind: (request: Tethering.BindRequest) => Promise<{}>;
+        send(method: 'Tethering.bind', params: Tethering.BindRequest): Promise<{}>;
+        
         /** Request browser port unbinding. */
-        unbind: (request: Tethering.UnbindRequest) => Promise<{}>;
+        send(method: 'Tethering.unbind', params: Tethering.UnbindRequest): Promise<{}>;
+        
         /** Informs that port was successfully bound and got a specified connection id. */
-        onAccepted: (handler: (event: Tethering.AcceptedEvent) => void) => void;
+        on(method: 'Tethering.accepted', handler: (params: Tethering.AcceptedEvent) => void): void;
+        
+        /** Send request to server */
+        send(method: string, params: any): Promise<any>;
+        
+        /** Handle message from server */
+        on(method: string, handler: (params: any) => void): void;
+        
     }
     
-    export interface TetheringAdapter {
+    export interface RpcServer {
+        /** Evaluates expression on global object. */
+        reply(method: 'Runtime.evaluate', handler: (params: Runtime.EvaluateRequest) => PromiseOrNot<Runtime.EvaluateResponse>): void;
+        
+        /** Calls function with given declaration on the given object. Object group of the result is inherited from the target object. */
+        reply(method: 'Runtime.callFunctionOn', handler: (params: Runtime.CallFunctionOnRequest) => PromiseOrNot<Runtime.CallFunctionOnResponse>): void;
+        
+        /** Returns properties of a given object. Object group of the result is inherited from the target object. */
+        reply(method: 'Runtime.getProperties', handler: (params: Runtime.GetPropertiesRequest) => PromiseOrNot<Runtime.GetPropertiesResponse>): void;
+        
+        /** Releases remote object with given id. */
+        reply(method: 'Runtime.releaseObject', handler: (params: Runtime.ReleaseObjectRequest) => PromiseOrNot<{}>): void;
+        
+        /** Releases all remote objects that belong to a given group. */
+        reply(method: 'Runtime.releaseObjectGroup', handler: (params: Runtime.ReleaseObjectGroupRequest) => PromiseOrNot<{}>): void;
+        
+        /** Tells inspected instance(worker or page) that it can run in case it was started paused. */
+        reply(method: 'Runtime.run', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Enables reporting of execution contexts creation by means of 'executionContextCreated' event. When the reporting gets enabled the event will be sent immediately for each existing execution context. */
+        reply(method: 'Runtime.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables reporting of execution contexts creation. */
+        reply(method: 'Runtime.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Runtime.setCustomObjectFormatterEnabled', handler: (params: Runtime.SetCustomObjectFormatterEnabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Compiles expression. */
+        reply(method: 'Runtime.compileScript', handler: (params: Runtime.CompileScriptRequest) => PromiseOrNot<Runtime.CompileScriptResponse>): void;
+        
+        /** Runs script with given id in a given context. */
+        reply(method: 'Runtime.runScript', handler: (params: Runtime.RunScriptRequest) => PromiseOrNot<Runtime.RunScriptResponse>): void;
+        
+        /** Issued when new execution context is created. */
+        notify(method: 'Runtime.executionContextCreated', params: Runtime.ExecutionContextCreatedEvent): void;
+        
+        /** Issued when execution context is destroyed. */
+        notify(method: 'Runtime.executionContextDestroyed', params: Runtime.ExecutionContextDestroyedEvent): void;
+        
+        /** Issued when all executionContexts were cleared in browser */
+        notify(method: 'Runtime.executionContextsCleared'): void;
+        
+        /** Issued when exception was thrown and unhandled. */
+        notify(method: 'Runtime.exceptionThrown', params: Runtime.ExceptionThrownEvent): void;
+        
+        /** Issued when unhandled exception was revoked. */
+        notify(method: 'Runtime.exceptionRevoked', params: Runtime.ExceptionRevokedEvent): void;
+        
+        /** Issued when console API was called. */
+        notify(method: 'Runtime.consoleAPICalled', params: Runtime.ConsoleAPICalledEvent): void;
+        
+        notify(method: 'Runtime.inspectRequested', params: Runtime.InspectRequestedEvent): void;
+        
+        /** Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received. */
+        reply(method: 'Debugger.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables debugger for given page. */
+        reply(method: 'Debugger.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Activates / deactivates all breakpoints on the page. */
+        reply(method: 'Debugger.setBreakpointsActive', handler: (params: Debugger.SetBreakpointsActiveRequest) => PromiseOrNot<{}>): void;
+        
+        /** Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc). */
+        reply(method: 'Debugger.setSkipAllPauses', handler: (params: Debugger.SetSkipAllPausesRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in 'locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved' events issued. This logical breakpoint will survive page reloads. */
+        reply(method: 'Debugger.setBreakpointByUrl', handler: (params: Debugger.SetBreakpointByUrlRequest) => PromiseOrNot<Debugger.SetBreakpointByUrlResponse>): void;
+        
+        /** Sets JavaScript breakpoint at a given location. */
+        reply(method: 'Debugger.setBreakpoint', handler: (params: Debugger.SetBreakpointRequest) => PromiseOrNot<Debugger.SetBreakpointResponse>): void;
+        
+        /** Removes JavaScript breakpoint. */
+        reply(method: 'Debugger.removeBreakpoint', handler: (params: Debugger.RemoveBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Continues execution until specific location is reached. */
+        reply(method: 'Debugger.continueToLocation', handler: (params: Debugger.ContinueToLocationRequest) => PromiseOrNot<{}>): void;
+        
+        /** Steps over the statement. */
+        reply(method: 'Debugger.stepOver', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Steps into the function call. */
+        reply(method: 'Debugger.stepInto', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Steps out of the function call. */
+        reply(method: 'Debugger.stepOut', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Stops on the next JavaScript statement. */
+        reply(method: 'Debugger.pause', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Resumes JavaScript execution. */
+        reply(method: 'Debugger.resume', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Searches for given string in script content. */
+        reply(method: 'Debugger.searchInContent', handler: (params: Debugger.SearchInContentRequest) => PromiseOrNot<Debugger.SearchInContentResponse>): void;
+        
+        /** Always returns true. */
+        reply(method: 'Debugger.canSetScriptSource', handler: () => PromiseOrNot<Debugger.CanSetScriptSourceResponse>): void;
+        
+        /** Edits JavaScript source live. */
+        reply(method: 'Debugger.setScriptSource', handler: (params: Debugger.SetScriptSourceRequest) => PromiseOrNot<Debugger.SetScriptSourceResponse>): void;
+        
+        /** Restarts particular call frame from the beginning. */
+        reply(method: 'Debugger.restartFrame', handler: (params: Debugger.RestartFrameRequest) => PromiseOrNot<Debugger.RestartFrameResponse>): void;
+        
+        /** Returns source for the script with given id. */
+        reply(method: 'Debugger.getScriptSource', handler: (params: Debugger.GetScriptSourceRequest) => PromiseOrNot<Debugger.GetScriptSourceResponse>): void;
+        
+        /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
+        reply(method: 'Debugger.setPauseOnExceptions', handler: (params: Debugger.SetPauseOnExceptionsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Evaluates expression on a given call frame. */
+        reply(method: 'Debugger.evaluateOnCallFrame', handler: (params: Debugger.EvaluateOnCallFrameRequest) => PromiseOrNot<Debugger.EvaluateOnCallFrameResponse>): void;
+        
+        /** Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually. */
+        reply(method: 'Debugger.setVariableValue', handler: (params: Debugger.SetVariableValueRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns call stack including variables changed since VM was paused. VM must be paused. */
+        reply(method: 'Debugger.getBacktrace', handler: () => PromiseOrNot<Debugger.GetBacktraceResponse>): void;
+        
+        /** Enables or disables async call stacks tracking. */
+        reply(method: 'Debugger.setAsyncCallStackDepth', handler: (params: Debugger.SetAsyncCallStackDepthRequest) => PromiseOrNot<{}>): void;
+        
+        /** Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. */
+        reply(method: 'Debugger.setBlackboxPatterns', handler: (params: Debugger.SetBlackboxPatternsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted. */
+        reply(method: 'Debugger.setBlackboxedRanges', handler: (params: Debugger.SetBlackboxedRangesRequest) => PromiseOrNot<{}>): void;
+        
+        /** Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger. */
+        notify(method: 'Debugger.scriptParsed', params: Debugger.ScriptParsedEvent): void;
+        
+        /** Fired when virtual machine fails to parse the script. */
+        notify(method: 'Debugger.scriptFailedToParse', params: Debugger.ScriptFailedToParseEvent): void;
+        
+        /** Fired when breakpoint is resolved to an actual script and location. */
+        notify(method: 'Debugger.breakpointResolved', params: Debugger.BreakpointResolvedEvent): void;
+        
+        /** Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria. */
+        notify(method: 'Debugger.paused', params: Debugger.PausedEvent): void;
+        
+        /** Fired when the virtual machine resumed execution. */
+        notify(method: 'Debugger.resumed'): void;
+        
+        /** Enables console domain, sends the messages collected so far to the client by means of the 'messageAdded' notification. */
+        reply(method: 'Console.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables console domain, prevents further console messages from being reported to the client. */
+        reply(method: 'Console.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Clears console messages collected in the browser. */
+        reply(method: 'Console.clearMessages', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Issued when new console message is added. */
+        notify(method: 'Console.messageAdded', params: Console.MessageAddedEvent): void;
+        
+        /** Is not issued. Will be gone in the future versions of the protocol. */
+        notify(method: 'Console.messageRepeatCountUpdated', params: Console.MessageRepeatCountUpdatedEvent): void;
+        
+        /** Not issued. */
+        notify(method: 'Console.messagesCleared'): void;
+        
+        reply(method: 'Profiler.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Profiler.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Changes CPU profiler sampling interval. Must be called before CPU profiles recording started. */
+        reply(method: 'Profiler.setSamplingInterval', handler: (params: Profiler.SetSamplingIntervalRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Profiler.start', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Profiler.stop', handler: () => PromiseOrNot<Profiler.StopResponse>): void;
+        
+        /** Sent when new profile recodring is started using console.profile() call. */
+        notify(method: 'Profiler.consoleProfileStarted', params: Profiler.ConsoleProfileStartedEvent): void;
+        
+        notify(method: 'Profiler.consoleProfileFinished', params: Profiler.ConsoleProfileFinishedEvent): void;
+        
+        reply(method: 'HeapProfiler.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.startTrackingHeapObjects', handler: (params: HeapProfiler.StartTrackingHeapObjectsRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.stopTrackingHeapObjects', handler: (params: HeapProfiler.StopTrackingHeapObjectsRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.takeHeapSnapshot', handler: (params: HeapProfiler.TakeHeapSnapshotRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.collectGarbage', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.getObjectByHeapObjectId', handler: (params: HeapProfiler.GetObjectByHeapObjectIdRequest) => PromiseOrNot<HeapProfiler.GetObjectByHeapObjectIdResponse>): void;
+        
+        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
+        reply(method: 'HeapProfiler.addInspectedHeapObject', handler: (params: HeapProfiler.AddInspectedHeapObjectRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.getHeapObjectId', handler: (params: HeapProfiler.GetHeapObjectIdRequest) => PromiseOrNot<HeapProfiler.GetHeapObjectIdResponse>): void;
+        
+        reply(method: 'HeapProfiler.startSampling', handler: (params: HeapProfiler.StartSamplingRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'HeapProfiler.stopSampling', handler: () => PromiseOrNot<HeapProfiler.StopSamplingResponse>): void;
+        
+        notify(method: 'HeapProfiler.addHeapSnapshotChunk', params: HeapProfiler.AddHeapSnapshotChunkEvent): void;
+        
+        notify(method: 'HeapProfiler.resetProfiles'): void;
+        
+        notify(method: 'HeapProfiler.reportHeapSnapshotProgress', params: HeapProfiler.ReportHeapSnapshotProgressEvent): void;
+        
+        /** If heap objects tracking has been started then backend regulary sends a current value for last seen object id and corresponding timestamp. If the were changes in the heap since last event then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event. */
+        notify(method: 'HeapProfiler.lastSeenObjectId', params: HeapProfiler.LastSeenObjectIdEvent): void;
+        
+        /** If heap objects tracking has been started then backend may send update for one or more fragments */
+        notify(method: 'HeapProfiler.heapStatsUpdate', params: HeapProfiler.HeapStatsUpdateEvent): void;
+        
+        /** Enables inspector domain notifications. */
+        reply(method: 'Inspector.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables inspector domain notifications. */
+        reply(method: 'Inspector.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Fired when remote debugging connection is about to be terminated. Contains detach reason. */
+        notify(method: 'Inspector.detached', params: Inspector.DetachedEvent): void;
+        
+        /** Fired when debugging target has crashed */
+        notify(method: 'Inspector.targetCrashed'): void;
+        
+        reply(method: 'Memory.getDOMCounters', handler: () => PromiseOrNot<Memory.GetDOMCountersResponse>): void;
+        
+        /** Enable/disable suppressing memory pressure notifications in all processes. */
+        reply(method: 'Memory.setPressureNotificationsSuppressed', handler: (params: Memory.SetPressureNotificationsSuppressedRequest) => PromiseOrNot<{}>): void;
+        
+        /** Simulate a memory pressure notification in all processes. */
+        reply(method: 'Memory.simulatePressureNotification', handler: (params: Memory.SimulatePressureNotificationRequest) => PromiseOrNot<{}>): void;
+        
+        /** Enables page domain notifications. */
+        reply(method: 'Page.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables page domain notifications. */
+        reply(method: 'Page.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Page.addScriptToEvaluateOnLoad', handler: (params: Page.AddScriptToEvaluateOnLoadRequest) => PromiseOrNot<Page.AddScriptToEvaluateOnLoadResponse>): void;
+        
+        reply(method: 'Page.removeScriptToEvaluateOnLoad', handler: (params: Page.RemoveScriptToEvaluateOnLoadRequest) => PromiseOrNot<{}>): void;
+        
+        /** Controls whether browser will open a new inspector window for connected pages. */
+        reply(method: 'Page.setAutoAttachToCreatedPages', handler: (params: Page.SetAutoAttachToCreatedPagesRequest) => PromiseOrNot<{}>): void;
+        
+        /** Reloads given page optionally ignoring the cache. */
+        reply(method: 'Page.reload', handler: (params: Page.ReloadRequest) => PromiseOrNot<{}>): void;
+        
+        /** Navigates current page to the given URL. */
+        reply(method: 'Page.navigate', handler: (params: Page.NavigateRequest) => PromiseOrNot<Page.NavigateResponse>): void;
+        
+        /** Returns navigation history for the current page. */
+        reply(method: 'Page.getNavigationHistory', handler: () => PromiseOrNot<Page.GetNavigationHistoryResponse>): void;
+        
+        /** Navigates current page to the given history entry. */
+        reply(method: 'Page.navigateToHistoryEntry', handler: (params: Page.NavigateToHistoryEntryRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
+        reply(method: 'Page.getCookies', handler: () => PromiseOrNot<Page.GetCookiesResponse>): void;
+        
+        /** Deletes browser cookie with given name, domain and path. */
+        reply(method: 'Page.deleteCookie', handler: (params: Page.DeleteCookieRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns present frame / resource tree structure. */
+        reply(method: 'Page.getResourceTree', handler: () => PromiseOrNot<Page.GetResourceTreeResponse>): void;
+        
+        /** Returns content of the given resource. */
+        reply(method: 'Page.getResourceContent', handler: (params: Page.GetResourceContentRequest) => PromiseOrNot<Page.GetResourceContentResponse>): void;
+        
+        /** Searches for given string in resource content. */
+        reply(method: 'Page.searchInResource', handler: (params: Page.SearchInResourceRequest) => PromiseOrNot<Page.SearchInResourceResponse>): void;
+        
+        /** Sets given markup as the document's HTML. */
+        reply(method: 'Page.setDocumentContent', handler: (params: Page.SetDocumentContentRequest) => PromiseOrNot<{}>): void;
+        
+        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
+        reply(method: 'Page.setDeviceMetricsOverride', handler: (params: Page.SetDeviceMetricsOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Clears the overriden device metrics. */
+        reply(method: 'Page.clearDeviceMetricsOverride', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
+        reply(method: 'Page.setGeolocationOverride', handler: (params: Page.SetGeolocationOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Clears the overriden Geolocation Position and Error. */
+        reply(method: 'Page.clearGeolocationOverride', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Overrides the Device Orientation. */
+        reply(method: 'Page.setDeviceOrientationOverride', handler: (params: Page.SetDeviceOrientationOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Clears the overridden Device Orientation. */
+        reply(method: 'Page.clearDeviceOrientationOverride', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Toggles mouse event-based touch event emulation. */
+        reply(method: 'Page.setTouchEmulationEnabled', handler: (params: Page.SetTouchEmulationEnabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Capture page screenshot. */
+        reply(method: 'Page.captureScreenshot', handler: () => PromiseOrNot<Page.CaptureScreenshotResponse>): void;
+        
+        /** Starts sending each frame using the 'screencastFrame' event. */
+        reply(method: 'Page.startScreencast', handler: (params: Page.StartScreencastRequest) => PromiseOrNot<{}>): void;
+        
+        /** Stops sending each frame in the 'screencastFrame'. */
+        reply(method: 'Page.stopScreencast', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Acknowledges that a screencast frame has been received by the frontend. */
+        reply(method: 'Page.screencastFrameAck', handler: (params: Page.ScreencastFrameAckRequest) => PromiseOrNot<{}>): void;
+        
+        /** Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload). */
+        reply(method: 'Page.handleJavaScriptDialog', handler: (params: Page.HandleJavaScriptDialogRequest) => PromiseOrNot<{}>): void;
+        
+        /** Shows / hides color picker */
+        reply(method: 'Page.setColorPickerEnabled', handler: (params: Page.SetColorPickerEnabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets overlay message. */
+        reply(method: 'Page.setOverlayMessage', handler: (params: Page.SetOverlayMessageRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Page.getAppManifest', handler: () => PromiseOrNot<Page.GetAppManifestResponse>): void;
+        
+        reply(method: 'Page.requestAppBanner', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Page.setBlockedEventsWarningThreshold', handler: (params: Page.SetBlockedEventsWarningThresholdRequest) => PromiseOrNot<{}>): void;
+        
+        /** Toggles navigation throttling which allows programatic control over navigation and redirect response. */
+        reply(method: 'Page.setControlNavigations', handler: (params: Page.SetControlNavigationsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation. */
+        reply(method: 'Page.processNavigation', handler: (params: Page.ProcessNavigationRequest) => PromiseOrNot<{}>): void;
+        
+        notify(method: 'Page.domContentEventFired', params: Page.DomContentEventFiredEvent): void;
+        
+        notify(method: 'Page.loadEventFired', params: Page.LoadEventFiredEvent): void;
+        
+        /** Fired when frame has been attached to its parent. */
+        notify(method: 'Page.frameAttached', params: Page.FrameAttachedEvent): void;
+        
+        /** Fired once navigation of the frame has completed. Frame is now associated with the new loader. */
+        notify(method: 'Page.frameNavigated', params: Page.FrameNavigatedEvent): void;
+        
+        /** Fired when frame has been detached from its parent. */
+        notify(method: 'Page.frameDetached', params: Page.FrameDetachedEvent): void;
+        
+        /** Fired when frame has started loading. */
+        notify(method: 'Page.frameStartedLoading', params: Page.FrameStartedLoadingEvent): void;
+        
+        /** Fired when frame has stopped loading. */
+        notify(method: 'Page.frameStoppedLoading', params: Page.FrameStoppedLoadingEvent): void;
+        
+        /** Fired when frame schedules a potential navigation. */
+        notify(method: 'Page.frameScheduledNavigation', params: Page.FrameScheduledNavigationEvent): void;
+        
+        /** Fired when frame no longer has a scheduled navigation. */
+        notify(method: 'Page.frameClearedScheduledNavigation', params: Page.FrameClearedScheduledNavigationEvent): void;
+        
+        notify(method: 'Page.frameResized'): void;
+        
+        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open. */
+        notify(method: 'Page.javascriptDialogOpening', params: Page.JavascriptDialogOpeningEvent): void;
+        
+        /** Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed. */
+        notify(method: 'Page.javascriptDialogClosed', params: Page.JavascriptDialogClosedEvent): void;
+        
+        /** Compressed image data requested by the 'startScreencast'. */
+        notify(method: 'Page.screencastFrame', params: Page.ScreencastFrameEvent): void;
+        
+        /** Fired when the page with currently enabled screencast was shown or hidden </code>. */
+        notify(method: 'Page.screencastVisibilityChanged', params: Page.ScreencastVisibilityChangedEvent): void;
+        
+        /** Fired when a color has been picked. */
+        notify(method: 'Page.colorPicked', params: Page.ColorPickedEvent): void;
+        
+        /** Fired when interstitial page was shown */
+        notify(method: 'Page.interstitialShown'): void;
+        
+        /** Fired when interstitial page was hidden */
+        notify(method: 'Page.interstitialHidden'): void;
+        
+        /** Fired when a navigation is started if navigation throttles are enabled.  The navigation will be deferred until processNavigation is called. */
+        notify(method: 'Page.navigationRequested', params: Page.NavigationRequestedEvent): void;
+        
+        /** Requests that backend shows paint rectangles */
+        reply(method: 'Rendering.setShowPaintRects', handler: (params: Rendering.SetShowPaintRectsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Requests that backend shows debug borders on layers */
+        reply(method: 'Rendering.setShowDebugBorders', handler: (params: Rendering.SetShowDebugBordersRequest) => PromiseOrNot<{}>): void;
+        
+        /** Requests that backend shows the FPS counter */
+        reply(method: 'Rendering.setShowFPSCounter', handler: (params: Rendering.SetShowFPSCounterRequest) => PromiseOrNot<{}>): void;
+        
+        /** Requests that backend shows scroll bottleneck rects */
+        reply(method: 'Rendering.setShowScrollBottleneckRects', handler: (params: Rendering.SetShowScrollBottleneckRectsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Paints viewport size upon main frame resize. */
+        reply(method: 'Rendering.setShowViewportSizeOnResize', handler: (params: Rendering.SetShowViewportSizeOnResizeRequest) => PromiseOrNot<{}>): void;
+        
+        /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
+        reply(method: 'Emulation.setDeviceMetricsOverride', handler: (params: Emulation.SetDeviceMetricsOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Clears the overriden device metrics. */
+        reply(method: 'Emulation.clearDeviceMetricsOverride', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Requests that page scale factor is reset to initial values. */
+        reply(method: 'Emulation.resetPageScaleFactor', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Sets a specified page scale factor. */
+        reply(method: 'Emulation.setPageScaleFactor', handler: (params: Emulation.SetPageScaleFactorRequest) => PromiseOrNot<{}>): void;
+        
+        /** Switches script execution in the page. */
+        reply(method: 'Emulation.setScriptExecutionDisabled', handler: (params: Emulation.SetScriptExecutionDisabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
+        reply(method: 'Emulation.setGeolocationOverride', handler: (params: Emulation.SetGeolocationOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Clears the overriden Geolocation Position and Error. */
+        reply(method: 'Emulation.clearGeolocationOverride', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Toggles mouse event-based touch event emulation. */
+        reply(method: 'Emulation.setTouchEmulationEnabled', handler: (params: Emulation.SetTouchEmulationEnabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Emulates the given media for CSS media queries. */
+        reply(method: 'Emulation.setEmulatedMedia', handler: (params: Emulation.SetEmulatedMediaRequest) => PromiseOrNot<{}>): void;
+        
+        /** Enables CPU throttling to emulate slow CPUs. */
+        reply(method: 'Emulation.setCPUThrottlingRate', handler: (params: Emulation.SetCPUThrottlingRateRequest) => PromiseOrNot<{}>): void;
+        
+        /** Tells whether emulation is supported. */
+        reply(method: 'Emulation.canEmulate', handler: () => PromiseOrNot<Emulation.CanEmulateResponse>): void;
+        
+        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
+        reply(method: 'Emulation.setVirtualTimePolicy', handler: (params: Emulation.SetVirtualTimePolicyRequest) => PromiseOrNot<{}>): void;
+        
+        /** Enables tracking security state changes. */
+        reply(method: 'Security.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables tracking security state changes. */
+        reply(method: 'Security.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** The security state of the page changed. */
+        notify(method: 'Security.securityStateChanged', params: Security.SecurityStateChangedEvent): void;
+        
+        /** Enables network tracking, network events will now be delivered to the client. */
+        reply(method: 'Network.enable', handler: (params: Network.EnableRequest) => PromiseOrNot<{}>): void;
+        
+        /** Disables network tracking, prevents network events from being sent to the client. */
+        reply(method: 'Network.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Allows overriding user agent with the given string. */
+        reply(method: 'Network.setUserAgentOverride', handler: (params: Network.SetUserAgentOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Specifies whether to always send extra HTTP headers with the requests from this page. */
+        reply(method: 'Network.setExtraHTTPHeaders', handler: (params: Network.SetExtraHTTPHeadersRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns content served for the given request. */
+        reply(method: 'Network.getResponseBody', handler: (params: Network.GetResponseBodyRequest) => PromiseOrNot<Network.GetResponseBodyResponse>): void;
+        
+        /** Blocks specific URL from loading. */
+        reply(method: 'Network.addBlockedURL', handler: (params: Network.AddBlockedURLRequest) => PromiseOrNot<{}>): void;
+        
+        /** Cancels blocking of a specific URL from loading. */
+        reply(method: 'Network.removeBlockedURL', handler: (params: Network.RemoveBlockedURLRequest) => PromiseOrNot<{}>): void;
+        
+        /** This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password. */
+        reply(method: 'Network.replayXHR', handler: (params: Network.ReplayXHRRequest) => PromiseOrNot<{}>): void;
+        
+        /** Toggles monitoring of XMLHttpRequest. If 'true', console will receive messages upon each XHR issued. */
+        reply(method: 'Network.setMonitoringXHREnabled', handler: (params: Network.SetMonitoringXHREnabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Tells whether clearing browser cache is supported. */
+        reply(method: 'Network.canClearBrowserCache', handler: () => PromiseOrNot<Network.CanClearBrowserCacheResponse>): void;
+        
+        /** Clears browser cache. */
+        reply(method: 'Network.clearBrowserCache', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Tells whether clearing browser cookies is supported. */
+        reply(method: 'Network.canClearBrowserCookies', handler: () => PromiseOrNot<Network.CanClearBrowserCookiesResponse>): void;
+        
+        /** Clears browser cookies. */
+        reply(method: 'Network.clearBrowserCookies', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
+        reply(method: 'Network.getCookies', handler: () => PromiseOrNot<Network.GetCookiesResponse>): void;
+        
+        /** Deletes browser cookie with given name, domain and path. */
+        reply(method: 'Network.deleteCookie', handler: (params: Network.DeleteCookieRequest) => PromiseOrNot<{}>): void;
+        
+        /** Tells whether emulation of network conditions is supported. */
+        reply(method: 'Network.canEmulateNetworkConditions', handler: () => PromiseOrNot<Network.CanEmulateNetworkConditionsResponse>): void;
+        
+        /** Activates emulation of network conditions. */
+        reply(method: 'Network.emulateNetworkConditions', handler: (params: Network.EmulateNetworkConditionsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Toggles ignoring cache for each request. If 'true', cache will not be used. */
+        reply(method: 'Network.setCacheDisabled', handler: (params: Network.SetCacheDisabledRequest) => PromiseOrNot<{}>): void;
+        
+        /** Toggles ignoring of service worker for each request. */
+        reply(method: 'Network.setBypassServiceWorker', handler: (params: Network.SetBypassServiceWorkerRequest) => PromiseOrNot<{}>): void;
+        
+        /** For testing. */
+        reply(method: 'Network.setDataSizeLimitsForTest', handler: (params: Network.SetDataSizeLimitsForTestRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns details for the given certificate. */
+        reply(method: 'Network.getCertificateDetails', handler: (params: Network.GetCertificateDetailsRequest) => PromiseOrNot<Network.GetCertificateDetailsResponse>): void;
+        
+        /** Displays native dialog with the certificate details. */
+        reply(method: 'Network.showCertificateViewer', handler: (params: Network.ShowCertificateViewerRequest) => PromiseOrNot<{}>): void;
+        
+        /** Fired when resource loading priority is changed */
+        notify(method: 'Network.resourceChangedPriority', params: Network.ResourceChangedPriorityEvent): void;
+        
+        /** Fired when page is about to send HTTP request. */
+        notify(method: 'Network.requestWillBeSent', params: Network.RequestWillBeSentEvent): void;
+        
+        /** Fired if request ended up loading from cache. */
+        notify(method: 'Network.requestServedFromCache', params: Network.RequestServedFromCacheEvent): void;
+        
+        /** Fired when HTTP response is available. */
+        notify(method: 'Network.responseReceived', params: Network.ResponseReceivedEvent): void;
+        
+        /** Fired when data chunk was received over the network. */
+        notify(method: 'Network.dataReceived', params: Network.DataReceivedEvent): void;
+        
+        /** Fired when HTTP request has finished loading. */
+        notify(method: 'Network.loadingFinished', params: Network.LoadingFinishedEvent): void;
+        
+        /** Fired when HTTP request has failed to load. */
+        notify(method: 'Network.loadingFailed', params: Network.LoadingFailedEvent): void;
+        
+        /** Fired when WebSocket is about to initiate handshake. */
+        notify(method: 'Network.webSocketWillSendHandshakeRequest', params: Network.WebSocketWillSendHandshakeRequestEvent): void;
+        
+        /** Fired when WebSocket handshake response becomes available. */
+        notify(method: 'Network.webSocketHandshakeResponseReceived', params: Network.WebSocketHandshakeResponseReceivedEvent): void;
+        
+        /** Fired upon WebSocket creation. */
+        notify(method: 'Network.webSocketCreated', params: Network.WebSocketCreatedEvent): void;
+        
+        /** Fired when WebSocket is closed. */
+        notify(method: 'Network.webSocketClosed', params: Network.WebSocketClosedEvent): void;
+        
+        /** Fired when WebSocket frame is received. */
+        notify(method: 'Network.webSocketFrameReceived', params: Network.WebSocketFrameReceivedEvent): void;
+        
+        /** Fired when WebSocket frame error occurs. */
+        notify(method: 'Network.webSocketFrameError', params: Network.WebSocketFrameErrorEvent): void;
+        
+        /** Fired when WebSocket frame is sent. */
+        notify(method: 'Network.webSocketFrameSent', params: Network.WebSocketFrameSentEvent): void;
+        
+        /** Fired when EventSource message is received. */
+        notify(method: 'Network.eventSourceMessageReceived', params: Network.EventSourceMessageReceivedEvent): void;
+        
+        /** Enables database tracking, database events will now be delivered to the client. */
+        reply(method: 'Database.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables database tracking, prevents database events from being sent to the client. */
+        reply(method: 'Database.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Database.getDatabaseTableNames', handler: (params: Database.GetDatabaseTableNamesRequest) => PromiseOrNot<Database.GetDatabaseTableNamesResponse>): void;
+        
+        reply(method: 'Database.executeSQL', handler: (params: Database.ExecuteSQLRequest) => PromiseOrNot<Database.ExecuteSQLResponse>): void;
+        
+        notify(method: 'Database.addDatabase', params: Database.AddDatabaseEvent): void;
+        
+        /** Enables events from backend. */
+        reply(method: 'IndexedDB.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables events from backend. */
+        reply(method: 'IndexedDB.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Requests database names for given security origin. */
+        reply(method: 'IndexedDB.requestDatabaseNames', handler: (params: IndexedDB.RequestDatabaseNamesRequest) => PromiseOrNot<IndexedDB.RequestDatabaseNamesResponse>): void;
+        
+        /** Requests database with given name in given frame. */
+        reply(method: 'IndexedDB.requestDatabase', handler: (params: IndexedDB.RequestDatabaseRequest) => PromiseOrNot<IndexedDB.RequestDatabaseResponse>): void;
+        
+        /** Requests data from object store or index. */
+        reply(method: 'IndexedDB.requestData', handler: (params: IndexedDB.RequestDataRequest) => PromiseOrNot<IndexedDB.RequestDataResponse>): void;
+        
+        /** Clears all entries from an object store. */
+        reply(method: 'IndexedDB.clearObjectStore', handler: (params: IndexedDB.ClearObjectStoreRequest) => PromiseOrNot<IndexedDB.ClearObjectStoreResponse>): void;
+        
+        /** Requests cache names. */
+        reply(method: 'CacheStorage.requestCacheNames', handler: (params: CacheStorage.RequestCacheNamesRequest) => PromiseOrNot<CacheStorage.RequestCacheNamesResponse>): void;
+        
+        /** Requests data from cache. */
+        reply(method: 'CacheStorage.requestEntries', handler: (params: CacheStorage.RequestEntriesRequest) => PromiseOrNot<CacheStorage.RequestEntriesResponse>): void;
+        
+        /** Deletes a cache. */
+        reply(method: 'CacheStorage.deleteCache', handler: (params: CacheStorage.DeleteCacheRequest) => PromiseOrNot<{}>): void;
+        
+        /** Deletes a cache entry. */
+        reply(method: 'CacheStorage.deleteEntry', handler: (params: CacheStorage.DeleteEntryRequest) => PromiseOrNot<{}>): void;
+        
+        /** Enables storage tracking, storage events will now be delivered to the client. */
+        reply(method: 'DOMStorage.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables storage tracking, prevents storage events from being sent to the client. */
+        reply(method: 'DOMStorage.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'DOMStorage.getDOMStorageItems', handler: (params: DOMStorage.GetDOMStorageItemsRequest) => PromiseOrNot<DOMStorage.GetDOMStorageItemsResponse>): void;
+        
+        reply(method: 'DOMStorage.setDOMStorageItem', handler: (params: DOMStorage.SetDOMStorageItemRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'DOMStorage.removeDOMStorageItem', handler: (params: DOMStorage.RemoveDOMStorageItemRequest) => PromiseOrNot<{}>): void;
+        
+        notify(method: 'DOMStorage.domStorageItemsCleared', params: DOMStorage.DomStorageItemsClearedEvent): void;
+        
+        notify(method: 'DOMStorage.domStorageItemRemoved', params: DOMStorage.DomStorageItemRemovedEvent): void;
+        
+        notify(method: 'DOMStorage.domStorageItemAdded', params: DOMStorage.DomStorageItemAddedEvent): void;
+        
+        notify(method: 'DOMStorage.domStorageItemUpdated', params: DOMStorage.DomStorageItemUpdatedEvent): void;
+        
+        /** Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache. */
+        reply(method: 'ApplicationCache.getFramesWithManifests', handler: () => PromiseOrNot<ApplicationCache.GetFramesWithManifestsResponse>): void;
+        
+        /** Enables application cache domain notifications. */
+        reply(method: 'ApplicationCache.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Returns manifest URL for document in the given frame. */
+        reply(method: 'ApplicationCache.getManifestForFrame', handler: (params: ApplicationCache.GetManifestForFrameRequest) => PromiseOrNot<ApplicationCache.GetManifestForFrameResponse>): void;
+        
+        /** Returns relevant application cache data for the document in given frame. */
+        reply(method: 'ApplicationCache.getApplicationCacheForFrame', handler: (params: ApplicationCache.GetApplicationCacheForFrameRequest) => PromiseOrNot<ApplicationCache.GetApplicationCacheForFrameResponse>): void;
+        
+        notify(method: 'ApplicationCache.applicationCacheStatusUpdated', params: ApplicationCache.ApplicationCacheStatusUpdatedEvent): void;
+        
+        notify(method: 'ApplicationCache.networkStateUpdated', params: ApplicationCache.NetworkStateUpdatedEvent): void;
+        
+        /** Enables DOM agent for the given page. */
+        reply(method: 'DOM.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables DOM agent for the given page. */
+        reply(method: 'DOM.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Returns the root DOM node to the caller. */
+        reply(method: 'DOM.getDocument', handler: () => PromiseOrNot<DOM.GetDocumentResponse>): void;
+        
+        /** Requests that children of the node with given id are returned to the caller in form of 'setChildNodes' events where not only immediate children are retrieved, but all children down to the specified depth. */
+        reply(method: 'DOM.requestChildNodes', handler: (params: DOM.RequestChildNodesRequest) => PromiseOrNot<{}>): void;
+        
+        /** Executes 'querySelector' on a given node. */
+        reply(method: 'DOM.querySelector', handler: (params: DOM.QuerySelectorRequest) => PromiseOrNot<DOM.QuerySelectorResponse>): void;
+        
+        /** Executes 'querySelectorAll' on a given node. */
+        reply(method: 'DOM.querySelectorAll', handler: (params: DOM.QuerySelectorAllRequest) => PromiseOrNot<DOM.QuerySelectorAllResponse>): void;
+        
+        /** Sets node name for a node with given id. */
+        reply(method: 'DOM.setNodeName', handler: (params: DOM.SetNodeNameRequest) => PromiseOrNot<DOM.SetNodeNameResponse>): void;
+        
+        /** Sets node value for a node with given id. */
+        reply(method: 'DOM.setNodeValue', handler: (params: DOM.SetNodeValueRequest) => PromiseOrNot<{}>): void;
+        
+        /** Removes node with given id. */
+        reply(method: 'DOM.removeNode', handler: (params: DOM.RemoveNodeRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets attribute for an element with given id. */
+        reply(method: 'DOM.setAttributeValue', handler: (params: DOM.SetAttributeValueRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs. */
+        reply(method: 'DOM.setAttributesAsText', handler: (params: DOM.SetAttributesAsTextRequest) => PromiseOrNot<{}>): void;
+        
+        /** Removes attribute with given name from an element with given id. */
+        reply(method: 'DOM.removeAttribute', handler: (params: DOM.RemoveAttributeRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns node's HTML markup. */
+        reply(method: 'DOM.getOuterHTML', handler: (params: DOM.GetOuterHTMLRequest) => PromiseOrNot<DOM.GetOuterHTMLResponse>): void;
+        
+        /** Sets node HTML markup, returns new node id. */
+        reply(method: 'DOM.setOuterHTML', handler: (params: DOM.SetOuterHTMLRequest) => PromiseOrNot<{}>): void;
+        
+        /** Searches for a given string in the DOM tree. Use 'getSearchResults</code> to access search results or <code>cancelSearch' to end this search session. */
+        reply(method: 'DOM.performSearch', handler: (params: DOM.PerformSearchRequest) => PromiseOrNot<DOM.PerformSearchResponse>): void;
+        
+        /** Returns search results from given 'fromIndex</code> to given <code>toIndex' from the sarch with the given identifier. */
+        reply(method: 'DOM.getSearchResults', handler: (params: DOM.GetSearchResultsRequest) => PromiseOrNot<DOM.GetSearchResultsResponse>): void;
+        
+        /** Discards search results from the session with the given id. 'getSearchResults' should no longer be called for that search. */
+        reply(method: 'DOM.discardSearchResults', handler: (params: DOM.DiscardSearchResultsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of 'setChildNodes' notifications. */
+        reply(method: 'DOM.requestNode', handler: (params: DOM.RequestNodeRequest) => PromiseOrNot<DOM.RequestNodeResponse>): void;
+        
+        /** Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection. */
+        reply(method: 'DOM.setInspectMode', handler: (params: DOM.SetInspectModeRequest) => PromiseOrNot<{}>): void;
+        
+        /** Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport. */
+        reply(method: 'DOM.highlightRect', handler: (params: DOM.HighlightRectRequest) => PromiseOrNot<{}>): void;
+        
+        /** Highlights given quad. Coordinates are absolute with respect to the main frame viewport. */
+        reply(method: 'DOM.highlightQuad', handler: (params: DOM.HighlightQuadRequest) => PromiseOrNot<{}>): void;
+        
+        /** Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified. */
+        reply(method: 'DOM.highlightNode', handler: (params: DOM.HighlightNodeRequest) => PromiseOrNot<{}>): void;
+        
+        /** Hides DOM node highlight. */
+        reply(method: 'DOM.hideHighlight', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Highlights owner element of the frame with given id. */
+        reply(method: 'DOM.highlightFrame', handler: (params: DOM.HighlightFrameRequest) => PromiseOrNot<{}>): void;
+        
+        /** Requests that the node is sent to the caller given its path. // FIXME, use XPath */
+        reply(method: 'DOM.pushNodeByPathToFrontend', handler: (params: DOM.PushNodeByPathToFrontendRequest) => PromiseOrNot<DOM.PushNodeByPathToFrontendResponse>): void;
+        
+        /** Requests that a batch of nodes is sent to the caller given their backend node ids. */
+        reply(method: 'DOM.pushNodesByBackendIdsToFrontend', handler: (params: DOM.PushNodesByBackendIdsToFrontendRequest) => PromiseOrNot<DOM.PushNodesByBackendIdsToFrontendResponse>): void;
+        
+        /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
+        reply(method: 'DOM.setInspectedNode', handler: (params: DOM.SetInspectedNodeRequest) => PromiseOrNot<{}>): void;
+        
+        /** Resolves JavaScript node object for given node id. */
+        reply(method: 'DOM.resolveNode', handler: (params: DOM.ResolveNodeRequest) => PromiseOrNot<DOM.ResolveNodeResponse>): void;
+        
+        /** Returns attributes for the specified node. */
+        reply(method: 'DOM.getAttributes', handler: (params: DOM.GetAttributesRequest) => PromiseOrNot<DOM.GetAttributesResponse>): void;
+        
+        /** Creates a deep copy of the specified node and places it into the target container before the given anchor. */
+        reply(method: 'DOM.copyTo', handler: (params: DOM.CopyToRequest) => PromiseOrNot<DOM.CopyToResponse>): void;
+        
+        /** Moves node into the new container, places it before the given anchor. */
+        reply(method: 'DOM.moveTo', handler: (params: DOM.MoveToRequest) => PromiseOrNot<DOM.MoveToResponse>): void;
+        
+        /** Undoes the last performed action. */
+        reply(method: 'DOM.undo', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Re-does the last undone action. */
+        reply(method: 'DOM.redo', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Marks last undoable state. */
+        reply(method: 'DOM.markUndoableState', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Focuses the given element. */
+        reply(method: 'DOM.focus', handler: (params: DOM.FocusRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets files for the given file input element. */
+        reply(method: 'DOM.setFileInputFiles', handler: (params: DOM.SetFileInputFilesRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns boxes for the currently selected nodes. */
+        reply(method: 'DOM.getBoxModel', handler: (params: DOM.GetBoxModelRequest) => PromiseOrNot<DOM.GetBoxModelResponse>): void;
+        
+        /** Returns node id at given location. */
+        reply(method: 'DOM.getNodeForLocation', handler: (params: DOM.GetNodeForLocationRequest) => PromiseOrNot<DOM.GetNodeForLocationResponse>): void;
+        
+        /** Returns the id of the nearest ancestor that is a relayout boundary. */
+        reply(method: 'DOM.getRelayoutBoundary', handler: (params: DOM.GetRelayoutBoundaryRequest) => PromiseOrNot<DOM.GetRelayoutBoundaryResponse>): void;
+        
+        /** For testing. */
+        reply(method: 'DOM.getHighlightObjectForTest', handler: (params: DOM.GetHighlightObjectForTestRequest) => PromiseOrNot<DOM.GetHighlightObjectForTestResponse>): void;
+        
+        /** Fired when 'Document' has been totally updated. Node ids are no longer valid. */
+        notify(method: 'DOM.documentUpdated'): void;
+        
+        /** Fired when the node should be inspected. This happens after call to 'setInspectMode'. */
+        notify(method: 'DOM.inspectNodeRequested', params: DOM.InspectNodeRequestedEvent): void;
+        
+        /** Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids. */
+        notify(method: 'DOM.setChildNodes', params: DOM.SetChildNodesEvent): void;
+        
+        /** Fired when 'Element''s attribute is modified. */
+        notify(method: 'DOM.attributeModified', params: DOM.AttributeModifiedEvent): void;
+        
+        /** Fired when 'Element''s attribute is removed. */
+        notify(method: 'DOM.attributeRemoved', params: DOM.AttributeRemovedEvent): void;
+        
+        /** Fired when 'Element''s inline style is modified via a CSS property modification. */
+        notify(method: 'DOM.inlineStyleInvalidated', params: DOM.InlineStyleInvalidatedEvent): void;
+        
+        /** Mirrors 'DOMCharacterDataModified' event. */
+        notify(method: 'DOM.characterDataModified', params: DOM.CharacterDataModifiedEvent): void;
+        
+        /** Fired when 'Container''s child node count has changed. */
+        notify(method: 'DOM.childNodeCountUpdated', params: DOM.ChildNodeCountUpdatedEvent): void;
+        
+        /** Mirrors 'DOMNodeInserted' event. */
+        notify(method: 'DOM.childNodeInserted', params: DOM.ChildNodeInsertedEvent): void;
+        
+        /** Mirrors 'DOMNodeRemoved' event. */
+        notify(method: 'DOM.childNodeRemoved', params: DOM.ChildNodeRemovedEvent): void;
+        
+        /** Called when shadow root is pushed into the element. */
+        notify(method: 'DOM.shadowRootPushed', params: DOM.ShadowRootPushedEvent): void;
+        
+        /** Called when shadow root is popped from the element. */
+        notify(method: 'DOM.shadowRootPopped', params: DOM.ShadowRootPoppedEvent): void;
+        
+        /** Called when a pseudo element is added to an element. */
+        notify(method: 'DOM.pseudoElementAdded', params: DOM.PseudoElementAddedEvent): void;
+        
+        /** Called when a pseudo element is removed from an element. */
+        notify(method: 'DOM.pseudoElementRemoved', params: DOM.PseudoElementRemovedEvent): void;
+        
+        /** Called when distrubution is changed. */
+        notify(method: 'DOM.distributedNodesUpdated', params: DOM.DistributedNodesUpdatedEvent): void;
+        
+        notify(method: 'DOM.nodeHighlightRequested', params: DOM.NodeHighlightRequestedEvent): void;
+        
+        /** Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received. */
+        reply(method: 'CSS.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables the CSS agent for the given page. */
+        reply(method: 'CSS.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Returns requested styles for a DOM node identified by 'nodeId'. */
+        reply(method: 'CSS.getMatchedStylesForNode', handler: (params: CSS.GetMatchedStylesForNodeRequest) => PromiseOrNot<CSS.GetMatchedStylesForNodeResponse>): void;
+        
+        /** Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by 'nodeId'. */
+        reply(method: 'CSS.getInlineStylesForNode', handler: (params: CSS.GetInlineStylesForNodeRequest) => PromiseOrNot<CSS.GetInlineStylesForNodeResponse>): void;
+        
+        /** Returns the computed style for a DOM node identified by 'nodeId'. */
+        reply(method: 'CSS.getComputedStyleForNode', handler: (params: CSS.GetComputedStyleForNodeRequest) => PromiseOrNot<CSS.GetComputedStyleForNodeResponse>): void;
+        
+        /** Requests information about platform fonts which we used to render child TextNodes in the given node. */
+        reply(method: 'CSS.getPlatformFontsForNode', handler: (params: CSS.GetPlatformFontsForNodeRequest) => PromiseOrNot<CSS.GetPlatformFontsForNodeResponse>): void;
+        
+        /** Returns the current textual content and the URL for a stylesheet. */
+        reply(method: 'CSS.getStyleSheetText', handler: (params: CSS.GetStyleSheetTextRequest) => PromiseOrNot<CSS.GetStyleSheetTextResponse>): void;
+        
+        /** Sets the new stylesheet text. */
+        reply(method: 'CSS.setStyleSheetText', handler: (params: CSS.SetStyleSheetTextRequest) => PromiseOrNot<CSS.SetStyleSheetTextResponse>): void;
+        
+        /** Modifies the rule selector. */
+        reply(method: 'CSS.setRuleSelector', handler: (params: CSS.SetRuleSelectorRequest) => PromiseOrNot<CSS.SetRuleSelectorResponse>): void;
+        
+        /** Modifies the keyframe rule key text. */
+        reply(method: 'CSS.setKeyframeKey', handler: (params: CSS.SetKeyframeKeyRequest) => PromiseOrNot<CSS.SetKeyframeKeyResponse>): void;
+        
+        /** Applies specified style edits one after another in the given order. */
+        reply(method: 'CSS.setStyleTexts', handler: (params: CSS.SetStyleTextsRequest) => PromiseOrNot<CSS.SetStyleTextsResponse>): void;
+        
+        /** Modifies the rule selector. */
+        reply(method: 'CSS.setMediaText', handler: (params: CSS.SetMediaTextRequest) => PromiseOrNot<CSS.SetMediaTextResponse>): void;
+        
+        /** Creates a new special "via-inspector" stylesheet in the frame with given 'frameId'. */
+        reply(method: 'CSS.createStyleSheet', handler: (params: CSS.CreateStyleSheetRequest) => PromiseOrNot<CSS.CreateStyleSheetResponse>): void;
+        
+        /** Inserts a new rule with the given 'ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location'. */
+        reply(method: 'CSS.addRule', handler: (params: CSS.AddRuleRequest) => PromiseOrNot<CSS.AddRuleResponse>): void;
+        
+        /** Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser. */
+        reply(method: 'CSS.forcePseudoState', handler: (params: CSS.ForcePseudoStateRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns all media queries parsed by the rendering engine. */
+        reply(method: 'CSS.getMediaQueries', handler: () => PromiseOrNot<CSS.GetMediaQueriesResponse>): void;
+        
+        /** Find a rule with the given active property for the given node and set the new value for this property */
+        reply(method: 'CSS.setEffectivePropertyValueForNode', handler: (params: CSS.SetEffectivePropertyValueForNodeRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'CSS.getBackgroundColors', handler: (params: CSS.GetBackgroundColorsRequest) => PromiseOrNot<CSS.GetBackgroundColorsResponse>): void;
+        
+        /** Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features. */
+        notify(method: 'CSS.mediaQueryResultChanged'): void;
+        
+        /** Fired whenever a stylesheet is changed as a result of the client operation. */
+        notify(method: 'CSS.styleSheetChanged', params: CSS.StyleSheetChangedEvent): void;
+        
+        /** Fired whenever an active document stylesheet is added. */
+        notify(method: 'CSS.styleSheetAdded', params: CSS.StyleSheetAddedEvent): void;
+        
+        /** Fired whenever an active document stylesheet is removed. */
+        notify(method: 'CSS.styleSheetRemoved', params: CSS.StyleSheetRemovedEvent): void;
+        
+        notify(method: 'CSS.layoutEditorChange', params: CSS.LayoutEditorChangeEvent): void;
+        
+        /** Read a chunk of the stream */
+        reply(method: 'IO.read', handler: (params: IO.ReadRequest) => PromiseOrNot<IO.ReadResponse>): void;
+        
+        /** Close the stream, discard any temporary backing storage. */
+        reply(method: 'IO.close', handler: (params: IO.CloseRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets breakpoint on particular operation with DOM. */
+        reply(method: 'DOMDebugger.setDOMBreakpoint', handler: (params: DOMDebugger.SetDOMBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Removes DOM breakpoint that was set using 'setDOMBreakpoint'. */
+        reply(method: 'DOMDebugger.removeDOMBreakpoint', handler: (params: DOMDebugger.RemoveDOMBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets breakpoint on particular DOM event. */
+        reply(method: 'DOMDebugger.setEventListenerBreakpoint', handler: (params: DOMDebugger.SetEventListenerBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Removes breakpoint on particular DOM event. */
+        reply(method: 'DOMDebugger.removeEventListenerBreakpoint', handler: (params: DOMDebugger.RemoveEventListenerBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets breakpoint on particular native event. */
+        reply(method: 'DOMDebugger.setInstrumentationBreakpoint', handler: (params: DOMDebugger.SetInstrumentationBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Removes breakpoint on particular native event. */
+        reply(method: 'DOMDebugger.removeInstrumentationBreakpoint', handler: (params: DOMDebugger.RemoveInstrumentationBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets breakpoint on XMLHttpRequest. */
+        reply(method: 'DOMDebugger.setXHRBreakpoint', handler: (params: DOMDebugger.SetXHRBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Removes breakpoint from XMLHttpRequest. */
+        reply(method: 'DOMDebugger.removeXHRBreakpoint', handler: (params: DOMDebugger.RemoveXHRBreakpointRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns event listeners of the given object. */
+        reply(method: 'DOMDebugger.getEventListeners', handler: (params: DOMDebugger.GetEventListenersRequest) => PromiseOrNot<DOMDebugger.GetEventListenersResponse>): void;
+        
+        reply(method: 'Worker.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Worker.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Worker.sendMessageToWorker', handler: (params: Worker.SendMessageToWorkerRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'Worker.setWaitForDebuggerOnStart', handler: (params: Worker.SetWaitForDebuggerOnStartRequest) => PromiseOrNot<{}>): void;
+        
+        notify(method: 'Worker.workerCreated', params: Worker.WorkerCreatedEvent): void;
+        
+        notify(method: 'Worker.workerTerminated', params: Worker.WorkerTerminatedEvent): void;
+        
+        notify(method: 'Worker.dispatchMessageFromWorker', params: Worker.DispatchMessageFromWorkerEvent): void;
+        
+        reply(method: 'ServiceWorker.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.sendMessage', handler: (params: ServiceWorker.SendMessageRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.stop', handler: (params: ServiceWorker.StopRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.unregister', handler: (params: ServiceWorker.UnregisterRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.updateRegistration', handler: (params: ServiceWorker.UpdateRegistrationRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.startWorker', handler: (params: ServiceWorker.StartWorkerRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.skipWaiting', handler: (params: ServiceWorker.SkipWaitingRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.stopWorker', handler: (params: ServiceWorker.StopWorkerRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.inspectWorker', handler: (params: ServiceWorker.InspectWorkerRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.setForceUpdateOnPageLoad', handler: (params: ServiceWorker.SetForceUpdateOnPageLoadRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.deliverPushMessage', handler: (params: ServiceWorker.DeliverPushMessageRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.dispatchSyncEvent', handler: (params: ServiceWorker.DispatchSyncEventRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'ServiceWorker.getTargetInfo', handler: (params: ServiceWorker.GetTargetInfoRequest) => PromiseOrNot<ServiceWorker.GetTargetInfoResponse>): void;
+        
+        reply(method: 'ServiceWorker.activateTarget', handler: (params: ServiceWorker.ActivateTargetRequest) => PromiseOrNot<{}>): void;
+        
+        notify(method: 'ServiceWorker.workerCreated', params: ServiceWorker.WorkerCreatedEvent): void;
+        
+        notify(method: 'ServiceWorker.workerTerminated', params: ServiceWorker.WorkerTerminatedEvent): void;
+        
+        notify(method: 'ServiceWorker.dispatchMessage', params: ServiceWorker.DispatchMessageEvent): void;
+        
+        notify(method: 'ServiceWorker.workerRegistrationUpdated', params: ServiceWorker.WorkerRegistrationUpdatedEvent): void;
+        
+        notify(method: 'ServiceWorker.workerVersionUpdated', params: ServiceWorker.WorkerVersionUpdatedEvent): void;
+        
+        notify(method: 'ServiceWorker.workerErrorReported', params: ServiceWorker.WorkerErrorReportedEvent): void;
+        
+        /** Dispatches a key event to the page. */
+        reply(method: 'Input.dispatchKeyEvent', handler: (params: Input.DispatchKeyEventRequest) => PromiseOrNot<{}>): void;
+        
+        /** Dispatches a mouse event to the page. */
+        reply(method: 'Input.dispatchMouseEvent', handler: (params: Input.DispatchMouseEventRequest) => PromiseOrNot<{}>): void;
+        
+        /** Dispatches a touch event to the page. */
+        reply(method: 'Input.dispatchTouchEvent', handler: (params: Input.DispatchTouchEventRequest) => PromiseOrNot<{}>): void;
+        
+        /** Emulates touch event from the mouse event parameters. */
+        reply(method: 'Input.emulateTouchFromMouseEvent', handler: (params: Input.EmulateTouchFromMouseEventRequest) => PromiseOrNot<{}>): void;
+        
+        /** Synthesizes a pinch gesture over a time period by issuing appropriate touch events. */
+        reply(method: 'Input.synthesizePinchGesture', handler: (params: Input.SynthesizePinchGestureRequest) => PromiseOrNot<{}>): void;
+        
+        /** Synthesizes a scroll gesture over a time period by issuing appropriate touch events. */
+        reply(method: 'Input.synthesizeScrollGesture', handler: (params: Input.SynthesizeScrollGestureRequest) => PromiseOrNot<{}>): void;
+        
+        /** Synthesizes a tap gesture over a time period by issuing appropriate touch events. */
+        reply(method: 'Input.synthesizeTapGesture', handler: (params: Input.SynthesizeTapGestureRequest) => PromiseOrNot<{}>): void;
+        
+        /** Enables compositing tree inspection. */
+        reply(method: 'LayerTree.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables compositing tree inspection. */
+        reply(method: 'LayerTree.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Provides the reasons why the given layer was composited. */
+        reply(method: 'LayerTree.compositingReasons', handler: (params: LayerTree.CompositingReasonsRequest) => PromiseOrNot<LayerTree.CompositingReasonsResponse>): void;
+        
+        /** Returns the layer snapshot identifier. */
+        reply(method: 'LayerTree.makeSnapshot', handler: (params: LayerTree.MakeSnapshotRequest) => PromiseOrNot<LayerTree.MakeSnapshotResponse>): void;
+        
+        /** Returns the snapshot identifier. */
+        reply(method: 'LayerTree.loadSnapshot', handler: (params: LayerTree.LoadSnapshotRequest) => PromiseOrNot<LayerTree.LoadSnapshotResponse>): void;
+        
+        /** Releases layer snapshot captured by the back-end. */
+        reply(method: 'LayerTree.releaseSnapshot', handler: (params: LayerTree.ReleaseSnapshotRequest) => PromiseOrNot<{}>): void;
+        
+        reply(method: 'LayerTree.profileSnapshot', handler: (params: LayerTree.ProfileSnapshotRequest) => PromiseOrNot<LayerTree.ProfileSnapshotResponse>): void;
+        
+        /** Replays the layer snapshot and returns the resulting bitmap. */
+        reply(method: 'LayerTree.replaySnapshot', handler: (params: LayerTree.ReplaySnapshotRequest) => PromiseOrNot<LayerTree.ReplaySnapshotResponse>): void;
+        
+        /** Replays the layer snapshot and returns canvas log. */
+        reply(method: 'LayerTree.snapshotCommandLog', handler: (params: LayerTree.SnapshotCommandLogRequest) => PromiseOrNot<LayerTree.SnapshotCommandLogResponse>): void;
+        
+        notify(method: 'LayerTree.layerTreeDidChange', params: LayerTree.LayerTreeDidChangeEvent): void;
+        
+        notify(method: 'LayerTree.layerPainted', params: LayerTree.LayerPaintedEvent): void;
+        
+        /** Overrides the Device Orientation. */
+        reply(method: 'DeviceOrientation.setDeviceOrientationOverride', handler: (params: DeviceOrientation.SetDeviceOrientationOverrideRequest) => PromiseOrNot<{}>): void;
+        
+        /** Clears the overridden Device Orientation. */
+        reply(method: 'DeviceOrientation.clearDeviceOrientationOverride', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Start trace events collection. */
+        reply(method: 'Tracing.start', handler: (params: Tracing.StartRequest) => PromiseOrNot<{}>): void;
+        
+        /** Stop trace events collection. */
+        reply(method: 'Tracing.end', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Gets supported tracing categories. */
+        reply(method: 'Tracing.getCategories', handler: () => PromiseOrNot<Tracing.GetCategoriesResponse>): void;
+        
+        /** Request a global memory dump. */
+        reply(method: 'Tracing.requestMemoryDump', handler: () => PromiseOrNot<Tracing.RequestMemoryDumpResponse>): void;
+        
+        /** Record a clock sync marker in the trace. */
+        reply(method: 'Tracing.recordClockSyncMarker', handler: (params: Tracing.RecordClockSyncMarkerRequest) => PromiseOrNot<{}>): void;
+        
+        /** Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event. */
+        notify(method: 'Tracing.dataCollected', params: Tracing.DataCollectedEvent): void;
+        
+        /** Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events. */
+        notify(method: 'Tracing.tracingComplete', params: Tracing.TracingCompleteEvent): void;
+        
+        notify(method: 'Tracing.bufferUsage', params: Tracing.BufferUsageEvent): void;
+        
+        /** Enables animation domain notifications. */
+        reply(method: 'Animation.enable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Disables animation domain notifications. */
+        reply(method: 'Animation.disable', handler: () => PromiseOrNot<{}>): void;
+        
+        /** Gets the playback rate of the document timeline. */
+        reply(method: 'Animation.getPlaybackRate', handler: () => PromiseOrNot<Animation.GetPlaybackRateResponse>): void;
+        
+        /** Sets the playback rate of the document timeline. */
+        reply(method: 'Animation.setPlaybackRate', handler: (params: Animation.SetPlaybackRateRequest) => PromiseOrNot<{}>): void;
+        
+        /** Returns the current time of the an animation. */
+        reply(method: 'Animation.getCurrentTime', handler: (params: Animation.GetCurrentTimeRequest) => PromiseOrNot<Animation.GetCurrentTimeResponse>): void;
+        
+        /** Sets the paused state of a set of animations. */
+        reply(method: 'Animation.setPaused', handler: (params: Animation.SetPausedRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sets the timing of an animation node. */
+        reply(method: 'Animation.setTiming', handler: (params: Animation.SetTimingRequest) => PromiseOrNot<{}>): void;
+        
+        /** Seek a set of animations to a particular time within each animation. */
+        reply(method: 'Animation.seekAnimations', handler: (params: Animation.SeekAnimationsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Releases a set of animations to no longer be manipulated. */
+        reply(method: 'Animation.releaseAnimations', handler: (params: Animation.ReleaseAnimationsRequest) => PromiseOrNot<{}>): void;
+        
+        /** Gets the remote object of the Animation. */
+        reply(method: 'Animation.resolveAnimation', handler: (params: Animation.ResolveAnimationRequest) => PromiseOrNot<Animation.ResolveAnimationResponse>): void;
+        
+        /** Event for each animation that has been created. */
+        notify(method: 'Animation.animationCreated', params: Animation.AnimationCreatedEvent): void;
+        
+        /** Event for animation that has been started. */
+        notify(method: 'Animation.animationStarted', params: Animation.AnimationStartedEvent): void;
+        
+        /** Event for when an animation has been cancelled. */
+        notify(method: 'Animation.animationCanceled', params: Animation.AnimationCanceledEvent): void;
+        
+        /** Fetches the accessibility node for this DOM node, if it exists. */
+        reply(method: 'Accessibility.getAXNode', handler: (params: Accessibility.GetAXNodeRequest) => PromiseOrNot<Accessibility.GetAXNodeResponse>): void;
+        
+        /** Clears storage for origin. */
+        reply(method: 'Storage.clearDataForOrigin', handler: (params: Storage.ClearDataForOriginRequest) => PromiseOrNot<{}>): void;
+        
+        /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
+        reply(method: 'Browser.createBrowserContext', handler: () => PromiseOrNot<Browser.CreateBrowserContextResponse>): void;
+        
+        /** Deletes a BrowserContext, will fail of any open page uses it. */
+        reply(method: 'Browser.disposeBrowserContext', handler: (params: Browser.DisposeBrowserContextRequest) => PromiseOrNot<Browser.DisposeBrowserContextResponse>): void;
+        
+        /** Creates a new page. */
+        reply(method: 'Browser.createTarget', handler: (params: Browser.CreateTargetRequest) => PromiseOrNot<Browser.CreateTargetResponse>): void;
+        
+        /** Closes the target. If the target is a page that gets closed too. */
+        reply(method: 'Browser.closeTarget', handler: (params: Browser.CloseTargetRequest) => PromiseOrNot<Browser.CloseTargetResponse>): void;
+        
+        /** Returns target information for all potential targets. */
+        reply(method: 'Browser.getTargets', handler: () => PromiseOrNot<Browser.GetTargetsResponse>): void;
+        
+        /** Attaches to the target with given id. */
+        reply(method: 'Browser.attach', handler: (params: Browser.AttachRequest) => PromiseOrNot<{}>): void;
+        
+        /** Detaches from the target with given id. */
+        reply(method: 'Browser.detach', handler: (params: Browser.DetachRequest) => PromiseOrNot<{}>): void;
+        
+        /** Sends protocol message to the target with given id. */
+        reply(method: 'Browser.sendMessage', handler: (params: Browser.SendMessageRequest) => PromiseOrNot<{}>): void;
+        
+        /** Dispatches protocol message from the target with given id. */
+        notify(method: 'Browser.dispatchMessage', params: Browser.DispatchMessageEvent): void;
+        
+        /** Returns information about the system. */
+        reply(method: 'SystemInfo.getInfo', handler: () => PromiseOrNot<SystemInfo.GetInfoResponse>): void;
+        
         /** Request browser port binding. */
-        onBind: (handler: (request: Tethering.BindRequest) => PromiseOrNot<{}>) => void;
+        reply(method: 'Tethering.bind', handler: (params: Tethering.BindRequest) => PromiseOrNot<{}>): void;
+        
         /** Request browser port unbinding. */
-        onUnbind: (handler: (request: Tethering.UnbindRequest) => PromiseOrNot<{}>) => void;
+        reply(method: 'Tethering.unbind', handler: (params: Tethering.UnbindRequest) => PromiseOrNot<{}>): void;
+        
         /** Informs that port was successfully bound and got a specified connection id. */
-        fireAccepted: (event: Tethering.AcceptedEvent) => void;
+        notify(method: 'Tethering.accepted', params: Tethering.AcceptedEvent): void;
+        
+        /** Handle request from client */
+        reply(method: string, handler: (params: any) => PromiseOrNot<any>): void;
+        
+        /** Send notification to client */
+        notify(method: string, params: any): void;
+        
     }
 }
 

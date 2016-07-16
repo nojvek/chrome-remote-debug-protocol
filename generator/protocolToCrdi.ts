@@ -9,10 +9,10 @@ import {protocol as browserProtocol} from './protocolDef/browser_protocol'
 
 
 // This is used to hold adapter and client interface definitions
-interface ClientAdapterDef {
+interface ClientServerDef {
     name: string
     client: P.FunctionType
-    adapter: P.FunctionType
+    server: P.FunctionType
 }
 
 type ParamOrFunction = P.ParameterType | P.FunctionType
@@ -57,9 +57,12 @@ const emitModule = (moduleName:string, domains: P.Domain[]) => {
     emitHeaderComments()
     emitOpenBlock(`export module ${moduleName}`)
     emitGlobalTypeDefs()
-    emitInterface(`${moduleName}Client`, domains.map(d => getDomainDef(d.domain, 'Client')))
-    emitInterface(`${moduleName}Adapter`, domains.map(d => getDomainDef(d.domain, 'Adapter')))
-    domains.forEach(emitDomain)
+    const domainedFunctionDefs = domains.map(emitDomain)
+    const functionDefs = [].concat(...domainedFunctionDefs).concat(getJsonRpc2Defs())
+    emitInterface(`RpcClient`, functionDefs.map(s => s.client))
+    emitInterface(`RpcServer`, functionDefs.map(s => s.server))
+    // emitInterface(`${moduleName}Client`, domains.map(d => getDomainDef(d.domain, 'Client')))
+    // emitInterface(`${moduleName}Server`, domains.map(d => getDomainDef(d.domain, 'Server')))
     emitCloseBlock()
     emitLine()
     emitLine(`export default ${moduleName};`)
@@ -71,7 +74,7 @@ const emitGlobalTypeDefs = () => {
     emitLine(`export type PromiseOrNot<T> = T | Promise<T>;`)
 }
 
-const emitDomain = (domain: P.Domain) => {
+const emitDomain = (domain: P.Domain): ClientServerDef[] => {
     const domainName = toTitleCase(domain.domain)
     emitLine()
     emitDescription(domain.description)
@@ -81,8 +84,9 @@ const emitDomain = (domain: P.Domain) => {
     const eventDefs = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
     const functionDefs = commandDefs.concat(eventDefs)
     emitCloseBlock()
-    emitInterface(`${domainName}Client`, functionDefs.map(s => s.client))
-    emitInterface(`${domainName}Adapter`, functionDefs.map(s => s.adapter))
+    return functionDefs
+    // emitInterface(`${domainName}Client`, functionDefs.map(s => s.client))
+    // emitInterface(`${domainName}Server`, functionDefs.map(s => s.server))
 }
 
 const getDomainDef = (domainName: string, $ref:string ) => {
@@ -95,20 +99,34 @@ const emitDescription = (description: string) => {
     description ? emitLine(formatDescription(description)) : null
 }
 
-const getPropertyDef = (prop: P.ParameterType) => `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
+const getPropertyDef = (prop: P.ParameterType) => {
+    if ((<any>prop).type == "function") {
+        return `${prop.name}${getPropertyType(prop)}`
+    } else  {
+        return `${prop.name}${prop.optional ? '?' : ''}: ${getPropertyType(prop)}`
+    }
+}
 
 const getPropertyType = (prop: any): string  => {
-    if (prop.$ref) return prop.$ref
-    else if (prop.type == 'array') return `${getPropertyType(prop.items)}[]`
-    else if (prop.type == 'object') return `any`
-    else if (prop.type == 'function') return `(${prop.accepts.map(getPropertyDef).join(', ')}) => ${(prop).returns || 'void'}`
-    else if (prop.type == 'string' && prop.enum) return prop.enum.map((v: string) => `'${v}'`).join(' | ')
+    if (prop.$ref)
+        return prop.$ref
+    else if (prop.type == 'array')
+        return `${getPropertyType(prop.items)}[]`
+    else if (prop.type == 'object')
+        return `any`
+    else if (prop.type == 'function')
+        return `(${prop.accepts.map(getPropertyDef).join(', ')}): ${prop.returns || 'void'}`
+    else if (prop.type == 'lambda')
+        return `(${prop.accepts.map(getPropertyDef).join(', ')}) => ${prop.returns || 'void'}`
+    else if (prop.type == 'string' && prop.enum)
+        return prop.enum.map((v: string) => `'${v}'`).join(' | ')
     return prop.type
 }
 
 const emitProperty = (prop: P.ParameterType) => {
     emitDescription(prop.description)
     emitLine(`${getPropertyDef(prop)};`)
+    emitLine()
 }
 
 const emitInterface = (interfaceName: string, props: ParamOrFunction[], emitNewLine = true): string => {
@@ -132,30 +150,35 @@ const emitType = (type: P.PropertyType) => {
 
 const toTitleCase = (str: string) => str[0].toUpperCase() + str.substr(1)
 
-const emitCommand = (command: P.Command, domain: string): ClientAdapterDef => {
+const emitCommand = (command: P.Command, domain: string): ClientServerDef => {
     const titleCase = toTitleCase(command.name)
     const requestType = command.parameters ? `${domain}.${emitInterface(`${titleCase}Request`, command.parameters)}` : null
     const responseType = command.returns ? `${domain}.${emitInterface(`${titleCase}Response`, command.returns)}` : null
-    const requestArgDef = requestType ? [{name: 'request', $ref: requestType}] : []
+    const paramsDef = requestType ? [{name: 'params', $ref: requestType}] : []
+    const methodDef = [{name: 'method', $ref: `'${domain}.${command.name}'`}]
+
     const clientDef: P.FunctionType = {
         type: 'function',
         description: command.description,
-        name: command.name,
-        accepts: requestArgDef,
+        name: "send",
+        accepts: methodDef.concat(paramsDef),
         returns: `Promise<${responseType || '{}'}>`
     }
 
-    const commandDef: ClientAdapterDef = {
+    const commandDef: ClientServerDef = {
         name: command.name,
         client: clientDef,
-        adapter: Object.assign({}, clientDef, {
-            name: `on${titleCase}`,
-            accepts: [{
-                name: "handler",
-                type: "function",
-                accepts: requestArgDef,
-                returns: `PromiseOrNot<${responseType || '{}'}>`
-            }],
+        server: Object.assign({}, clientDef, {
+            name: "reply",
+            accepts: [
+                methodDef[0],
+                {
+                    name: "handler",
+                    type: "lambda",
+                    accepts: paramsDef,
+                    returns: `PromiseOrNot<${responseType || '{}'}>`
+                }
+            ],
             returns: null
         })
     }
@@ -163,39 +186,109 @@ const emitCommand = (command: P.Command, domain: string): ClientAdapterDef => {
     return commandDef
 }
 
-const emitEvent = (event: P.Event, domain: string): ClientAdapterDef => {
+const emitEvent = (event: P.Event, domain: string): ClientServerDef => {
     const titleCase = toTitleCase(event.name)
     const eventType = event.parameters ? `${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
-    const eventArgDef = eventType ? [{name: 'event', $ref: eventType}] : []
+    const paramsDef = eventType ? [{name: 'params', $ref: eventType}] : []
+    const methodDef = [{name: 'method', $ref: `'${domain}.${event.name}'`}]
+
     const clientDef: P.FunctionType = {
         type: 'function',
         description: event.description,
-        name: `on${titleCase}`,
-        accepts: [{
-            name: "handler",
-            type: "function",
-            accepts: eventArgDef
-        }],
+        name: "on",
+        accepts: [
+            methodDef[0],
+            {
+                name: "handler",
+                type: "lambda",
+                accepts: paramsDef
+            }
+        ],
     }
 
-    const eventDef: ClientAdapterDef = {
+    const eventDef: ClientServerDef = {
         name: event.name,
         client: clientDef,
-        adapter: Object.assign({}, clientDef, {
-            name: `fire${titleCase}`,
-            accepts: eventArgDef
+        server: Object.assign({}, clientDef, {
+            name: "notify",
+            accepts: methodDef.concat(paramsDef)
         })
     }
 
     return eventDef
 }
 
-const emitNames = (names: ClientAdapterDef[], arrayName: string) => {
+const emitNames = (names: ClientServerDef[], arrayName: string) => {
     emitLine()
     emitOpenBlock(`export const ${arrayName}: string[] = `, '[')
     names.forEach(s => emitLine(`'${s.name}',`))
     emitCloseBlock(']')
 }
+
+const getJsonRpc2Defs = (): ClientServerDef[] =>  {
+    const requestDef: ClientServerDef = {
+        name: "request",
+        client: {
+            type: 'function',
+            description: "Send request to server",
+            name: "send",
+            accepts: [
+                {name: 'method', $ref: "string"},
+                {
+                    type: "any",
+                    name: "params",
+                }
+            ],
+            returns: "Promise<any>"
+        },
+        server: {
+            type: 'function',
+            description: "Handle request from client",
+            name: "reply",
+            accepts: [
+                {name: 'method', $ref: "string"},
+                {
+                    type: "lambda",
+                    name: "handler",
+                    accepts: [{name: 'params', $ref: "any"}],
+                    returns: "PromiseOrNot<any>"
+                }
+            ],
+        }
+    }
+
+    const eventDef: ClientServerDef = {
+        name: "event",
+        client: {
+            type: 'function',
+            description: "Handle message from server",
+            name: "on",
+            accepts: [
+                {name: 'method', $ref: "string"},
+                {
+                    type: "lambda",
+                    name: "handler",
+                    accepts: [{name: 'params', $ref: "any"}]
+                }
+            ],
+        },
+        server: {
+            type: 'function',
+            description: "Send notification to client",
+            name: "notify",
+            accepts: [
+                {name: 'method', $ref: "string"},
+                {
+                    type: "any",
+                    name: "params",
+                }
+            ],
+        }
+    }
+
+    return [requestDef, eventDef]
+}
+
 
 /// Main
 const destFilePath = `${__dirname}/../../src/crdi.d.ts`

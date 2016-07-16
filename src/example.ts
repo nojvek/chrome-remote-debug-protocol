@@ -8,7 +8,7 @@ async function setupClient() {
     try {
         // const client = await WsRpcClient.connect("ws://localhost:9222/devtools/page/758107cd-dc4a-4263-b089-e2ef82260125")
         // const client = await rpc.Client.connect("ws://localhost:9229/node")
-        const client = await rpc.Client.connect("ws://localhost:8080")
+        const client: Crdi.RpcClient = await rpc.Client.connect("ws://localhost:8080")
 
         //client.on('error', (e: Error) => console.log(e));
 

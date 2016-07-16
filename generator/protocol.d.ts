@@ -115,8 +115,8 @@ export module Protocol {
 
     /** Interface that aids in the generation of client and adapter interfaces */
     export interface FunctionType extends ParamBaseType {
-        type: "function"
-        accepts?: FunctionType[] | (RefType & ParamBaseType)[]
+        type: "function" | "lambda"
+        accepts?: (FunctionType | ParameterType)[]
         returns?: FunctionType | string
     }
 }
