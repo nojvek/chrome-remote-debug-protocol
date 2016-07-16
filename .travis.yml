@@ -5,6 +5,7 @@ node_js:
 
 install:
     - npm install -g typescript@next
+    - npm install -g coffee-script
     - npm install -g jake
     - npm install -g typings
     - typings install
