@@ -8,7 +8,7 @@ log = jake.logger.log
 error = jake.logger.error
 
 ## Tasks
-task 'default', ['download-protocols', 'generate-crdi']
+task 'default', ['download-protocols']
 
 desc 'Download latest protocol.json files from Chromium source and append typescript protocol stub to them'
 task 'download-protocols', async: true, async ->

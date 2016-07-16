@@ -4,7 +4,7 @@
   "description": "Auto generate crdi interface from protocol.json files used by Chrome Remote Debugging Protocol",
   "main": "out/example.js",
   "scripts": {
-    "download-protocols": "jake download-protocols",
+    "download-protocols": "jake -f Jakefile.coffee download-protocols",
     "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

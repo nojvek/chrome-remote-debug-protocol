@@ -137,15 +137,21 @@ export const protocol: IProtocol =
                 "id": "ExceptionDetails",
                 "type": "object",
                 "hidden": true,
-                "description": "Detailed information on exception (or error) that was thrown during script compilation or execution.",
+                "description": "Detailed information about exception (or error) that was thrown during script compilation or execution.",
                 "properties": [
                     { "name": "text", "type": "string", "description": "Exception text." },
-                    { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
-                    { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
-                    { "name": "lineNumber", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message. (0-based)." },
-                    { "name": "columnNumber", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message. (0-based)." },
-                    { "name": "stack", "$ref": "StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." }
+                    { "name": "scriptId", "$ref": "ScriptId", "description": "Script ID of the exception location." },
+                    { "name": "lineNumber", "type": "integer", "description": "Line number of the exception location (0-based)." },
+                    { "name": "columnNumber", "type": "integer", "description": "Column number of the exception location (0-based)." },
+                    { "name": "url", "type": "string", "optional": true, "description": "URL of the exception location, to be used when the script was not reported." },
+                    { "name": "stackTrace", "$ref": "StackTrace", "optional": true, "description": "JavaScript stack trace if available." }
                 ]
+            },
+            {
+                "id": "Timestamp",
+                "type": "number",
+                "description": "Number of milliseconds since epoch.",
+                "hidden": true
             },
             {
                 "id": "CallFrame",
@@ -316,7 +322,7 @@ export const protocol: IProtocol =
                 "description": "Issued when exception was thrown and unhandled.",
                 "parameters": [
                     { "name": "exceptionId", "type": "integer", "description": "Exception id." },
-                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of the exception." },
                     { "name": "details", "$ref": "ExceptionDetails" },
                     { "name": "exception", "$ref": "RemoteObject", "optional": true, "description": "Exception object." },
                     { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Identifier of the context where exception happened." }
@@ -327,7 +333,6 @@ export const protocol: IProtocol =
                 "name": "exceptionRevoked",
                 "description": "Issued when unhandled exception was revoked.",
                 "parameters": [
-                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
                     { "name": "message", "type": "string", "description": "Message describing why exception was revoked." },
                     { "name": "exceptionId", "type": "integer", "description": "The id of revoked exception, as reported in <code>exceptionUnhandled</code>." }
                 ],
@@ -340,7 +345,7 @@ export const protocol: IProtocol =
                     { "name": "type", "type": "string", "enum": ["log", "debug", "info", "error", "warning", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Type of the call." },
                     { "name": "args", "type": "array", "items": { "$ref": "RemoteObject" }, "description": "Call arguments." },
                     { "name": "executionContextId", "$ref": "ExecutionContextId", "description": "Identifier of the context where the call was made." },
-                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Call timestamp." },
                     { "name": "stackTrace", "$ref": "StackTrace", "optional": true, "description": "Stack trace captured when the call was made." }
                 ],
                 "hidden": true
@@ -415,17 +420,6 @@ export const protocol: IProtocol =
                     { "name": "endLocation", "$ref": "Location", "optional": true, "hidden": true, "description": "Location in the source code where scope ends" }
                 ],
                 "description": "Scope description."
-            },
-            {
-                "id": "SetScriptSourceError",
-                "type": "object",
-                "properties": [
-                    { "name": "message", "type": "string", "description": "Compiler error message" },
-                    { "name": "lineNumber", "type": "integer", "description": "Compile error line number (1-based)" },
-                    { "name": "columnNumber", "type": "integer", "description": "Compile error column number (1-based)" }
-                ],
-                "description": "Error data for setScriptSource command. Contains uncompilable script source error.",
-                "hidden": true
             },
             {
                 "id": "SearchMatch",
@@ -555,7 +549,7 @@ export const protocol: IProtocol =
                     { "name": "callFrames", "type": "array", "optional": true, "items": { "$ref": "CallFrame" }, "description": "New stack trace in case editing has happened while VM was stopped." },
                     { "name": "stackChanged", "type": "boolean", "optional": true, "description": "Whether current call stack  was modified after applying the changes.", "hidden": true },
                     { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true },
-                    { "name": "compileError", "optional": true, "$ref": "SetScriptSourceError", "description": "Error data if any." }
+                    { "name": "compileError", "optional": true, "$ref": "Runtime.ExceptionDetails", "description": "Error data if any." }
                 ],
                 "description": "Edits JavaScript source live."
             },
@@ -723,12 +717,6 @@ export const protocol: IProtocol =
         "dependencies": ["Runtime"],
         "types": [
             {
-                "id": "Timestamp",
-                "type": "number",
-                "description": "Number of seconds since epoch.",
-                "hidden": true
-            },
-            {
                 "id": "ConsoleMessage",
                 "type": "object",
                 "description": "Console message.",
@@ -745,7 +733,7 @@ export const protocol: IProtocol =
                     { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Never present. Use Runtime.consoleAPICalled instead." },
                     { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
                     { "name": "networkRequestId", "type": "string", "optional": true, "description": "Identifier of the network request associated with this message." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
+                    { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true },
                     { "name": "workerId", "type": "string", "optional": true, "description": "Identifier of the worker this message came from.", "hidden": true }
                 ]
@@ -777,7 +765,7 @@ export const protocol: IProtocol =
                 "name": "messageRepeatCountUpdated",
                 "parameters": [
                     { "name": "count", "type": "integer", "description": "New repeat count value." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
+                    { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
                 ],
                 "description": "Is not issued. Will be gone in the future versions of the protocol.",
                 "deprecated": true
