@@ -1,12 +1,11 @@
 {
   "name": "chrome-remote-debug-interface",
   "version": "1.0.0",
-  "description": "Auto generate crdi interface from protocol.json files used by Chrome Remote Debugging Protocol",
+  "description": "Auto generate crdi.d.ts interface from protocol.json files used by Chrome Remote Debugging Protocol",
   "main": "out/example.js",
   "scripts": {
     "download-protocols": "jake -f jakefile.coffee download-protocols",
-    "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js"
   },
   "repository": {
     "type": "git",

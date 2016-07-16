@@ -65,7 +65,7 @@ export interface Error {
 }/*
 
 /** Error codes are same as xml-rpc codes. See http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php */
-export enum ErrorCode {
+export const enum ErrorCode {
     /** Parse error	Invalid JSON was received by the Server. */
     ParseError = -32700,
 
