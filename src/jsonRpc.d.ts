@@ -89,7 +89,7 @@ export type PromiseOrNot<T> = Promise<T> | T
 /** A JsonRPC Client that abstracts the transportation of messages to and from the Server. */
 export interface Client {
     /** Creates a Request object and sends to the Server. Returns the Response from the Server as a Promise. */
-    send: (method: string, params: any) => Promise<any>
+    call: (method: string, params: any) => Promise<any>
 
     /** Invokes the handler function when Server sends a notification. */
     on: (method: string, handler: (params: any) => void) => void
@@ -105,7 +105,7 @@ export interface Server {
      * If handler function returns a Promise, then it waits for the promise to be resolved or rejected before returning.
      * It also wraps the handler in a trycatch so it can send an error response when an exception is thrown.
      */
-    reply: (method: string, handler: (params: any) => PromiseOrNot<any>) => void
+    expose: (method: string, handler: (params: any) => Promise<any>) => void
 
     /** Invokes the handler function when Client sends a notification. */
     on: (method: string, handler: (params: any) => void) => void
