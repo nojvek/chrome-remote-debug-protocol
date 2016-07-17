@@ -31,8 +31,12 @@ const emitIndent = () => {
 }
 
 const emitLine = (str = "") => {
-    emitIndent()
-    emit(`${str}\n`)
+    if (str) {
+        emitIndent()
+        emit(`${str}\n`)
+    } else {
+        emit("\n")
+    }
 }
 
 const emitOpenBlock = (str: string, openChar = ' {') => {
@@ -55,14 +59,11 @@ const emitHeaderComments = () => {
 const emitModule = (moduleName:string, domains: P.Domain[]) => {
     moduleName = toTitleCase(moduleName)
     emitHeaderComments()
-    emitOpenBlock(`export module ${moduleName}`)
+    emitOpenBlock(`export namespace ${moduleName}`)
     emitGlobalTypeDefs()
-    const domainedFunctionDefs = domains.map(emitDomain)
-    const functionDefs = [].concat(...domainedFunctionDefs).concat(getJsonRpc2Defs())
-    emitInterface(`RpcClient`, functionDefs.map(s => s.client))
-    emitInterface(`RpcServer`, functionDefs.map(s => s.server))
-    // emitInterface(`${moduleName}Client`, domains.map(d => getDomainDef(d.domain, 'Client')))
-    // emitInterface(`${moduleName}Server`, domains.map(d => getDomainDef(d.domain, 'Server')))
+    emitInterface(`${moduleName}Client`, domains.map(d => getDomainDef(d.domain, 'Client')))
+    emitInterface(`${moduleName}Server`, domains.map(d => getDomainDef(d.domain, 'Server')))
+    domains.forEach(emitDomain)
     emitCloseBlock()
     emitLine()
     emitLine(`export default ${moduleName};`)
@@ -74,7 +75,7 @@ const emitGlobalTypeDefs = () => {
     emitLine(`export type PromiseOrNot<T> = T | Promise<T>;`)
 }
 
-const emitDomain = (domain: P.Domain): ClientServerDef[] => {
+const emitDomain = (domain: P.Domain) => {
     const domainName = toTitleCase(domain.domain)
     emitLine()
     emitDescription(domain.description)
@@ -84,9 +85,9 @@ const emitDomain = (domain: P.Domain): ClientServerDef[] => {
     const eventDefs = domain.events ? domain.events.map(e => emitEvent(e, domainName)) : []
     const functionDefs = commandDefs.concat(eventDefs)
     emitCloseBlock()
-    return functionDefs
-    // emitInterface(`${domainName}Client`, functionDefs.map(s => s.client))
-    // emitInterface(`${domainName}Server`, functionDefs.map(s => s.server))
+    emitInterface(`${domainName}Commands`, commandDefs.map(d => d.client))
+    emitInterface(`${domainName}Client extends ${domainName}Commands`, eventDefs.map(d => d.client))
+    emitInterface(`${domainName}Server`, eventDefs.concat(commandDefs[0]).map(d => d.server))
 }
 
 const getDomainDef = (domainName: string, $ref:string ) => {
@@ -158,29 +159,26 @@ const emitCommand = (command: P.Command, domain: string): ClientServerDef => {
     const methodDef = [{name: 'method', $ref: `'${domain}.${command.name}'`}]
 
     const clientDef: P.FunctionType = {
-        type: 'function',
+        type: 'lambda',
         description: command.description,
-        name: "send",
-        accepts: methodDef.concat(paramsDef),
-        returns: `Promise<${responseType || '{}'}>`
+        name: command.name,
+        optional: true,
+        accepts: paramsDef,
+        returns: `PromiseOrNot<${responseType || 'void'}>`
+    }
+
+    const serverDef: P.FunctionType = {
+        type: "function",
+        name: "expose",
+        accepts: [
+            {name: "domain", $ref: `${domain}Commands`}
+        ],
     }
 
     const commandDef: ClientServerDef = {
         name: command.name,
         client: clientDef,
-        server: Object.assign({}, clientDef, {
-            name: "reply",
-            accepts: [
-                methodDef[0],
-                {
-                    name: "handler",
-                    type: "lambda",
-                    accepts: paramsDef,
-                    returns: `PromiseOrNot<${responseType || '{}'}>`
-                }
-            ],
-            returns: null
-        })
+        server: serverDef
     }
 
     return commandDef
@@ -190,14 +188,12 @@ const emitEvent = (event: P.Event, domain: string): ClientServerDef => {
     const titleCase = toTitleCase(event.name)
     const eventType = event.parameters ? `${domain}.${emitInterface(`${titleCase}Event`, event.parameters)}` : ''
     const paramsDef = eventType ? [{name: 'params', $ref: eventType}] : []
-    const methodDef = [{name: 'method', $ref: `'${domain}.${event.name}'`}]
 
     const clientDef: P.FunctionType = {
         type: 'function',
         description: event.description,
-        name: "on",
+        name: `on${titleCase}`,
         accepts: [
-            methodDef[0],
             {
                 name: "handler",
                 type: "lambda",
@@ -210,8 +206,8 @@ const emitEvent = (event: P.Event, domain: string): ClientServerDef => {
         name: event.name,
         client: clientDef,
         server: Object.assign({}, clientDef, {
-            name: "notify",
-            accepts: methodDef.concat(paramsDef)
+            name: `emit${titleCase}`,
+            accepts: paramsDef
         })
     }
 
@@ -225,71 +221,6 @@ const emitNames = (names: ClientServerDef[], arrayName: string) => {
     emitCloseBlock(']')
 }
 
-const getJsonRpc2Defs = (): ClientServerDef[] =>  {
-    const requestDef: ClientServerDef = {
-        name: "request",
-        client: {
-            type: 'function',
-            description: "Send request to server",
-            name: "send",
-            accepts: [
-                {name: 'method', $ref: "string"},
-                {
-                    type: "any",
-                    name: "params",
-                }
-            ],
-            returns: "Promise<any>"
-        },
-        server: {
-            type: 'function',
-            description: "Handle request from client",
-            name: "reply",
-            accepts: [
-                {name: 'method', $ref: "string"},
-                {
-                    type: "lambda",
-                    name: "handler",
-                    accepts: [{name: 'params', $ref: "any"}],
-                    returns: "PromiseOrNot<any>"
-                }
-            ],
-        }
-    }
-
-    const eventDef: ClientServerDef = {
-        name: "event",
-        client: {
-            type: 'function',
-            description: "Handle message from server",
-            name: "on",
-            accepts: [
-                {name: 'method', $ref: "string"},
-                {
-                    type: "lambda",
-                    name: "handler",
-                    accepts: [{name: 'params', $ref: "any"}]
-                }
-            ],
-        },
-        server: {
-            type: 'function',
-            description: "Send notification to client",
-            name: "notify",
-            accepts: [
-                {name: 'method', $ref: "string"},
-                {
-                    type: "any",
-                    name: "params",
-                }
-            ],
-        }
-    }
-
-    return [requestDef, eventDef]
-}
-
-
 /// Main
 const destFilePath = `${__dirname}/../../src/crdi.d.ts`
 const moduleName = path.basename(destFilePath, ".d.ts")
@@ -298,3 +229,7 @@ const protocolDomains: P.Domain[] = jsProtocol.domains.concat(browserProtocol.do
 emitModule(moduleName, protocolDomains)
 console.log(`Writing to ${destFilePath}`)
 fs.writeFileSync(destFilePath, emitStr, 'utf-8')
+
+function a(): Promise<void> {
+    return Promise.resolve()
+}

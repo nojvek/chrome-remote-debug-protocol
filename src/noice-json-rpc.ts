@@ -1,5 +1,3 @@
-import * as http from 'http'
-
 import {EventEmitter} from 'events'
 import * as JsonRpc2 from './jsonRpc'
 

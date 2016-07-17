@@ -30,7 +30,7 @@
     "url": "https://github.com/nojvek/chrome-remote-debug-interface/issues"
   },
   "homepage": "https://github.com/nojvek/chrome-remote-debug-interface#readme",
-  "dependencies": {
+  "devDependencies": {
     "es6-simple-async": "^1.1.1",
     "node-fetch": "^1.5.3",
     "promisify-node": "^0.4.0",

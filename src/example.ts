@@ -8,7 +8,7 @@ import * as rpc from './noice-json-rpc'
 
 async function setupClient() {
     try {
-        const api = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
+        const api: Crdi.CrdiClient = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
 
         await Promise.all([
             api.Runtime.enable(),
@@ -28,7 +28,7 @@ async function setupClient() {
 
 function setupServer() {
     const wssServer = new WebSocketServer({port: 8080});
-    const api = new rpc.Server(wssServer).api();
+    const api: Crdi.CrdiServer = new rpc.Server(wssServer).api();
 
     const enable = () => {}
 
@@ -42,11 +42,21 @@ function setupServer() {
         enable,
         start() {
             setTimeout(() => {
-                api.Runtime.emitExecutionContextDestroyed()
+                api.Runtime.emitExecutionContextDestroyed({executionContextId:1})
             }, 1000)
         },
         stop() {
-            return {data: "noice!"}
+            const response: Crdi.Profiler.StopResponse = {
+                profile: {
+                    head: null,
+                    startTime: 0,
+                    endTime: 100
+                }
+            }
+            return response
+        },
+        setSamplingInterval({interval}) {
+            console.log(interval)
         }
     })
 
