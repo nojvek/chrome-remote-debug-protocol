@@ -1,17 +1,14 @@
 /// <reference path="../typings/index.d.ts" />
 import * as fs from 'fs'
+import * as WebSocket from 'ws'
+import WebSocketServer = WebSocket.Server
 import * as http from 'http'
 import Crdi from './crdi'
-import * as rpc from './websocket-json-rpc'
+import * as rpc from './noice-json-rpc'
 
 async function setupClient() {
     try {
-        // const client = await WsRpcClient.connect("ws://localhost:9222/devtools/page/758107cd-dc4a-4263-b089-e2ef82260125")
-        // const client = await rpc.Client.connect("ws://localhost:9229/node")
-        const client = await rpc.Client.connect("ws://localhost:8080")
-        const api = client.api()
-
-        //client.on('error', (e: Error) => console.log(e));
+        const api = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
 
         await Promise.all([
             api.Runtime.enable(),
@@ -21,7 +18,7 @@ async function setupClient() {
         ])
 
         await api.Profiler.start()
-        await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve)); // Wait for 1000 ms
+        await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve)); // Wait for event
         await api.Profiler.stop()
 
     } catch (e) {
@@ -30,9 +27,8 @@ async function setupClient() {
 }
 
 function setupServer() {
-    const httpServer = http.createServer();
-    const api = new rpc.Server(httpServer).api();
-    httpServer.listen(8080, "0.0.0.0")
+    const wssServer = new WebSocketServer({port: 8080});
+    const api = new rpc.Server(wssServer).api();
 
     const enable = () => {}
 
@@ -43,7 +39,6 @@ function setupServer() {
         run() {}
     })
     api.Profiler.expose({
-        hello: "world",
         enable,
         start() {
             setTimeout(() => {
@@ -51,20 +46,9 @@ function setupServer() {
             }, 1000)
         },
         stop() {
-            console.log(this.hello)
-            return {cpu: "yo"}
+            return {data: "noice!"}
         }
     })
-
-    // rpcServer.expose("Debugger.enable", () => Promise.resolve())
-    // rpcServer.expose("Profiler.enable", () => Promise.resolve())
-    // rpcServer.expose("Runtime.enable", () => Promise.resolve())
-    // rpcServer.expose("Runtime.run", () => Promise.resolve())
-    // rpcServer.expose("Profiler.start", () => Promise.resolve())
-    // rpcServer.expose("Profiler.stop", () => Promise.resolve({cpu: "uo"}))
-
-
-
 
 }
 

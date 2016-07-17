@@ -1,52 +1,77 @@
-import * as WebSocket from 'ws'
 import * as http from 'http'
-import WebSocketServer = WebSocket.Server
 
 import {EventEmitter} from 'events'
 import * as JsonRpc2 from './jsonRpc'
 
+export interface LikeSocket {
+    send(message: string): void
+    on(event: string, cb: Function): this;
+    removeListener(event: string, cb: Function): this;
+
+    on(event: 'open', cb: (ws: LikeSocket) => void ): this
+    on(event: 'message', cb: (data: string) => void): this;
+    on(event: 'error', cb: (err: Error) => void ): this
+}
+
+export interface LikeSocketServer {
+    on(event: string, cb: Function): this;
+    on(event: 'connection', cb: (ws: LikeSocket) => void ): this
+    on(event: 'error', cb: (err: Error) => void ): this
+    clients?: LikeSocket[]
+}
+
+export interface LogOpts {
+    /** All messages will be emmitted and can be handled by client.on('receive', (msg: string) => void) and client.on('send', (msg: string) => any)  */
+    logEmit?: boolean
+
+    /** All messages will be logged to console */
+    logConsole?: boolean
+}
+
+export interface ClientOpts extends LogOpts {
+}
+
+export interface ServerOpts extends LogOpts {
+}
+
+/**
+ * Creates a RPC Client.
+ * It is intentional that Client does not create a WebSocket object since we prefer composability
+ * The Client can be used to communicate over processes, http or anything that can send and receive strings
+ * It just needs to pass in an object that implements LikeSocket interface
+ */
 export class Client extends EventEmitter implements JsonRpc2.Client{
     private static ConnectTimeout = 5000
 
     private _connectedPromise: Promise<Client>
-    private _webSocket: WebSocket
+    private _socket: LikeSocket
     private _pendingMessageMap: Map<number, {resolve: Function, reject: Function}> = new Map()
     private _nextMessageId: number = 0
+    private _emitLog: boolean = false;
+    private _consoleLog: boolean = false;
 
-    static connect(address: string): Promise<Client> {
-        const client = new Client(address)
-        return client._connectedPromise
-    }
-
-    constructor(address: string){
+    constructor(socket: LikeSocket, opts?: ClientOpts){
         super()
+        this.setLogging(opts)
 
         this._connectedPromise = new Promise((resolve, reject) => {
-            try {
-                console.log("creating", address)
-                this._webSocket = new WebSocket(address)
-            } catch (e) {
-                return reject(e)
-            }
+            this._socket = socket
 
-            // If connection is hung, error after timeout
-            const ws = this._webSocket
-            setTimeout(() => reject(new Error('WebSocket connection timed out')), Client.ConnectTimeout)
-
-            ws.on('error', reject)
-            ws.on('open', () => {
+            socket.on('error', reject)
+            socket.on('open', () => {
                 // Replace the promise-rejecting handler
-                ws.removeListener('error', reject)
-                ws.on('error', e => this.emit('error', e))
-                ws.on('close', () => this.emit('close'))
+                socket.removeListener('error', reject)
+                socket.on('error', e => this.emit('error', e))
                 resolve(this)
             })
 
-            ws.on('message', message => this.processMessage(message))
+            socket.on('close', () => this.emit('close'))
+            socket.on('message', message => this.processMessage(message))
         })
     }
 
     public processMessage(messageStr: string) {
+        this._logMessage(messageStr, "receive")
         let message: JsonRpc2.Response & JsonRpc2.Notification
 
         // Ensure JSON is not malformed
@@ -56,10 +81,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
             return this.emit('error', e)
         }
 
-        // All messages will be emitted so host can log if needed
-        console.log("Client <", JSON.stringify(message))
-        this.emit('receive', message)
-
+        // Check that messages is well formed
         if (!message){
             this.emit('error', new Error(`Malformed message: ${messageStr}`))
         } else if (message.id) {
@@ -82,10 +104,26 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
         }
     }
 
+    /** Set logging for all received and sent messages */
+    public setLogging({logEmit, logConsole}: LogOpts = {}) {
+        this._emitLog = logEmit
+        this._consoleLog = logConsole
+    }
+
     private _send(message: JsonRpc2.Notification | JsonRpc2.Request) {
-        console.log("Client >", JSON.stringify(message))
-        this.emit('send', message);
-        this._webSocket.send(JSON.stringify(message))
+        const messsageStr = JSON.stringify(message)
+        this._logMessage(messsageStr, "send")
+        this._socket.send(messsageStr)
+    }
+
+    private _logMessage(message: string, direction: "send" | "receive") {
+        if (this._consoleLog) {
+            console.log(`Client ${direction === "send" ? ">" : "<"}`, message)
+        }
+
+        if (this._emitLog) {
+            this.emit(direction, message)
+        }
     }
 
     call(method: string, params?: any): Promise<any> {
@@ -103,9 +141,17 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     }
 
     /**
-     *  Builds a proxy where api.domain.func(params) transates into client.send('{domain}.{func}', params) calls
+     * Builds an ES6 Proxy where api.domain.method(params) transates into client.send('{domain}.{method}', params) calls
+     * api.domain.on{method} will add event handlers for {method} events
+     * api.domain.emit{method} will send {method} notifications to the server
+     * The api object leads itself to a very clean interface i.e `await api.Domain.func(params)` calls
+     * This allows the consumer to abstract all the internal details of marshalling the message from function call to a string
      */
     api(domain?: string): any {
+        if (!Proxy) {
+            throw new Error("api() requires ES6 Proxy. Please use an ES6 compatible engine")
+        }
+
         return new Proxy({}, {
             get: (target: any, prop: string) => {
                 if (target[prop]) {
@@ -133,43 +179,45 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     }
 }
 
-export interface MessageSender {
-    send(message: string): void
-}
-
+/**
+ * Creates a RPC Server.
+ * It is intentional that Server does not create a WebSocketServer object since we prefer composability
+ * The Server can be used to communicate over processes, http or anything that can send and receive strings
+ * It just needs to pass in an object that implements LikeSocketServer interface
+ */
 export class Server extends EventEmitter implements JsonRpc2.Server {
-    private _replyHandlerMap: Map<string, (params: any) => JsonRpc2.PromiseOrNot<any>> = new Map()
-    private _webSocketServer: WebSocketServer
+    private _socketServer: LikeSocketServer
+    private _exposedMethodsMap: Map<string, (params: any) => JsonRpc2.PromiseOrNot<any>> = new Map()
+    private _emitLog: boolean = false;
+    private _consoleLog: boolean = false;
 
-    constructor (httpServer: http.Server) {
+    constructor (server: LikeSocketServer, opts?:ServerOpts) {
         super()
+        this.setLogging(opts)
+        this._socketServer = server
+        server.on('error', (e) => this.emit('error', e))
 
-        const wss = this._webSocketServer = new WebSocketServer({server: httpServer})
-        wss.on('error', (e) => this.emit('error', e))
-
-        wss.on('connection', ws => {
-            ws.on('message', message => this.processMessage(message, ws))
+        server.on('connection', socket => {
+            socket.on('message', message => this.processMessage(message, socket))
         })
     }
 
-    private processMessage(messageStr: string, host: MessageSender): void {
+    private processMessage(messageStr: string, socket: LikeSocket): void {
+        this._logMessage(messageStr, "receive")
         let message: JsonRpc2.Request
 
         // Ensure JSON is not malformed
         try {
             message = JSON.parse(messageStr)
         } catch (e) {
-            return this._sendError(host, message, JsonRpc2.ErrorCode.ParseError)
+            return this._sendError(socket, message, JsonRpc2.ErrorCode.ParseError)
         }
 
-        // Emit message so caller can log if needed
-        console.log("Server <", JSON.stringify(message))
-        this.emit('receive', message, host)
 
         // Ensure method is atleast defined
         if (message && message.method && typeof message.method == "string") {
             if (message.id && typeof message.id === "number") {
-                const handler = this._replyHandlerMap.get(message.method)
+                const handler = this._exposedMethodsMap.get(message.method)
                 // Handler is defined so lets call it
                 if (handler) {
                     try {
@@ -177,19 +225,19 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                         if (result instanceof Promise) {
                             // Result is a promise, so lets wait for the result and handle accordingly
                             result.then((actualResult: any) => {
-                                this._send(host, {id: message.id, result: actualResult || {}})
+                                this._send(socket, {id: message.id, result: actualResult || {}})
                             }).catch((error: Error) => {
-                                this._sendError(host, message, JsonRpc2.ErrorCode.InternalError, error);
+                                this._sendError(socket, message, JsonRpc2.ErrorCode.InternalError, error);
                             })
                         } else {
                             // Result is not a promise so send immediately
-                            this._send(host, {id: message.id, result: result || {}})
+                            this._send(socket, {id: message.id, result: result || {}})
                         }
                     } catch (error) {
-                        this._sendError(host, message, JsonRpc2.ErrorCode.InternalError, error);
+                        this._sendError(socket, message, JsonRpc2.ErrorCode.InternalError, error);
                     }
                 } else {
-                    this._sendError(host, message, JsonRpc2.ErrorCode.MethodNotFound)
+                    this._sendError(socket, message, JsonRpc2.ErrorCode.MethodNotFound)
                 }
             } else {
                 // Message is a notification, so just emit
@@ -197,18 +245,34 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
             }
         } else {
             // No method property, send InvalidRequest error
-            this._sendError(host, message, JsonRpc2.ErrorCode.InvalidRequest)
+            this._sendError(socket, message, JsonRpc2.ErrorCode.InvalidRequest)
         }
     }
 
-    private _send(host: MessageSender, message: JsonRpc2.Response | JsonRpc2.Notification ) {
-        console.log("Server >", JSON.stringify(message))
-        this.emit('send', message);
-        host.send(JSON.stringify(message))
+    /** Set logging for all received and sent messages */
+    public setLogging({logEmit, logConsole}: LogOpts = {}) {
+        this._emitLog = logEmit
+        this._consoleLog = logConsole
     }
 
-    private _sendError(host: MessageSender, request: JsonRpc2.Request, errorCode: JsonRpc2.ErrorCode, errorData?: any) {
-        this._send(host, {
+    private _logMessage(messageStr: string, direction: "send" | "receive") {
+        if (this._consoleLog) {
+            console.log(`Server ${direction === "send" ? ">" : "<"}`, messageStr)
+        }
+
+        if (this._emitLog) {
+            this.emit(direction, messageStr)
+        }
+    }
+
+    private _send(socket: LikeSocket, message: JsonRpc2.Response | JsonRpc2.Notification ) {
+        const messageStr = JSON.stringify(message)
+        this._logMessage(messageStr, "send")
+        socket.send(messageStr)
+    }
+
+    private _sendError(socket: LikeSocket, request: JsonRpc2.Request, errorCode: JsonRpc2.ErrorCode, errorData?: any) {
+        this._send(socket, {
             id: request && request.id || -1,
             error: this._errorFromCode(errorCode, errorData, request.method)
         })
@@ -236,17 +300,31 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     }
 
     expose(method: string, handler: (params: any) => Promise<any>): void {
-        this._replyHandlerMap.set(method, handler)
+        this._exposedMethodsMap.set(method, handler)
     }
 
     notify (method: string, params?: any): void {
         // Broadcast message to all clients
-        this._webSocketServer.clients.forEach(ws => {
-            this._send(ws, {method, params})
-        })
+        if (this._socketServer.clients) {
+            this._socketServer.clients.forEach(ws => {
+                this._send(ws, {method, params})
+            })
+        } else {
+            throw new Error("SocketServer does not support broadcasting. No 'clients: LikeSocket[]' property found")
+        }
     }
 
+    /**
+     * Builds an ES6 Proxy where api.domain.expose(module) exposes all the functions in the module over RPC
+     * api.domain.emit{method} calls will send {method} notifications to the client
+     * The api object leads itself to a very clean interface i.e `await api.Domain.func(params)` calls
+     * This allows the consumer to abstract all the internal details of marshalling the message from function call to a string
+     */
     api(domain?: string): any {
+        if (!Proxy) {
+            throw new Error("api() requires ES6 Proxy. Please use an ES6 compatible engine")
+        }
+
         return new Proxy({}, {
             get: (target: any, prop: string) => {
                 if (target[prop]) {
