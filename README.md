@@ -1,5 +1,6 @@
 # Chrome Remote Debug Protocol
 [![build status](https://travis-ci.org/nojvek/chrome-remote-debug-protocol.svg?branch=master)](https://travis-ci.org/nojvek/chrome-remote-debug-protocol)
+[![npm version](https://badge.fury.io/js/chrome-remote-debug-protocol.svg)](https://badge.fury.io/js/chrome-remote-debug-protocol)
 
 ## Goals
  * Auto-generate Client interface so third party tools can connect to Chrome, Node and other CRDP compliant servers
