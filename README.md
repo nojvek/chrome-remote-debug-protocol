@@ -1,5 +1,5 @@
-# Chrome Remote Debug Interface
-[![build status](https://travis-ci.org/nojvek/chrome-remote-debug-interface.svg?branch=master)](https://travis-ci.org/nojvek/chrome-remote-debug-interface)
+# Chrome Remote Debug Protocol
+[![build status](https://travis-ci.org/nojvek/chrome-remote-debug-protocol.svg?branch=master)](https://travis-ci.org/nojvek/chrome-remote-debug-protocol)
 
 ## Goals
  * Auto-generate Client interface so third party tools can connect to Chrome, Node and other CRDP compliant servers
@@ -11,38 +11,43 @@ This package is purely a typings typescript d.ts interface that is automatically
 
 It downloads the latest protocol.json files from the [Chromium repo](https://chromium.googlesource.com/) and verifies structural integrity based on protocol.d.ts
 
-It then generates a crdi.d.ts with generator/protocolToCrdi.ts and publishes it
+It then generates a crdp.d.ts typescript interface. 
+
+Travis CI runs a nightly job to publish the latest typings
 
 ## Usage
 
-crdi.d.ts is a JsonRpc2 compliant interface. It can be used with `websocket-jsonrpc2` package.
+crdp.d.ts is a JsonRpc2 compliant interface. It is meant to be used with `noice-json-rpc` package.
 
-Rather than callbacks, `websocket-jsonrpc2` returns Promises. This means it can be used async-await style.
+Rather than callbacks, `noice-json-rpc` returns Promises. This means it can be used async-await style. 
+
+`noice-json-rpc` also provides a `.api()` to return an ES6 proxy which provides a clean api.Domain.function() calls.
 
 ## Example
- ```
+ ```js
 import fs from 'fs'
-import Crdi from 'crdi'
-import {Client} from 'websocket-jsonrpc2'
+import Crdp from 'chrome-remote-debug-protocol'
+import {Client} from 'noice-json-rpc'
 
-// Connect to `node --inspect --debug-brk` process, and automatically profile the execution of a script
+// run connects to `node --inspect --debug-brk` process, and profiles the execution of a script
 async function run() {
     try {
-        const client = <Crdi.JsonRpc2Client>(await Client.connect("ws://localhost:9229/node"))
+        // We want the api to be a CrdpClient
+        const api:Crdp.CrdpClient = new Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
 
+        // Initialize debugging
         await Promise.all([
-            client.send("Runtime.enable"),
-            client.send("Debugger.enable"),
-            client.send("Profiler.enable"),
-            client.send("Runtime.run")
-            client.send("Profiler.start")
+            api.Runtime.enable(),
+            api.Debugger.enable(),
+            api.Profiler.enable(),
+            api.Runtime.run(),
         ])
 
         // Wait until the script finishes
-        await new Promise((resolve) => client.once("Runtime.contextDestroyed", resolve);
+        await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve))
 
         // Get the cpuProfile back
-        const cpuProfile = await client.send("Profiler.stop")
+        const cpuProfile = await api.Profiler.stop()
 
         // Save it to a file
         fs.writeFileSync("profile.cpuProfile", JSON.stringify(cpuProfile), 'utf-8')
