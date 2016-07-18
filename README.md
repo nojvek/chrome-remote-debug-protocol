@@ -9,7 +9,7 @@
 
 This package is purely a typings typescript d.ts interface that is automatically published nightly by travis.
 
-It downloads the latest protocol.json files from the [Chromium repo](https://chromium.googlesource.com/) and verifies structural integrity based on protocol.d.ts
+It downloads the latest protocol.json files from the [Chromium repo](https://chromium.googlesource.com/) and verifies structural integrity based on [protocol.d.ts](generator/protocol.d.ts)
 
 It then generates a crdp.d.ts typescript interface. 
 
@@ -24,6 +24,7 @@ Rather than callbacks, `noice-json-rpc` returns Promises. This means it can be u
 `noice-json-rpc` also provides a `.api()` to return an ES6 proxy which provides a clean api.Domain.function() calls.
 
 ## Example
+
  ```js
 import fs from 'fs'
 import Crdp from 'chrome-remote-debug-protocol'
