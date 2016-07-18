@@ -1,3 +1,5 @@
+## TODO: Move to typescript and remove coffeescript dependency
+
 http = require 'http'
 promisify = require 'promisify-node'
 fs = promisify 'fs'

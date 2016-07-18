@@ -222,7 +222,7 @@ const emitNames = (names: ClientServerDef[], arrayName: string) => {
 }
 
 /// Main
-const destFilePath = `${__dirname}/../../src/crdi.d.ts`
+const destFilePath = `${__dirname}/../../lib/crdp.d.ts`
 const moduleName = path.basename(destFilePath, ".d.ts")
 const protocolDomains: P.Domain[] = jsProtocol.domains.concat(browserProtocol.domains)
 

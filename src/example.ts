@@ -54,9 +54,6 @@ function setupServer() {
                 }
             }
             return response
-        },
-        setSamplingInterval({interval}) {
-            console.log(interval)
         }
     })
 

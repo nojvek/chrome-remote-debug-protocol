@@ -1,8 +1,9 @@
 {
-  "name": "chrome-remote-debug-interface",
+  "name": "chrome-remote-debug-protocol",
   "version": "1.0.0",
-  "description": "Auto generate crdi.d.ts interface from protocol.json files used by Chrome Remote Debugging Protocol",
-  "main": "src/crdi.js",
+  "description": "Auto generated crdp.d.ts typings from protocol.json files used by Chrome Remote Debugging Protocol",
+  "main": "./lib/crdp.js",
+  "types": "./lib/crdp.d.ts",
   "scripts": {
     "download-protocols": "jake -f jakefile.coffee download-protocols",
     "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js"
@@ -13,23 +14,26 @@
   },
   "keywords": [
     "chrome",
+    "remote",
     "debug",
     "protocol",
     "interface",
     "json",
     "generator",
     "typescript",
-    "crdi",
-    "adapter",
+    "typings",
+    "types",
+    "crdp",
+    "server",
     "client",
     "converter"
   ],
   "author": "nojvek",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nojvek/chrome-remote-debug-interface/issues"
+    "url": "https://github.com/nojvek/chrome-remote-debug-protocol/issues"
   },
-  "homepage": "https://github.com/nojvek/chrome-remote-debug-interface#readme",
+  "homepage": "https://github.com/nojvek/chrome-remote-debug-protocol#readme",
   "devDependencies": {
     "es6-simple-async": "^1.1.1",
     "node-fetch": "^1.5.3",
