@@ -1,12 +1,15 @@
 {
   "name": "chrome-remote-debug-protocol",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Auto generated crdp.d.ts typings from protocol.json files used by Chrome Remote Debugging Protocol",
   "main": "./lib/crdp.js",
-  "types": "./lib/crdp.d.ts",
+  "typings": "./lib/crdp.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "download-protocols": "jake -f jakefile.coffee download-protocols",
-    "generate-crdi": "tsc -p generator/tsconfig.json && node out/generator/protocolToCrdi.js"
+    "generate-crdp": "tsc -p src/tsconfig.json && node out/protocolToCrdp.js"
   },
   "repository": {
     "type": "git",

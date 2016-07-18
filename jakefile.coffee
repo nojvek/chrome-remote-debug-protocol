@@ -17,7 +17,7 @@ task 'download-protocols', async: true, async ->
     try
         jsProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json"
         browserProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/inspector/browser_protocol.json"
-        protocolDefDir = "#{__dirname}/generator/protocolDef"
+        protocolDefDir = "#{__dirname}/src/protocolDef"
         jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + yield fetchProtocolJson("#{jsProtocolUrl}?format=TEXT")
         browserProtocolStr = getProtocolDefHeader(browserProtocolUrl) + yield fetchProtocolJson("#{browserProtocolUrl}?format=TEXT")
         yield fs.writeFile("#{protocolDefDir}/js_protocol.ts", jsProtocolStr ,'utf-8')

@@ -17,4 +17,4 @@ before_script:
 
 script:
     - npm run download-protocols
-    - npm run generate-crdi
+    - npm run generate-crdp
