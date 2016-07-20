@@ -68,6 +68,8 @@ export namespace Crdp {
 
         Storage: StorageClient;
 
+        Log: LogClient;
+
         Browser: BrowserClient;
 
         SystemInfo: SystemInfoClient;
@@ -136,6 +138,8 @@ export namespace Crdp {
         Accessibility: AccessibilityServer;
 
         Storage: StorageServer;
+
+        Log: LogServer;
 
         Browser: BrowserServer;
 
@@ -634,6 +638,9 @@ export namespace Crdp {
 
         /** Disables reporting of execution contexts creation. */
         disable?: () => PromiseOrNot<void>;
+
+        /** Discards collected exceptions and console API calls. */
+        discardConsoleEntries?: () => PromiseOrNot<void>;
 
         setCustomObjectFormatterEnabled?: (params: Runtime.SetCustomObjectFormatterEnabledRequest) => PromiseOrNot<void>;
 
@@ -1245,7 +1252,7 @@ export namespace Crdp {
 
     }
 
-    /** Console domain defines methods and events for interaction with the JavaScript console. Console collects messages created by means of the <a href='http://getfirebug.com/wiki/index.php/Console_API'>JavaScript Console API</a>. One needs to enable this domain using 'enable</code> command in order to start receiving the console messages. Browser collects messages issued while console domain is not enabled as well and reports them using <code>messageAdded' notification upon enabling. */
+    /** This domain is deprecated - use Runtime or Log instead. */
     export module Console {
 
         /** Console message. */
@@ -1259,41 +1266,14 @@ export namespace Crdp {
             /** Message text. */
             text: string;
 
-            /** Never present. Use Runtime.consoleAPICalled instead. */
-            type?: 'log' | 'dir' | 'dirxml' | 'table' | 'trace' | 'clear' | 'startGroup' | 'startGroupCollapsed' | 'endGroup' | 'assert' | 'profile' | 'profileEnd';
-
-            /** Script ID of the message origin. */
-            scriptId?: string;
-
             /** URL of the message origin. */
             url?: string;
 
-            /** Line number in the resource that generated this message. */
+            /** Line number in the resource that generated this message (1-based). */
             line?: integer;
 
-            /** Column number in the resource that generated this message. */
+            /** Column number in the resource that generated this message (1-based). */
             column?: integer;
-
-            /** Repeat count for repeated messages. */
-            repeatCount?: integer;
-
-            /** Never present. Use Runtime.consoleAPICalled instead. */
-            parameters?: Runtime.RemoteObject[];
-
-            /** JavaScript stack trace for assertions and error messages. */
-            stack?: Runtime.StackTrace;
-
-            /** Identifier of the network request associated with this message. */
-            networkRequestId?: string;
-
-            /** Timestamp, when this message was fired. */
-            timestamp: Runtime.Timestamp;
-
-            /** Identifier of the context where this message was created */
-            executionContextId?: Runtime.ExecutionContextId;
-
-            /** Identifier of the worker this message came from. */
-            workerId?: string;
 
         }
 
@@ -1320,7 +1300,7 @@ export namespace Crdp {
         /** Disables console domain, prevents further console messages from being reported to the client. */
         disable?: () => PromiseOrNot<void>;
 
-        /** Clears console messages collected in the browser. */
+        /** Does nothing. */
         clearMessages?: () => PromiseOrNot<void>;
 
     }
@@ -1329,7 +1309,7 @@ export namespace Crdp {
         /** Issued when new console message is added. */
         onMessageAdded(handler: (params: Console.MessageAddedEvent) => void): void;
 
-        /** Is not issued. Will be gone in the future versions of the protocol. */
+        /** Not issued. */
         onMessageRepeatCountUpdated(handler: (params: Console.MessageRepeatCountUpdatedEvent) => void): void;
 
         /** Not issued. */
@@ -1341,7 +1321,7 @@ export namespace Crdp {
         /** Issued when new console message is added. */
         emitMessageAdded(params: Console.MessageAddedEvent): void;
 
-        /** Is not issued. Will be gone in the future versions of the protocol. */
+        /** Not issued. */
         emitMessageRepeatCountUpdated(params: Console.MessageRepeatCountUpdatedEvent): void;
 
         /** Not issued. */
@@ -3090,7 +3070,7 @@ export namespace Crdp {
             /** Initiator URL, set for Parser type only. */
             url?: string;
 
-            /** Initiator line number, set for Parser type only. */
+            /** Initiator line number, set for Parser type only (0-based). */
             lineNumber?: number;
 
         }
@@ -3841,14 +3821,14 @@ export namespace Crdp {
 
         /** Data entry. */
         export interface DataEntry {
-            /** JSON-stringified key object. */
-            key: string;
+            /** Key object. */
+            key: Runtime.RemoteObject;
 
-            /** JSON-stringified primary key object. */
-            primaryKey: string;
+            /** Primary key object. */
+            primaryKey: Runtime.RemoteObject;
 
-            /** JSON-stringified value object. */
-            value: string;
+            /** Value object. */
+            value: Runtime.RemoteObject;
 
         }
 
@@ -7520,6 +7500,73 @@ export namespace Crdp {
 
     export interface StorageServer {
         expose(domain: StorageCommands): void;
+
+    }
+
+    /** Provides access to log entries. */
+    export module Log {
+
+        /** Log entry. */
+        export interface LogEntry {
+            /** Log entry source. */
+            source: 'xml' | 'javascript' | 'network' | 'storage' | 'appcache' | 'rendering' | 'security' | 'deprecation' | 'worker' | 'other';
+
+            /** Log entry severity. */
+            level: 'log' | 'warning' | 'error' | 'debug' | 'info';
+
+            /** Logged text. */
+            text: string;
+
+            /** Timestamp when this entry was added. */
+            timestamp: Runtime.Timestamp;
+
+            /** URL of the resource if known. */
+            url?: string;
+
+            /** Line number in the resource. */
+            lineNumber?: integer;
+
+            /** JavaScript stack trace. */
+            stackTrace?: Runtime.StackTrace;
+
+            /** Identifier of the network request associated with this entry. */
+            networkRequestId?: Network.RequestId;
+
+            /** Identifier of the worker associated with this entry. */
+            workerId?: string;
+
+        }
+
+        export interface EntryAddedEvent {
+            /** The entry. */
+            entry: LogEntry;
+
+        }
+    }
+
+    export interface LogCommands {
+        /** Enables log domain, sends the entries collected so far to the client by means of the 'entryAdded' notification. */
+        enable?: () => PromiseOrNot<void>;
+
+        /** Disables log domain, prevents further log entries from being reported to the client. */
+        disable?: () => PromiseOrNot<void>;
+
+        /** Clears the log. */
+        clear?: () => PromiseOrNot<void>;
+
+    }
+
+    export interface LogClient extends LogCommands {
+        /** Issued when new message was logged. */
+        onEntryAdded(handler: (params: Log.EntryAddedEvent) => void): void;
+
+    }
+
+    export interface LogServer {
+        /** Issued when new message was logged. */
+        emitEntryAdded(params: Log.EntryAddedEvent): void;
+
+        expose(domain: LogCommands): void;
 
     }
 

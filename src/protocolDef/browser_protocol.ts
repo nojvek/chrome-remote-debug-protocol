@@ -1106,7 +1106,7 @@ export const protocol: IProtocol =
                     { "name": "type", "type": "string", "enum": ["parser", "script", "other"], "description": "Type of this initiator." },
                     { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "Initiator JavaScript stack trace, set for Script only." },
                     { "name": "url", "type": "string", "optional": true, "description": "Initiator URL, set for Parser type only." },
-                    { "name": "lineNumber", "type": "number", "optional": true, "description": "Initiator line number, set for Parser type only." }
+                    { "name": "lineNumber", "type": "number", "optional": true, "description": "Initiator line number, set for Parser type only (0-based)." }
                 ]
             },
             {
@@ -1546,6 +1546,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "IndexedDB",
+        "dependencies": ["Runtime"],
         "hidden": true,
         "types": [
             {
@@ -1608,9 +1609,9 @@ export const protocol: IProtocol =
                 "type": "object",
                 "description": "Data entry.",
                 "properties": [
-                    { "name": "key", "type": "string", "description": "JSON-stringified key object." },
-                    { "name": "primaryKey", "type": "string", "description": "JSON-stringified primary key object." },
-                    { "name": "value", "type": "string", "description": "JSON-stringified value object." }
+                    { "name": "key", "$ref": "Runtime.RemoteObject", "description": "Key object." },
+                    { "name": "primaryKey", "$ref": "Runtime.RemoteObject", "description": "Primary key object." },
+                    { "name": "value", "$ref": "Runtime.RemoteObject", "description": "Value object." }
                 ]
             },
             {
@@ -4219,6 +4220,53 @@ export const protocol: IProtocol =
                 ],
                 "description": "Clears storage for origin.",
                 "handlers": ["browser"]
+            }
+        ]
+    },
+    {
+        "domain": "Log",
+        "description": "Provides access to log entries.",
+        "dependencies": ["Runtime", "Network", "Worker"],
+        "hidden": true,
+        "types": [
+            {
+                "id": "LogEntry",
+                "type": "object",
+                "description": "Log entry.",
+                "properties": [
+                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "storage", "appcache", "rendering", "security", "deprecation", "worker", "other"], "description": "Log entry source." },
+                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info"], "description": "Log entry severity." },
+                    { "name": "text", "type": "string", "description": "Logged text." },
+                    { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp when this entry was added." },
+                    { "name": "url", "type": "string", "optional": true, "description": "URL of the resource if known." },
+                    { "name": "lineNumber", "type": "integer", "optional": true, "description": "Line number in the resource." },
+                    { "name": "stackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace." },
+                    { "name": "networkRequestId", "$ref": "Network.RequestId", "optional": true, "description": "Identifier of the network request associated with this entry." },
+                    { "name": "workerId", "type": "string", "optional": true, "description": "Identifier of the worker associated with this entry." }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "enable",
+                "description": "Enables log domain, sends the entries collected so far to the client by means of the <code>entryAdded</code> notification."
+            },
+            {
+                "name": "disable",
+                "description": "Disables log domain, prevents further log entries from being reported to the client."
+            },
+            {
+                "name": "clear",
+                "description": "Clears the log."
+            }
+        ],
+        "events": [
+            {
+                "name": "entryAdded",
+                "parameters": [
+                    { "name": "entry", "$ref": "LogEntry", "description": "The entry." }
+                ],
+                "description": "Issued when new message was logged."
             }
         ]
     },
