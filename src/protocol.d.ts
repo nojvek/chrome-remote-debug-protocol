@@ -17,7 +17,7 @@ export module Protocol {
         description?: string
         /** Dependencies on other domains */
         dependencies?: string[]
-        /** Is domain for internal use ??? */
+        /** Is domain for internal use ? */
         hidden?: boolean
         /** Types used by the domain. */
         types?: PropertyType[]
@@ -25,6 +25,8 @@ export module Protocol {
         commands?: Command[]
         /** Events fired by domain */
         events?: Event[]
+        /** Is the domain deprecated for future use? */
+        deprecated?: boolean
     }
 
     export interface Command extends Event {
