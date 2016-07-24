@@ -18,11 +18,11 @@ Travis CI runs a nightly job to publish the latest typings
 
 ## Usage
 
-crdp.d.ts is a JsonRpc2 compliant interface. It is meant to be used with `noice-json-rpc` package.
+crdp.d.ts is a JsonRpc2 compliant interface. It is meant to be used with `[noice-json-rpc](https://github.com/nojvek/noice-json-rpc)` package.
 
-Rather than callbacks, `noice-json-rpc` returns Promises. This means it can be used async-await style. 
+Rather than callbacks, `[noice-json-rpc](https://github.com/nojvek/noice-json-rpc)` returns Promises. This means it can be used async-await style. 
 
-`noice-json-rpc` also provides a `.api()` to return an ES6 proxy which provides a clean api.Domain.function() calls.
+`[noice-json-rpc](https://github.com/nojvek/noice-json-rpc)` also provides a `.api()` to return an ES6 proxy which provides a clean api.Domain.function() calls.
 
 ## Example
 
