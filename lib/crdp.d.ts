@@ -5976,8 +5976,14 @@ export namespace Crdp {
             /** 'EventListener''s passive flag. */
             passive: boolean;
 
-            /** Handler code location. */
-            location: Debugger.Location;
+            /** Script id of the handler code. */
+            scriptId: Runtime.ScriptId;
+
+            /** Line number in the script (0-based). */
+            lineNumber: integer;
+
+            /** Column number in the script (0-based). */
+            columnNumber: integer;
 
             /** Event handler function value. */
             handler?: Runtime.RemoteObject;

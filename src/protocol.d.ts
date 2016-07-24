@@ -113,6 +113,8 @@ export module Protocol {
         hidden?: boolean
         /** Is the api deprecated for future use ? */
         deprecated?: boolean
+        /** See: https://codereview.chromium.org/2159633002/ Not sure what it exactly means */
+        exported?: boolean
     }
 
     /** Interface that aids in the generation of client and adapter interfaces */
