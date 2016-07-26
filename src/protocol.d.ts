@@ -109,11 +109,11 @@ export module Protocol {
     export interface BaseType {
         /** Description of the type */
         description?: string
-        /** ?? */
+        /** Not for public use. Can change any time */
         hidden?: boolean
         /** Is the api deprecated for future use ? */
         deprecated?: boolean
-        /** See: https://codereview.chromium.org/2159633002/ Not sure what it exactly means */
+        /** Entities marked as exported:true have special generated C++ classes which can be used in public API */
         exported?: boolean
     }
 
