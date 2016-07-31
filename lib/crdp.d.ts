@@ -5759,7 +5759,7 @@ export namespace Crdp {
             nodeId: DOM.NodeId;
 
             /** Element pseudo classes to force when computing the element's style. */
-            forcedPseudoClasses: 'active' | 'focus' | 'hover' | 'visited'[];
+            forcedPseudoClasses: ('active' | 'focus' | 'hover' | 'visited')[];
 
         }
 

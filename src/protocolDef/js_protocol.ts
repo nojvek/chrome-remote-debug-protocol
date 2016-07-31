@@ -181,6 +181,7 @@ export const protocol: IProtocol =
         "commands": [
             {
                 "name": "evaluate",
+                "async": true,
                 "parameters": [
                     { "name": "expression", "type": "string", "description": "Expression to evaluate." },
                     { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." },
@@ -189,7 +190,8 @@ export const protocol: IProtocol =
                     { "name": "contextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page." },
                     { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object that should be sent by value." },
                     { "name": "generatePreview", "type": "boolean", "optional": true, "hidden": true, "description": "Whether preview should be generated for the result." },
-                    { "name": "userGesture", "type": "boolean", "optional": true, "hidden": true, "description": "Whether execution should be treated as initiated by user in the UI." }
+                    { "name": "userGesture", "type": "boolean", "optional": true, "hidden": true, "description": "Whether execution should be treated as initiated by user in the UI." },
+                    { "name": "awaitPromise", "type": "boolean", "optional":true, "hidden": true, "description": "Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error." }
                 ],
                 "returns": [
                     { "name": "result", "$ref": "RemoteObject", "description": "Evaluation result." },
@@ -197,6 +199,22 @@ export const protocol: IProtocol =
                     { "name": "exceptionDetails", "$ref": "ExceptionDetails", "optional": true, "hidden": true, "description": "Exception details."}
                 ],
                 "description": "Evaluates expression on global object."
+            },
+            {
+                "name": "awaitPromise",
+                "hidden": true,
+                "async": true,
+                "parameters": [
+                    { "name": "promiseObjectId", "$ref": "RemoteObjectId", "description": "Identifier of the promise." },
+                    { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object that should be sent by value." },
+                    { "name": "generatePreview", "type": "boolean", "optional": true, "description": "Whether preview should be generated for the result." }
+                ],
+                "returns": [
+                    { "name": "result", "$ref": "RemoteObject", "description": "Promise result. Will contain rejected value if promise was rejected." },
+                    { "name": "wasThrown", "type": "boolean", "optional": true, "description": "True if the promise was rejected." },
+                    { "name": "exceptionDetails", "$ref": "ExceptionDetails", "optional": true, "description": "Exception details if stack strace is available."}
+                ],
+                "description": "Add handler to promise with given promise object id."
             },
             {
                 "name": "callFunctionOn",

@@ -120,7 +120,7 @@ const getPropertyType = (prop: any): string  => {
     else if (prop.type == 'lambda')
         return `(${prop.accepts.map(getPropertyDef).join(', ')}) => ${prop.returns || 'void'}`
     else if (prop.type == 'string' && prop.enum)
-        return prop.enum.map((v: string) => `'${v}'`).join(' | ')
+        return '(' + prop.enum.map((v: string) => `'${v}'`).join(' | ') + ')'
     return prop.type
 }
 

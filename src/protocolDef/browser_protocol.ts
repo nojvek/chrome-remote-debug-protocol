@@ -463,12 +463,13 @@ export const protocol: IProtocol =
                 "handlers": ["browser"]
             },
             {
-                "name": "setOverlayMessage",
+                "name": "configureOverlay",
                 "parameters": [
-                    { "name": "message", "type": "string", "optional": true, "description": "Overlay message to display when paused in debugger." }
+                    { "name": "suspended", "type": "boolean", "optional": true, "description": "Whether overlay should be suspended and not consume any resources." },
+                    { "name": "message", "type": "string", "optional": true, "description": "Overlay message to display." }
                 ],
                 "hidden": true,
-                "description": "Sets overlay message."
+                "description": "Configures overlay."
             },
             {
                 "name": "getAppManifest",
@@ -3031,6 +3032,10 @@ export const protocol: IProtocol =
             {
                 "name": "mediaQueryResultChanged",
                 "description": "Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features."
+            },
+            {
+                "name": "fontsUpdated",
+                "description": "Fires whenever a web font gets loaded."
             },
             {
                 "name": "styleSheetChanged",
