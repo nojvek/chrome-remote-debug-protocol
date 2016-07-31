@@ -1,6 +1,6 @@
 {
   "name": "chrome-remote-debug-protocol",
-  "version": "1.1.20160723",
+  "version": "1.1.20160730",
   "description": "Auto generated crdp.d.ts typings from protocol.json files used by Chrome Remote Debugging Protocol",
   "main": "./lib/crdp.js",
   "typings": "./lib/crdp.d.ts",
