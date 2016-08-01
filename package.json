@@ -39,6 +39,7 @@
   "homepage": "https://github.com/nojvek/chrome-remote-debug-protocol#readme",
   "devDependencies": {
     "es6-simple-async": "^1.1.1",
+    "jake": "^8.0.12",
     "node-fetch": "^1.5.3",
     "promisify-node": "^0.4.0"
   }
