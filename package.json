@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "download-protocols": "jake -f jakefile.coffee download-protocols",
-    "generate-crdp": "tsc -p src/tsconfig.json && node out/protocolToCrdp.js"
+    "generate-crdp": "tsc -p src/tsconfig.json && node out/protocolToCrdp.js",
+    "smoke-test": "tsc -p test/tsconfig.json"
   },
   "repository": {
     "type": "git",
