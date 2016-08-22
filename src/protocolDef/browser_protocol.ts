@@ -5,7 +5,7 @@ export const protocol: IProtocol =
     "version": { "major": "1", "minor": "1" },
     "domains": [{
         "domain": "Inspector",
-        "hidden": true,
+        "experimental": true,
         "types": [],
         "commands": [
             {
@@ -37,7 +37,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "Memory",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "PressureLevel",
@@ -114,7 +114,7 @@ export const protocol: IProtocol =
                     { "name": "failed", "type": "boolean", "optional": true, "description": "True if the resource failed to load." },
                     { "name": "canceled", "type": "boolean", "optional": true, "description": "True if the resource was canceled during loading." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "FrameResourceTree",
@@ -125,13 +125,13 @@ export const protocol: IProtocol =
                     { "name": "childFrames", "type": "array", "optional": true, "items": { "$ref": "FrameResourceTree" }, "description": "Child frames." },
                     { "name": "resources", "type": "array", "items": { "$ref": "FrameResource" }, "description": "Information about frame resources." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "ScriptIdentifier",
                 "type": "string",
                 "description": "Unique script identifier.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "NavigationEntry",
@@ -142,29 +142,29 @@ export const protocol: IProtocol =
                   { "name": "url", "type": "string", "description": "URL of the navigation history entry." },
                   { "name": "title", "type": "string", "description": "Title of the navigation history entry." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "ScreencastFrameMetadata",
                 "type": "object",
                 "description": "Screencast frame metadata.",
                 "properties": [
-                    { "name": "offsetTop", "type": "number", "hidden": true, "description": "Top offset in DIP." },
-                    { "name": "pageScaleFactor", "type": "number", "hidden": true, "description": "Page scale factor." },
-                    { "name": "deviceWidth", "type": "number", "hidden": true, "description": "Device screen width in DIP." },
-                    { "name": "deviceHeight", "type": "number", "hidden": true, "description": "Device screen height in DIP." },
-                    { "name": "scrollOffsetX", "type": "number", "hidden": true, "description": "Position of horizontal scroll in CSS pixels." },
-                    { "name": "scrollOffsetY", "type": "number", "hidden": true, "description": "Position of vertical scroll in CSS pixels." },
-                    { "name": "timestamp", "type": "number", "optional": true, "hidden": true, "description": "Frame swap timestamp." }
+                    { "name": "offsetTop", "type": "number", "experimental": true, "description": "Top offset in DIP." },
+                    { "name": "pageScaleFactor", "type": "number", "experimental": true, "description": "Page scale factor." },
+                    { "name": "deviceWidth", "type": "number", "experimental": true, "description": "Device screen width in DIP." },
+                    { "name": "deviceHeight", "type": "number", "experimental": true, "description": "Device screen height in DIP." },
+                    { "name": "scrollOffsetX", "type": "number", "experimental": true, "description": "Position of horizontal scroll in CSS pixels." },
+                    { "name": "scrollOffsetY", "type": "number", "experimental": true, "description": "Position of vertical scroll in CSS pixels." },
+                    { "name": "timestamp", "type": "number", "optional": true, "experimental": true, "description": "Frame swap timestamp." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "DialogType",
                 "description": "Javascript dialog type.",
                 "type": "string",
                 "enum": ["alert", "confirm", "prompt", "beforeunload"],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "AppManifestError",
@@ -176,14 +176,14 @@ export const protocol: IProtocol =
                   { "name": "line", "type": "integer", "description": "Error line." },
                   { "name": "column", "type": "integer", "description": "Error column." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "NavigationResponse",
                 "description": "Proceed: allow the navigation; Cancel: cancel the navigation; CancelAndIgnore: cancels the navigation and makes the requester of the navigation acts like the request was never made.",
                 "type": "string",
                 "enum": ["Proceed", "Cancel", "CancelAndIgnore"],
-                "hidden": true
+                "experimental": true
             }
         ],
         "commands": [
@@ -205,14 +205,14 @@ export const protocol: IProtocol =
                 "returns": [
                     { "name": "identifier", "$ref": "ScriptIdentifier", "description": "Identifier of the added script." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "removeScriptToEvaluateOnLoad",
                 "parameters": [
                     { "name": "identifier", "$ref": "ScriptIdentifier" }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setAutoAttachToCreatedPages",
@@ -220,7 +220,7 @@ export const protocol: IProtocol =
                     { "name": "autoAttach", "type": "boolean", "description": "If true, browser will open a new inspector window for every page created from this one." }
                 ],
                 "description": "Controls whether browser will open a new inspector window for connected pages.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "reload",
@@ -237,7 +237,7 @@ export const protocol: IProtocol =
                     { "name": "url", "type": "string", "description": "URL to navigate the page to." }
                 ],
                 "returns": [
-                    { "name": "frameId", "$ref": "FrameId", "hidden": true, "description": "Frame id that will be navigated." }
+                    { "name": "frameId", "$ref": "FrameId", "experimental": true, "description": "Frame id that will be navigated." }
                 ],
                 "description": "Navigates current page to the given URL.",
                 "handlers": ["browser", "renderer"]
@@ -249,7 +249,7 @@ export const protocol: IProtocol =
                 { "name": "entries", "type": "array", "items": { "$ref": "NavigationEntry" }, "description": "Array of navigation history entries." }
               ],
               "description": "Returns navigation history for the current page.",
-              "hidden": true,
+              "experimental": true,
               "handlers": ["browser"]
             },
             {
@@ -258,7 +258,7 @@ export const protocol: IProtocol =
                   { "name": "entryId", "type": "integer", "description": "Unique id of the entry to navigate to." }
               ],
               "description": "Navigates current page to the given history entry.",
-              "hidden": true,
+              "experimental": true,
               "handlers": ["browser"]
             },
             {
@@ -269,7 +269,7 @@ export const protocol: IProtocol =
                 "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
                 "handlers": ["browser"],
                 "async": true,
-                "hidden": true,
+                "experimental": true,
                 "redirect": "Network"
             },
             {
@@ -281,7 +281,7 @@ export const protocol: IProtocol =
                 "description": "Deletes browser cookie with given name, domain and path.",
                 "handlers": ["browser"],
                 "async": true,
-                "hidden": true,
+                "experimental": true,
                 "redirect": "Network"
             },
             {
@@ -290,7 +290,7 @@ export const protocol: IProtocol =
                 "returns": [
                     { "name": "frameTree", "$ref": "FrameResourceTree", "description": "Present frame / resource tree structure." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getResourceContent",
@@ -304,7 +304,7 @@ export const protocol: IProtocol =
                     { "name": "content", "type": "string", "description": "Resource content." },
                     { "name": "base64Encoded", "type": "boolean", "description": "True, if content was served as base64." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "searchInResource",
@@ -320,7 +320,7 @@ export const protocol: IProtocol =
                 "returns": [
                     { "name": "result", "type": "array", "items": { "$ref": "Debugger.SearchMatch" }, "description": "List of search matches." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setDocumentContent",
@@ -329,7 +329,7 @@ export const protocol: IProtocol =
                     { "name": "frameId", "$ref": "FrameId", "description": "Frame id to set HTML for." },
                     { "name": "html", "type": "string", "description": "HTML content to set."  }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setDeviceMetricsOverride",
@@ -351,14 +351,14 @@ export const protocol: IProtocol =
                 ],
                 "handlers": ["browser"],
                 "redirect": "Emulation",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "clearDeviceMetricsOverride",
                 "description": "Clears the overriden device metrics.",
                 "handlers": ["browser"],
                 "redirect": "Emulation",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setGeolocationOverride",
@@ -386,13 +386,13 @@ export const protocol: IProtocol =
                     { "name": "gamma", "type": "number", "description": "Mock gamma"}
                 ],
                 "redirect": "DeviceOrientation",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "clearDeviceOrientationOverride",
                 "description": "Clears the overridden Device Orientation.",
                 "redirect": "DeviceOrientation",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setTouchEmulationEnabled",
@@ -401,7 +401,7 @@ export const protocol: IProtocol =
                     { "name": "configuration", "type": "string", "enum": ["mobile", "desktop"], "optional": true, "description": "Touch/gesture events configuration. Default: current platform." }
                 ],
                 "description": "Toggles mouse event-based touch event emulation.",
-                "hidden": true,
+                "experimental": true,
                 "redirect": "Emulation",
                 "handlers": ["browser", "renderer"]
             },
@@ -412,7 +412,7 @@ export const protocol: IProtocol =
                 "returns": [
                     { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -425,13 +425,13 @@ export const protocol: IProtocol =
                     { "name": "maxHeight", "type": "integer", "optional": true, "description": "Maximum screenshot height." },
                     { "name": "everyNthFrame", "type": "integer", "optional": true, "description": "Send every n-th frame." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser", "renderer"]
             },
             {
                 "name": "stopScreencast",
                 "description": "Stops sending each frame in the <code>screencastFrame</code>.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser", "renderer"]
             },
             {
@@ -440,7 +440,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "sessionId", "type": "integer", "description": "Frame number." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -450,7 +450,7 @@ export const protocol: IProtocol =
                     { "name": "accept", "type": "boolean", "description": "Whether to accept or dismiss the dialog." },
                     { "name": "promptText", "type": "string", "optional": true, "description": "The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -459,7 +459,7 @@ export const protocol: IProtocol =
                     { "name": "enabled", "type": "boolean", "description": "Shows / hides color picker" }
                 ],
                 "description": "Shows / hides color picker",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -468,12 +468,12 @@ export const protocol: IProtocol =
                     { "name": "suspended", "type": "boolean", "optional": true, "description": "Whether overlay should be suspended and not consume any resources." },
                     { "name": "message", "type": "string", "optional": true, "description": "Overlay message to display." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "description": "Configures overlay."
             },
             {
                 "name": "getAppManifest",
-                "hidden": true,
+                "experimental": true,
                 "returns": [
                     { "name": "url", "type": "string", "description": "Manifest location." },
                     { "name": "errors", "type": "array", "items": { "$ref": "AppManifestError" } },
@@ -483,12 +483,12 @@ export const protocol: IProtocol =
             },
             {
                 "name": "requestAppBanner",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
                 "name": "setBlockedEventsWarningThreshold",
-                "hidden": true,
+                "experimental": true,
                 "parameters": [
                     { "name": "threshold", "type": "number", "description": "If set to a positive number, specifies threshold in seconds for input event latency that will cause a console warning about blocked event to be issued. If zero or less, the warning is disabled." }
                 ]
@@ -499,7 +499,7 @@ export const protocol: IProtocol =
                     { "name": "enabled", "type": "boolean" }
                 ],
                 "description": "Toggles navigation throttling which allows programatic control over navigation and redirect response.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -509,7 +509,7 @@ export const protocol: IProtocol =
                     { "name": "navigationId", "type": "integer" }
                 ],
                 "description": "Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             }
         ],
@@ -554,7 +554,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has started loading." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "frameStoppedLoading",
@@ -562,7 +562,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has stopped loading." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "frameScheduledNavigation",
@@ -571,7 +571,7 @@ export const protocol: IProtocol =
                     { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has scheduled a navigation." },
                     { "name": "delay", "type": "number", "description": "Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "frameClearedScheduledNavigation",
@@ -579,11 +579,11 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has cleared its scheduled navigation." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "frameResized",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "javascriptDialogOpening",
@@ -592,7 +592,7 @@ export const protocol: IProtocol =
                     { "name": "message", "type": "string", "description": "Message that will be displayed by the dialog." },
                     { "name": "type", "$ref": "DialogType", "description": "Dialog type." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "javascriptDialogClosed",
@@ -600,7 +600,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "result", "type": "boolean", "description": "Whether dialog was confirmed." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "screencastFrame",
@@ -610,7 +610,7 @@ export const protocol: IProtocol =
                     { "name": "metadata", "$ref": "ScreencastFrameMetadata", "description": "Screencast frame metadata."},
                     { "name": "sessionId", "type": "integer", "description": "Frame number."}
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -619,7 +619,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "visible", "type": "boolean", "description": "True if the page is visible." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -628,19 +628,19 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "color", "$ref": "DOM.RGBA", "description": "RGBA of the picked color." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
                 "name": "interstitialShown",
                 "description": "Fired when interstitial page was shown",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
                 "name": "interstitialHidden",
                 "description": "Fired when interstitial page was hidden",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -659,7 +659,7 @@ export const protocol: IProtocol =
     {
         "domain": "Rendering",
         "description": "This domain allows to control rendering of the page.",
-        "hidden": true,
+        "experimental": true,
         "commands": [
             {
                 "name": "setShowPaintRects",
@@ -701,7 +701,7 @@ export const protocol: IProtocol =
     {
         "domain": "Emulation",
         "description": "This domain emulates different environments for the page.",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "ScreenOrientation",
@@ -815,18 +815,25 @@ export const protocol: IProtocol =
             },
             {
                 "name": "setVirtualTimePolicy",
-                "description": "Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.",
+                "description": "Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.",
                 "parameters": [
-                    { "name": "policy", "$ref": "VirtualTimePolicy" }
+                    { "name": "policy", "$ref": "VirtualTimePolicy" },
+                    { "name": "budget", "type": "integer", "optional": true, "description": "If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent." }
                 ],
-                "hidden": true
+                "experimental": true
+            }
+        ],
+        "events": [
+            {
+                "name": "virtualTimeBudgetExpired",
+                "description": "Notification sent after the virual time budget for the current VirtualTimePolicy has run out."
             }
         ]
     },
     {
         "domain": "Security",
         "description": "Security",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "CertificateId",
@@ -920,6 +927,12 @@ export const protocol: IProtocol =
                 "description": "Loading priority of a resource request."
             },
             {
+                "id": "CookieSameSite",
+                "type": "string",
+                "enum": ["Strict", "Lax"],
+                "description": "Represents the cookie's 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies"
+            },
+            {
                 "id": "ResourceTiming",
                 "type": "object",
                 "description": "Timing information for the request.",
@@ -933,12 +946,12 @@ export const protocol: IProtocol =
                     { "name": "connectEnd", "type": "number", "description": "Connected to the remote host." },
                     { "name": "sslStart", "type": "number", "description": "Started SSL handshake." },
                     { "name": "sslEnd", "type": "number", "description": "Finished SSL handshake." },
-                    { "name": "workerStart", "type": "number", "description": "Started running ServiceWorker.", "hidden": true },
-                    { "name": "workerReady", "type": "number", "description": "Finished Starting ServiceWorker.", "hidden": true },
+                    { "name": "workerStart", "type": "number", "description": "Started running ServiceWorker.", "experimental": true },
+                    { "name": "workerReady", "type": "number", "description": "Finished Starting ServiceWorker.", "experimental": true },
                     { "name": "sendStart", "type": "number", "description": "Started sending request." },
                     { "name": "sendEnd", "type": "number", "description": "Finished sending request." },
-                    { "name": "pushStart", "type": "number", "description": "Time the server started pushing request.", "hidden": true },
-                    { "name": "pushEnd", "type": "number", "description": "Time the server finished pushing request.", "hidden": true },
+                    { "name": "pushStart", "type": "number", "description": "Time the server started pushing request.", "experimental": true },
+                    { "name": "pushEnd", "type": "number", "description": "Time the server finished pushing request.", "experimental": true },
                     { "name": "receiveHeadersEnd", "type": "number", "description": "Finished receiving response headers." }
                 ]
             },
@@ -983,16 +996,6 @@ export const protocol: IProtocol =
                 ]
             },
             {
-                "id": "CertificateValidationDetails",
-                "type": "object",
-                "description": "Details about the validation status of a request's certificate.",
-                "properties": [
-                    { "name": "numUnknownScts", "type": "integer", "description": "The number of SCTs from unknown logs." },
-                    { "name": "numInvalidScts", "type": "integer", "description": "The number of invalid SCTs." },
-                    { "name": "numValidScts", "type": "integer", "description": "The number of valid SCTs." }
-                ]
-            },
-            {
                 "id": "SignedCertificateTimestamp",
                 "type" : "object",
                 "description": "Details of a signed certificate timestamp (SCT).",
@@ -1017,7 +1020,6 @@ export const protocol: IProtocol =
                     { "name": "cipher", "type": "string", "description": "Cipher name." },
                     { "name": "mac", "type": "string", "optional": true, "description": "TLS MAC. Note that AEAD ciphers do not have separate MACs." },
                     { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate ID value." },
-                    { "name": "certificateValidationDetails", "$ref": "CertificateValidationDetails", "optional": true, "description": "Validation details for the request's certficate." },
                     { "name": "signedCertificateTimestampList", "type": "array", "items": { "$ref": "SignedCertificateTimestamp" }, "description": "List of signed certificate timestamps (SCTs)." }
                 ]
             },
@@ -1026,7 +1028,7 @@ export const protocol: IProtocol =
                 "type": "string",
                 "description": "The reason why request was blocked.",
                 "enum": ["csp", "mixed-content", "origin", "inspector", "subresource-filter", "other"],
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "Response",
@@ -1043,8 +1045,8 @@ export const protocol: IProtocol =
                     { "name": "requestHeadersText", "type": "string", "optional": true, "description": "HTTP request headers text." },
                     { "name": "connectionReused", "type": "boolean", "description": "Specifies whether physical connection was actually reused for this request." },
                     { "name": "connectionId", "type": "number", "description": "Physical connection id that was actually used for this request." },
-                    { "name": "remoteIPAddress", "type": "string", "optional": true, "hidden": true, "description": "Remote IP address." },
-                    { "name": "remotePort", "type": "integer", "optional": true, "hidden": true, "description": "Remote port."},
+                    { "name": "remoteIPAddress", "type": "string", "optional": true, "experimental": true, "description": "Remote IP address." },
+                    { "name": "remotePort", "type": "integer", "optional": true, "experimental": true, "description": "Remote port."},
                     { "name": "fromDiskCache", "type": "boolean", "optional": true, "description": "Specifies that the request was served from the disk cache." },
                     { "name": "fromServiceWorker", "type": "boolean", "optional": true, "description": "Specifies that the request was served from the ServiceWorker." },
                     { "name": "encodedDataLength", "type": "number", "optional": false, "description": "Total number of bytes received for this request so far." },
@@ -1058,7 +1060,7 @@ export const protocol: IProtocol =
                 "id": "WebSocketRequest",
                 "type": "object",
                 "description": "WebSocket request data.",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "headers", "$ref": "Headers", "description": "HTTP request headers." }
                 ]
@@ -1067,7 +1069,7 @@ export const protocol: IProtocol =
                 "id": "WebSocketResponse",
                 "type": "object",
                 "description": "WebSocket response data.",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "status", "type": "number", "description": "HTTP response status code." },
                     { "name": "statusText", "type": "string", "description": "HTTP response status text." },
@@ -1081,7 +1083,7 @@ export const protocol: IProtocol =
                 "id": "WebSocketFrame",
                 "type": "object",
                 "description": "WebSocket frame data.",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "opcode", "type": "number", "description": "WebSocket frame opcode." },
                     { "name": "mask", "type": "boolean", "description": "WebSocke frame mask." },
@@ -1119,14 +1121,14 @@ export const protocol: IProtocol =
                     { "name": "value", "type": "string", "description": "Cookie value." },
                     { "name": "domain", "type": "string", "description": "Cookie domain." },
                     { "name": "path", "type": "string", "description": "Cookie path." },
-                    { "name": "expires", "type": "number", "description": "Cookie expires." },
+                    { "name": "expires", "type": "number", "description": "Cookie expiration date as the number of seconds since the UNIX epoch." },
                     { "name": "size", "type": "integer", "description": "Cookie size." },
                     { "name": "httpOnly", "type": "boolean", "description": "True if cookie is http-only." },
                     { "name": "secure", "type": "boolean", "description": "True if cookie is secure." },
                     { "name": "session", "type": "boolean", "description": "True in case of session cookie." },
-                    { "name": "sameSite", "type": "string", "optional": true, "enum": ["Strict", "Lax"], "description": "Represents the cookies' 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies" }
+                    { "name": "sameSite", "$ref": "CookieSameSite", "optional": true, "description": "Cookie SameSite type." }
                 ],
-                "hidden": true
+                "experimental": true
             }
         ],
         "commands": [
@@ -1134,8 +1136,8 @@ export const protocol: IProtocol =
                 "name": "enable",
                 "description": "Enables network tracking, network events will now be delivered to the client.",
                 "parameters": [
-                    { "name": "maxTotalBufferSize", "type": "integer", "optional": true, "hidden": true, "description": "Buffer size in bytes to use when preserving network payloads (XHRs, etc)." },
-                    { "name": "maxResourceBufferSize", "type": "integer", "optional": true, "hidden": true, "description": "Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc)." }
+                    { "name": "maxTotalBufferSize", "type": "integer", "optional": true, "experimental": true, "description": "Buffer size in bytes to use when preserving network payloads (XHRs, etc)." },
+                    { "name": "maxResourceBufferSize", "type": "integer", "optional": true, "experimental": true, "description": "Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc)." }
                 ]
             },
             {
@@ -1174,7 +1176,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "url", "type": "string", "description": "URL to block." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "removeBlockedURL",
@@ -1182,7 +1184,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "url", "type": "string", "description": "URL to stop blocking." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "replayXHR",
@@ -1190,7 +1192,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Identifier of XHR to replay." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setMonitoringXHREnabled",
@@ -1198,7 +1200,7 @@ export const protocol: IProtocol =
                     { "name": "enabled", "type": "boolean", "description": "Monitoring enabled state." }
                 ],
                 "description": "Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "canClearBrowserCache",
@@ -1232,7 +1234,7 @@ export const protocol: IProtocol =
                 "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
                 "handlers": ["browser"],
                 "async": true,
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "deleteCookie",
@@ -1243,7 +1245,28 @@ export const protocol: IProtocol =
                 "description": "Deletes browser cookie with given name, domain and path.",
                 "handlers": ["browser"],
                 "async": true,
-                "hidden": true
+                "experimental": true
+            },
+            {
+                "name": "setCookie",
+                "parameters": [
+                    { "name": "url", "type": "string", "description": "The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie." },
+                    { "name": "name", "type": "string", "description": "The name of the cookie." },
+                    { "name": "value", "type": "string", "description": "The value of the cookie." },
+                    { "name": "domain", "type": "string", "optional": true, "description": "If omitted, the cookie becomes a host-only cookie." },
+                    { "name": "path", "type": "string", "optional": true, "description": "Defaults to the path portion of the url parameter." },
+                    { "name": "secure", "type": "boolean", "optional": true, "description": "Defaults ot false." },
+                    { "name": "httpOnly", "type": "boolean", "optional": true, "description": "Defaults to false." },
+                    { "name": "sameSite", "$ref": "CookieSameSite", "optional": true, "description": "Defaults to browser default behavior." },
+                    { "name": "expirationDate", "$ref": "Timestamp", "optional": true, "description": "If omitted, the cookie becomes a session cookie." }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "True if successfully set cookie." }
+                ],
+                "description": "Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.",
+                "handlers": ["browser"],
+                "async": true,
+                "experimental": true
             },
             {
                 "name": "canEmulateNetworkConditions",
@@ -1251,7 +1274,7 @@ export const protocol: IProtocol =
                 "returns": [
                   { "name": "result", "type": "boolean", "description": "True if emulation of network conditions is supported." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -1264,7 +1287,7 @@ export const protocol: IProtocol =
                     { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." },
                     { "name": "connectionType", "$ref": "ConnectionType", "optional": true, "description": "Connection type if known."}
                 ],
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser", "renderer"]
             },
             {
@@ -1279,7 +1302,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "bypass", "type": "boolean", "description": "Bypass service worker and load from network." }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "description": "Toggles ignoring of service worker for each request."
             },
             {
@@ -1289,7 +1312,7 @@ export const protocol: IProtocol =
                     { "name": "maxResourceSize", "type": "integer", "description": "Maximum per-resource size." }
                 ],
                 "description": "For testing.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getCertificateDetails",
@@ -1320,22 +1343,22 @@ export const protocol: IProtocol =
                     { "name": "newPriority", "$ref": "ResourcePriority", "description": "New priority" },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "requestWillBeSent",
                 "description": "Fired when page is about to send HTTP request.",
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
-                    { "name": "frameId", "$ref": "Page.FrameId", "description": "Frame identifier.", "hidden": true },
+                    { "name": "frameId", "$ref": "Page.FrameId", "description": "Frame identifier.", "experimental": true },
                     { "name": "loaderId", "$ref": "LoaderId", "description": "Loader identifier." },
                     { "name": "documentURL", "type": "string", "description": "URL of the document this request is loaded for." },
                     { "name": "request", "$ref": "Request", "description": "Request data." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
-                    { "name": "wallTime", "$ref": "Timestamp", "hidden": true, "description": "UTC Timestamp." },
+                    { "name": "wallTime", "$ref": "Timestamp", "experimental": true, "description": "UTC Timestamp." },
                     { "name": "initiator", "$ref": "Initiator", "description": "Request initiator." },
                     { "name": "redirectResponse", "optional": true, "$ref": "Response", "description": "Redirect response data." },
-                    { "name": "type", "$ref": "Page.ResourceType", "optional": true, "hidden": true, "description": "Type of this resource." }
+                    { "name": "type", "$ref": "Page.ResourceType", "optional": true, "experimental": true, "description": "Type of this resource." }
                 ]
             },
             {
@@ -1350,7 +1373,7 @@ export const protocol: IProtocol =
                 "description": "Fired when HTTP response is available.",
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
-                    { "name": "frameId", "$ref": "Page.FrameId", "description": "Frame identifier.", "hidden": true },
+                    { "name": "frameId", "$ref": "Page.FrameId", "description": "Frame identifier.", "experimental": true },
                     { "name": "loaderId", "$ref": "LoaderId", "description": "Loader identifier." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
                     { "name": "type", "$ref": "Page.ResourceType", "description": "Resource type." },
@@ -1385,7 +1408,7 @@ export const protocol: IProtocol =
                     { "name": "type", "$ref": "Page.ResourceType", "description": "Resource type." },
                     { "name": "errorText", "type": "string", "description": "User friendly error message." },
                     { "name": "canceled", "type": "boolean", "optional": true, "description": "True if loading was canceled." },
-                    { "name": "blockedReason", "$ref": "BlockedReason", "optional": true, "description": "The reason why loading was blocked, if any.", "hidden": true }
+                    { "name": "blockedReason", "$ref": "BlockedReason", "optional": true, "description": "The reason why loading was blocked, if any.", "experimental": true }
                 ]
             },
             {
@@ -1394,10 +1417,10 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
-                    { "name": "wallTime", "$ref": "Timestamp", "hidden": true, "description": "UTC Timestamp." },
+                    { "name": "wallTime", "$ref": "Timestamp", "experimental": true, "description": "UTC Timestamp." },
                     { "name": "request", "$ref": "WebSocketRequest", "description": "WebSocket request data." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "webSocketHandshakeResponseReceived",
@@ -1407,7 +1430,7 @@ export const protocol: IProtocol =
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
                     { "name": "response", "$ref": "WebSocketResponse", "description": "WebSocket response data." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "webSocketCreated",
@@ -1417,7 +1440,7 @@ export const protocol: IProtocol =
                     { "name": "url", "type": "string", "description": "WebSocket request URL." },
                     { "name": "initiator", "$ref": "Initiator", "optional": true, "description": "Request initiator." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "webSocketClosed",
@@ -1426,7 +1449,7 @@ export const protocol: IProtocol =
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "webSocketFrameReceived",
@@ -1436,7 +1459,7 @@ export const protocol: IProtocol =
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
                     { "name": "response", "$ref": "WebSocketFrame", "description": "WebSocket response data." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "webSocketFrameError",
@@ -1446,7 +1469,7 @@ export const protocol: IProtocol =
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
                     { "name": "errorMessage", "type": "string", "description": "WebSocket frame error message." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "webSocketFrameSent",
@@ -1456,7 +1479,7 @@ export const protocol: IProtocol =
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
                     { "name": "response", "$ref": "WebSocketFrame", "description": "WebSocket response data." }
                 ],
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "eventSourceMessageReceived",
@@ -1468,25 +1491,25 @@ export const protocol: IProtocol =
                     { "name": "eventId", "type": "string", "description": "Message identifier." },
                     { "name": "data", "type": "string", "description": "Message content." }
                 ],
-                "hidden": true
+                "experimental": true
             }
         ]
     },
     {
         "domain": "Database",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "DatabaseId",
                 "type": "string",
                 "description": "Unique identifier of Database object.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "Database",
                 "type": "object",
                 "description": "Database object.",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "id", "$ref": "DatabaseId", "description": "Database ID." },
                     { "name": "domain", "type": "string", "description": "Database domain." },
@@ -1548,7 +1571,7 @@ export const protocol: IProtocol =
     {
         "domain": "IndexedDB",
         "dependencies": ["Runtime"],
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "DatabaseWithObjectStores",
@@ -1692,7 +1715,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "CacheStorage",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "CacheId",
@@ -1766,14 +1789,14 @@ export const protocol: IProtocol =
     },
     {
         "domain": "DOMStorage",
-        "hidden": true,
+        "experimental": true,
         "description": "Query and modify DOM storage.",
         "types": [
             {
                 "id": "StorageId",
                 "type": "object",
                 "description": "DOM Storage identifier.",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "securityOrigin", "type": "string", "description": "Security origin for the storage." },
                     { "name": "isLocalStorage", "type": "boolean", "description": "Whether the storage is local storage (not session storage)." }
@@ -1783,7 +1806,7 @@ export const protocol: IProtocol =
                 "id": "Item",
                 "type": "array",
                 "description": "DOM Storage item.",
-                "hidden": true,
+                "experimental": true,
                 "items": { "type": "string" }
             }
         ],
@@ -1856,7 +1879,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "ApplicationCache",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "ApplicationCacheResource",
@@ -1955,7 +1978,7 @@ export const protocol: IProtocol =
                 "id": "BackendNodeId",
                 "type": "integer",
                 "description": "Unique DOM node identifier used to reference a node that may not have been pushed to the front-end.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "BackendNode",
@@ -1965,7 +1988,7 @@ export const protocol: IProtocol =
                     { "name": "nodeName", "type": "string", "description": "<code>Node</code>'s nodeName." },
                     { "name": "backendNodeId", "$ref": "BackendNodeId" }
                 ],
-                "hidden": true,
+                "experimental": true,
                 "description": "Backend node with a friendly name."
             },
             {
@@ -2009,7 +2032,7 @@ export const protocol: IProtocol =
                     { "name": "children", "type": "array", "optional": true, "items": { "$ref": "Node" }, "description": "Child nodes of this node when requested with children." },
                     { "name": "attributes", "type": "array", "optional": true, "items": { "type": "string" }, "description": "Attributes of the <code>Element</code> node in the form of flat array <code>[name1, value1, name2, value2]</code>." },
                     { "name": "documentURL", "type": "string", "optional": true, "description": "Document URL that <code>Document</code> or <code>FrameOwner</code> node points to." },
-                    { "name": "baseURL", "type": "string", "optional": true, "description": "Base URL that <code>Document</code> or <code>FrameOwner</code> node uses for URL completion.", "hidden": true },
+                    { "name": "baseURL", "type": "string", "optional": true, "description": "Base URL that <code>Document</code> or <code>FrameOwner</code> node uses for URL completion.", "experimental": true },
                     { "name": "publicId", "type": "string", "optional": true, "description": "<code>DocumentType</code>'s publicId." },
                     { "name": "systemId", "type": "string", "optional": true, "description": "<code>DocumentType</code>'s systemId." },
                     { "name": "internalSubset", "type": "string", "optional": true, "description": "<code>DocumentType</code>'s internalSubset." },
@@ -2018,13 +2041,13 @@ export const protocol: IProtocol =
                     { "name": "value", "type": "string", "optional": true, "description": "<code>Attr</code>'s value." },
                     { "name": "pseudoType", "$ref": "PseudoType", "optional": true, "description": "Pseudo element type for this node." },
                     { "name": "shadowRootType", "$ref": "ShadowRootType", "optional": true, "description": "Shadow root type." },
-                    { "name": "frameId", "$ref": "Page.FrameId", "optional": true, "description": "Frame ID for frame owner elements.", "hidden": true },
+                    { "name": "frameId", "$ref": "Page.FrameId", "optional": true, "description": "Frame ID for frame owner elements.", "experimental": true },
                     { "name": "contentDocument", "$ref": "Node", "optional": true, "description": "Content document for frame owner elements." },
-                    { "name": "shadowRoots", "type": "array", "optional": true, "items": { "$ref": "Node" }, "description": "Shadow root list for given element host.", "hidden": true },
-                    { "name": "templateContent", "$ref": "Node", "optional": true, "description": "Content document fragment for template elements.", "hidden": true },
-                    { "name": "pseudoElements", "type": "array", "items": { "$ref": "Node" }, "optional": true, "description": "Pseudo elements associated with this node.", "hidden": true },
+                    { "name": "shadowRoots", "type": "array", "optional": true, "items": { "$ref": "Node" }, "description": "Shadow root list for given element host.", "experimental": true },
+                    { "name": "templateContent", "$ref": "Node", "optional": true, "description": "Content document fragment for template elements.", "experimental": true },
+                    { "name": "pseudoElements", "type": "array", "items": { "$ref": "Node" }, "optional": true, "description": "Pseudo elements associated with this node.", "experimental": true },
                     { "name": "importedDocument", "$ref": "Node", "optional": true, "description": "Import document for the HTMLImport links." },
-                    { "name": "distributedNodes", "type": "array", "items": { "$ref": "BackendNode" }, "optional": true, "description": "Distributed nodes for given insertion point.", "hidden": true }
+                    { "name": "distributedNodes", "type": "array", "items": { "$ref": "BackendNode" }, "optional": true, "description": "Distributed nodes for given insertion point.", "experimental": true }
                 ],
                 "description": "DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type."
             },
@@ -2046,12 +2069,12 @@ export const protocol: IProtocol =
                 "minItems": 8,
                 "maxItems": 8,
                 "description": "An array of quad vertices, x immediately followed by y for each point, points clock-wise.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "BoxModel",
                 "type": "object",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "content", "$ref": "Quad", "description": "Content box" },
                     { "name": "padding", "$ref": "Quad", "description": "Padding box" },
@@ -2066,7 +2089,7 @@ export const protocol: IProtocol =
             {
                 "id": "ShapeOutsideInfo",
                 "type": "object",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "bounds", "$ref": "Quad", "description": "Shape bounds" },
                     { "name": "shape", "type": "array", "items": { "type": "any"}, "description": "Shape coordinate details" },
@@ -2077,7 +2100,7 @@ export const protocol: IProtocol =
             {
                 "id": "Rect",
                 "type": "object",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "x", "type": "number", "description": "X coordinate" },
                     { "name": "y", "type": "number", "description": "Y coordinate" },
@@ -2093,14 +2116,14 @@ export const protocol: IProtocol =
                     { "name": "showInfo", "type": "boolean", "optional": true, "description": "Whether the node info tooltip should be shown (default: false)." },
                     { "name": "showRulers", "type": "boolean", "optional": true, "description": "Whether the rulers should be shown (default: false)." },
                     { "name": "showExtensionLines", "type": "boolean", "optional": true, "description": "Whether the extension lines from node to the rulers should be shown (default: false)." },
-                    { "name": "displayAsMaterial", "type": "boolean", "optional": true, "hidden": true},
+                    { "name": "displayAsMaterial", "type": "boolean", "optional": true, "experimental": true},
                     { "name": "contentColor", "$ref": "RGBA", "optional": true, "description": "The content box highlight fill color (default: transparent)." },
                     { "name": "paddingColor", "$ref": "RGBA", "optional": true, "description": "The padding highlight fill color (default: transparent)." },
                     { "name": "borderColor", "$ref": "RGBA", "optional": true, "description": "The border highlight fill color (default: transparent)." },
                     { "name": "marginColor", "$ref": "RGBA", "optional": true, "description": "The margin highlight fill color (default: transparent)." },
-                    { "name": "eventTargetColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The event target element highlight fill color (default: transparent)." },
-                    { "name": "shapeColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The shape outside fill color (default: transparent)." },
-                    { "name": "shapeMarginColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The shape margin fill color (default: transparent)." },
+                    { "name": "eventTargetColor", "$ref": "RGBA", "optional": true, "experimental": true, "description": "The event target element highlight fill color (default: transparent)." },
+                    { "name": "shapeColor", "$ref": "RGBA", "optional": true, "experimental": true, "description": "The shape outside fill color (default: transparent)." },
+                    { "name": "shapeMarginColor", "$ref": "RGBA", "optional": true, "experimental": true, "description": "The shape margin fill color (default: transparent)." },
                     { "name": "selectorList", "type": "string", "optional": true, "description": "Selectors to highlight relevant nodes."}
                 ],
                 "description": "Configuration data for the highlighting of page elements."
@@ -2108,7 +2131,7 @@ export const protocol: IProtocol =
             {
                 "id": "InspectMode",
                 "type": "string",
-                "hidden": true,
+                "experimental": true,
                 "enum": [
                     "searchForNode",
                     "searchForUAShadowDOM",
@@ -2137,7 +2160,7 @@ export const protocol: IProtocol =
                 "name": "requestChildNodes",
                 "parameters": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get children for." },
-                    { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.", "hidden": true }
+                    { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.", "experimental": true }
                 ],
                 "description": "Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth."
             },
@@ -2237,14 +2260,14 @@ export const protocol: IProtocol =
                 "name": "performSearch",
                 "parameters": [
                     { "name": "query", "type": "string", "description": "Plain text or query selector or XPath search query." },
-                    { "name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true, "description": "True to search in user agent shadow DOM.", "hidden": true }
+                    { "name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true, "description": "True to search in user agent shadow DOM.", "experimental": true }
                 ],
                 "returns": [
                     { "name": "searchId", "type": "string", "description": "Unique search session identifier." },
                     { "name": "resultCount", "type": "integer", "description": "Number of search results." }
                 ],
                 "description": "Searches for a given string in the DOM tree. Use <code>getSearchResults</code> to access search results or <code>cancelSearch</code> to end this search session.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getSearchResults",
@@ -2257,7 +2280,7 @@ export const protocol: IProtocol =
                     { "name": "nodeIds", "type": "array", "items": { "$ref": "NodeId" }, "description": "Ids of the search result nodes." }
                 ],
                 "description": "Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the sarch with the given identifier.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "discardSearchResults",
@@ -2265,7 +2288,7 @@ export const protocol: IProtocol =
                     { "name": "searchId", "type": "string", "description": "Unique search session identifier." }
                 ],
                 "description": "Discards search results from the session with the given id. <code>getSearchResults</code> should no longer be called for that search.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "requestNode",
@@ -2279,7 +2302,7 @@ export const protocol: IProtocol =
             },
             {
                 "name": "setInspectMode",
-                "hidden": true,
+                "experimental": true,
                 "parameters": [
                     { "name": "mode", "$ref": "InspectMode", "description": "Set an inspection mode." },
                     { "name": "highlightConfig", "$ref": "HighlightConfig", "optional": true, "description": "A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>." }
@@ -2306,7 +2329,7 @@ export const protocol: IProtocol =
                     { "name": "outlineColor", "$ref": "RGBA", "optional": true, "description": "The highlight outline color (default: transparent)." }
                 ],
                 "description": "Highlights given quad. Coordinates are absolute with respect to the main frame viewport.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "highlightNode",
@@ -2314,7 +2337,7 @@ export const protocol: IProtocol =
                     { "name": "highlightConfig", "$ref": "HighlightConfig",  "description": "A descriptor for the highlight appearance." },
                     { "name": "nodeId", "$ref": "NodeId", "optional": true, "description": "Identifier of the node to highlight." },
                     { "name": "backendNodeId", "$ref": "BackendNodeId", "optional": true, "description": "Identifier of the backend node to highlight." },
-                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "JavaScript object id of the node to be highlighted.", "hidden": true }
+                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "JavaScript object id of the node to be highlighted.", "experimental": true }
                 ],
                 "description": "Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified."
             },
@@ -2330,7 +2353,7 @@ export const protocol: IProtocol =
                     { "name": "contentOutlineColor", "$ref": "RGBA", "optional": true, "description": "The content box highlight outline color (default: transparent)." }
                 ],
                 "description": "Highlights owner element of the frame with given id.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "pushNodeByPathToFrontend",
@@ -2341,7 +2364,7 @@ export const protocol: IProtocol =
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node for given path." }
                 ],
                 "description": "Requests that the node is sent to the caller given its path. // FIXME, use XPath",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "pushNodesByBackendIdsToFrontend",
@@ -2352,7 +2375,7 @@ export const protocol: IProtocol =
                     { "name": "nodeIds", "type": "array", "items": {"$ref": "NodeId"}, "description": "The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds." }
                 ],
                 "description": "Requests that a batch of nodes is sent to the caller given their backend node ids.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setInspectedNode",
@@ -2360,7 +2383,7 @@ export const protocol: IProtocol =
                     { "name": "nodeId", "$ref": "NodeId", "description": "DOM node id to be accessible by means of $x command line API." }
                 ],
                 "description": "Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions).",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "resolveNode",
@@ -2394,7 +2417,7 @@ export const protocol: IProtocol =
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node clone." }
                 ],
                 "description": "Creates a deep copy of the specified node and places it into the target container before the given anchor.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "moveTo",
@@ -2411,17 +2434,17 @@ export const protocol: IProtocol =
             {
                 "name": "undo",
                 "description": "Undoes the last performed action.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "redo",
                 "description": "Re-does the last undone action.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "markUndoableState",
                 "description": "Marks last undoable state.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "focus",
@@ -2429,7 +2452,7 @@ export const protocol: IProtocol =
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to focus." }
                 ],
                 "description": "Focuses the given element.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setFileInputFiles",
@@ -2438,7 +2461,7 @@ export const protocol: IProtocol =
                     { "name": "files", "type": "array", "items": { "type": "string" }, "description": "Array of file paths to set." }
                 ],
                 "description": "Sets files for the given file input element.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser", "renderer"]
             },
             {
@@ -2450,7 +2473,7 @@ export const protocol: IProtocol =
                     { "name": "model", "$ref": "BoxModel", "description": "Box model for the node." }
                 ],
                 "description": "Returns boxes for the currently selected nodes.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getNodeForLocation",
@@ -2462,7 +2485,7 @@ export const protocol: IProtocol =
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node at given coordinates." }
                 ],
                 "description": "Returns node id at given location.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getRelayoutBoundary",
@@ -2473,7 +2496,7 @@ export const protocol: IProtocol =
                     { "name": "nodeId", "$ref": "NodeId", "description": "Relayout boundary node id for the given node." }
                 ],
                 "description": "Returns the id of the nearest ancestor that is a relayout boundary.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getHighlightObjectForTest",
@@ -2484,7 +2507,7 @@ export const protocol: IProtocol =
                     { "name": "highlight", "type": "object", "description": "Highlight data for the node." }
                 ],
                 "description": "For testing.",
-                "hidden": true
+                "experimental": true
             }
         ],
         "events": [
@@ -2498,7 +2521,7 @@ export const protocol: IProtocol =
                     { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "Id of the node to inspect." }
                 ],
                 "description": "Fired when the node should be inspected. This happens after call to <code>setInspectMode</code>.",
-                "hidden" : true
+                "experimental" : true
             },
             {
                 "name": "setChildNodes",
@@ -2531,7 +2554,7 @@ export const protocol: IProtocol =
                     { "name": "nodeIds", "type": "array", "items": { "$ref": "NodeId" }, "description": "Ids of the nodes for which the inline styles have been invalidated." }
                 ],
                 "description": "Fired when <code>Element</code>'s inline style is modified via a CSS property modification.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "characterDataModified",
@@ -2573,7 +2596,7 @@ export const protocol: IProtocol =
                     { "name": "root", "$ref": "Node", "description": "Shadow root." }
                 ],
                 "description": "Called when shadow root is pushed into the element.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "shadowRootPopped",
@@ -2582,7 +2605,7 @@ export const protocol: IProtocol =
                     { "name": "rootId", "$ref": "NodeId", "description": "Shadow root id." }
                 ],
                 "description": "Called when shadow root is popped from the element.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "pseudoElementAdded",
@@ -2591,7 +2614,7 @@ export const protocol: IProtocol =
                     { "name": "pseudoElement", "$ref": "Node", "description": "The added pseudo element." }
                 ],
                 "description": "Called when a pseudo element is added to an element.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "pseudoElementRemoved",
@@ -2600,7 +2623,7 @@ export const protocol: IProtocol =
                     { "name": "pseudoElementId", "$ref": "NodeId", "description": "The removed pseudo element id." }
                 ],
                 "description": "Called when a pseudo element is removed from an element.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "distributedNodesUpdated",
@@ -2609,20 +2632,20 @@ export const protocol: IProtocol =
                     { "name": "distributedNodes", "type": "array", "items": { "$ref": "BackendNode" }, "description": "Distributed nodes for given insertion point." }
                 ],
                 "description": "Called when distrubution is changed.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "nodeHighlightRequested",
                 "parameters": [
                     {"name": "nodeId", "$ref": "NodeId"}
                 ],
-                "hidden": true
+                "experimental": true
             }
         ]
     },
     {
         "domain": "CSS",
-        "hidden": true,
+        "experimental": true,
         "description": "This domain exposes CSS read/write operations. All CSS objects (stylesheets, rules, and styles) have an associated <code>id</code> used in subsequent operations on the related object. Each object type has a specific <code>id</code> structure, and those are not interchangeable between objects of different kinds. CSS objects can be loaded using the <code>get*ForNode()</code> calls (which accept a DOM node id). A client can also discover all the existing stylesheets with the <code>getAllStyleSheets()</code> method (or keeping track of the <code>styleSheetAdded</code>/<code>styleSheetRemoved</code> events) and subsequently load the required stylesheet contents using the <code>getStyleSheet[Text]()</code> methods.",
         "dependencies": ["DOM"],
         "types": [
@@ -2776,7 +2799,7 @@ export const protocol: IProtocol =
                     { "name": "sourceURL", "type": "string", "optional": true, "description": "URL of the document containing the media query description." },
                     { "name": "range", "$ref": "SourceRange", "optional": true, "description": "The associated rule (@media or @import) header range in the enclosing stylesheet (if available)." },
                     { "name": "styleSheetId", "$ref": "StyleSheetId", "optional": true, "description": "Identifier of the stylesheet containing this object (if exists)." },
-                    { "name": "mediaList", "type": "array", "items": { "$ref": "MediaQuery" }, "optional": true, "hidden": true, "description": "Array of media queries." }
+                    { "name": "mediaList", "type": "array", "items": { "$ref": "MediaQuery" }, "optional": true, "experimental": true, "description": "Array of media queries." }
                 ],
                 "description": "CSS media rule descriptor."
             },
@@ -2788,7 +2811,7 @@ export const protocol: IProtocol =
                     { "name": "active", "type": "boolean", "description": "Whether the media query condition is satisfied." }
                 ],
                 "description": "Media query descriptor.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "MediaQueryExpression",
@@ -2801,7 +2824,7 @@ export const protocol: IProtocol =
                     { "name": "computedLength", "type": "number", "optional": true, "description": "Computed length of media query expression (if applicable)."}
                 ],
                 "description": "Media query expression descriptor.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "PlatformFontUsage",
@@ -2812,7 +2835,7 @@ export const protocol: IProtocol =
                     { "name": "glyphCount", "type": "number", "description": "Amount of glyphs that were rendered with this font."}
                 ],
                 "description": "Information about amount of glyphs that were rendered with given font.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "id": "CSSKeyframesRule",
@@ -2900,7 +2923,7 @@ export const protocol: IProtocol =
                     { "name": "fonts", "type": "array", "items": { "$ref": "PlatformFontUsage" }, "description": "Usage statistics for every employed platform font." }
                 ],
                 "description": "Requests information about platform fonts which we used to render child TextNodes in the given node.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getStyleSheetText",
@@ -3005,7 +3028,7 @@ export const protocol: IProtocol =
                     { "name": "medias", "type": "array", "items": { "$ref": "CSSMedia" } }
                 ],
                 "description": "Returns all media queries parsed by the rendering engine.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setEffectivePropertyValueForNode",
@@ -3015,7 +3038,7 @@ export const protocol: IProtocol =
                     { "name": "value", "type": "string"}
                 ],
                 "description": "Find a rule with the given active property for the given node and set the new value for this property",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "getBackgroundColors",
@@ -3025,7 +3048,7 @@ export const protocol: IProtocol =
                 "returns": [
                     { "name": "backgroundColors", "type": "array", "items": { "type": "string" }, "description": "The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).", "optional": true }
                 ],
-                "hidden": true
+                "experimental": true
             }
         ],
         "events": [
@@ -3070,7 +3093,7 @@ export const protocol: IProtocol =
     {
         "domain": "IO",
         "description": "Input/Output operations for streams produced by DevTools.",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "StreamHandle",
@@ -3129,7 +3152,7 @@ export const protocol: IProtocol =
                     { "name": "originalHandler", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event original handler function value." },
                     { "name": "removeFunction", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event listener remove function." }
                 ],
-                "hidden": true
+                "experimental": true
             }
         ],
         "commands": [
@@ -3153,7 +3176,7 @@ export const protocol: IProtocol =
                 "name": "setEventListenerBreakpoint",
                 "parameters": [
                     { "name": "eventName", "type": "string", "description": "DOM Event name to stop on (any DOM event will do)." },
-                    { "name": "targetName", "type": "string", "optional": true, "description": "EventTarget interface name to stop on. If equal to <code>\"*\"</code> or not provided, will stop on any EventTarget.", "hidden": true }
+                    { "name": "targetName", "type": "string", "optional": true, "description": "EventTarget interface name to stop on. If equal to <code>\"*\"</code> or not provided, will stop on any EventTarget.", "experimental": true }
                 ],
                 "description": "Sets breakpoint on particular DOM event."
             },
@@ -3161,7 +3184,7 @@ export const protocol: IProtocol =
                 "name": "removeEventListenerBreakpoint",
                 "parameters": [
                     { "name": "eventName", "type": "string", "description": "Event name." },
-                    { "name": "targetName", "type": "string", "optional": true, "description": "EventTarget interface name.", "hidden": true }
+                    { "name": "targetName", "type": "string", "optional": true, "description": "EventTarget interface name.", "experimental": true }
                 ],
                 "description": "Removes breakpoint on particular DOM event."
             },
@@ -3171,7 +3194,7 @@ export const protocol: IProtocol =
                     { "name": "eventName", "type": "string", "description": "Instrumentation name to stop on." }
                 ],
                 "description": "Sets breakpoint on particular native event.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "removeInstrumentationBreakpoint",
@@ -3179,7 +3202,7 @@ export const protocol: IProtocol =
                     { "name": "eventName", "type": "string", "description": "Instrumentation name to stop on." }
                 ],
                 "description": "Removes breakpoint on particular native event.",
-                "hidden": true
+                "experimental": true
             },
             {
                 "name": "setXHRBreakpoint",
@@ -3197,7 +3220,7 @@ export const protocol: IProtocol =
             },
             {
                 "name": "getEventListeners",
-                "hidden": true,
+                "experimental": true,
                 "parameters": [
                     { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Identifier of the object to return listeners for." }
                 ],
@@ -3210,7 +3233,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "Worker",
-        "hidden": true,
+        "experimental": true,
         "types": [],
         "commands": [
             {
@@ -3259,7 +3282,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "ServiceWorker",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "ServiceWorkerRegistration",
@@ -3488,7 +3511,7 @@ export const protocol: IProtocol =
             {
                 "id": "TouchPoint",
                 "type": "object",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "state", "type": "string", "enum": ["touchPressed", "touchReleased", "touchMoved", "touchStationary", "touchCancelled"], "description": "State of the touch point." },
                     { "name": "x", "type": "integer", "description": "X coordinate of the event relative to the main frame's viewport."},
@@ -3503,7 +3526,7 @@ export const protocol: IProtocol =
             {
                 "id": "GestureSourceType",
                 "type": "string",
-                "hidden": true,
+                "experimental": true,
                 "enum": ["default", "touch", "mouse"]
             }
         ],
@@ -3544,7 +3567,7 @@ export const protocol: IProtocol =
             },
             {
                 "name": "dispatchTouchEvent",
-                "hidden": true,
+                "experimental": true,
                 "parameters": [
                     { "name": "type", "type": "string", "enum": ["touchStart", "touchEnd", "touchMove"], "description": "Type of the touch event." },
                     { "name": "touchPoints", "type": "array", "items": { "$ref": "TouchPoint" }, "description": "Touch points." },
@@ -3555,7 +3578,7 @@ export const protocol: IProtocol =
             },
             {
                 "name": "emulateTouchFromMouseEvent",
-                "hidden": true,
+                "experimental": true,
                 "parameters": [
                     { "name": "type", "type": "string", "enum": ["mousePressed", "mouseReleased", "mouseMoved", "mouseWheel"], "description": "Type of the mouse event." },
                     { "name": "x", "type": "integer", "description": "X coordinate of the mouse pointer in DIP."},
@@ -3581,7 +3604,7 @@ export const protocol: IProtocol =
                     { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." }
                 ],
                 "description": "Synthesizes a pinch gesture over a time period by issuing appropriate touch events.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -3602,7 +3625,7 @@ export const protocol: IProtocol =
                     { "name": "interactionMarkerName", "type": "string", "optional": true, "description": "The name of the interaction markers to generate, if not empty (default: \"\")." }
                 ],
                 "description": "Synthesizes a scroll gesture over a time period by issuing appropriate touch events.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -3616,7 +3639,7 @@ export const protocol: IProtocol =
                     { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." }
                 ],
                 "description": "Synthesizes a tap gesture over a time period by issuing appropriate touch events.",
-                "hidden": true,
+                "experimental": true,
                 "handlers": ["browser"]
             }
         ],
@@ -3624,7 +3647,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "LayerTree",
-        "hidden": true,
+        "experimental": true,
         "dependencies": ["DOM"],
         "types": [
             {
@@ -3788,7 +3811,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "DeviceOrientation",
-        "hidden": true,
+        "experimental": true,
         "commands": [
             {
                 "name": "setDeviceOrientationOverride",
@@ -3906,17 +3929,17 @@ export const protocol: IProtocol =
     },
     {
         "domain": "Animation",
-        "hidden": true,
+        "experimental": true,
         "dependencies": ["Runtime", "DOM"],
         "types": [
             {
                 "id": "Animation",
                 "type": "object",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "id", "type": "string", "description": "<code>Animation</code>'s id." },
                     { "name": "name", "type": "string", "description": "<code>Animation</code>'s name." },
-                    { "name": "pausedState", "type": "boolean", "hidden": true, "description": "<code>Animation</code>'s internal paused state." },
+                    { "name": "pausedState", "type": "boolean", "experimental": true, "description": "<code>Animation</code>'s internal paused state." },
                     { "name": "playState", "type": "string", "description": "<code>Animation</code>'s play state." },
                     { "name": "playbackRate", "type": "number", "description": "<code>Animation</code>'s playback rate." },
                     { "name": "startTime", "type": "number", "description": "<code>Animation</code>'s start time." },
@@ -3930,11 +3953,10 @@ export const protocol: IProtocol =
             {
                 "id": "AnimationEffect",
                 "type": "object",
-                "hidden": true,
+                "experimental": true,
                 "properties": [
                     { "name": "delay", "type": "number", "description": "<code>AnimationEffect</code>'s delay." },
                     { "name": "endDelay", "type": "number", "description": "<code>AnimationEffect</code>'s end delay." },
-                    { "name": "playbackRate", "type": "number", "description": "<code>AnimationEffect</code>'s playbackRate." },
                     { "name": "iterationStart", "type": "number", "description": "<code>AnimationEffect</code>'s iteration start." },
                     { "name": "iterations", "type": "number", "description": "<code>AnimationEffect</code>'s iterations." },
                     { "name": "duration", "type": "number", "description": "<code>AnimationEffect</code>'s iteration duration." },
@@ -4067,7 +4089,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "Accessibility",
-        "hidden": true,
+        "experimental": true,
         "dependencies": ["DOM"],
         "types": [
             {
@@ -4192,13 +4214,13 @@ export const protocol: IProtocol =
                     { "name": "accessibilityNode", "$ref": "AXNode", "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists.", "optional": true }
                 ],
                 "description": "Fetches the accessibility node for this DOM node, if it exists.",
-                "hidden": true
+                "experimental": true
             }
         ]
     },
     {
         "domain": "Storage",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "StorageType",
@@ -4234,7 +4256,7 @@ export const protocol: IProtocol =
         "domain": "Log",
         "description": "Provides access to log entries.",
         "dependencies": ["Runtime", "Network", "Worker"],
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "LogEntry",
@@ -4280,7 +4302,7 @@ export const protocol: IProtocol =
     {
         "domain": "Browser",
         "description": "The Browser domain allows listing, creating, activating and attaching to the targets.",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "BrowserContextID",
@@ -4326,8 +4348,8 @@ export const protocol: IProtocol =
                 "description": "Creates a new page.",
                 "parameters": [
                     { "name": "url", "type": "string", "description": "The initial URL the page will be navigated to." },
-                    { "name": "width", "type": "integer", "description": "Window width (headless chrome only).", "optional": true },
-                    { "name": "height", "type": "integer", "description": "Window height (headless chrome only).", "optional": true },
+                    { "name": "width", "type": "integer", "description": "Frame width in DIP (headless chrome only).", "optional": true },
+                    { "name": "height", "type": "integer", "description": "Frame height in DIP (headless chrome only).", "optional": true },
                     { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The browser context to create the page in (headless chrome only).", "optional": true }
                 ],
                 "returns": [
@@ -4395,7 +4417,7 @@ export const protocol: IProtocol =
     {
         "domain": "SystemInfo",
         "description": "The SystemInfo domain defines methods and events for querying low-level system information.",
-        "hidden": true,
+        "experimental": true,
         "types": [
             {
                 "id": "GPUDevice",
@@ -4437,7 +4459,7 @@ export const protocol: IProtocol =
     {
         "domain": "Tethering",
         "description": "The Tethering domain defines methods and events for browser port binding.",
-        "hidden": true,
+        "experimental": true,
         "commands": [
             {
                 "name": "bind",

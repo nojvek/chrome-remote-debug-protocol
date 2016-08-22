@@ -158,19 +158,25 @@ export namespace Crdp {
         /** Unique object identifier. */
         export type RemoteObjectId = string;
 
+        /** Primitive value which cannot be JSON-stringified. */
+        export type UnserializableValue = ('Infinity' | 'NaN' | '-Infinity' | '-0');
+
         /** Mirror object referencing original JavaScript object. */
         export interface RemoteObject {
             /** Object type. */
-            type: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol';
+            type: ('object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol');
 
             /** Object subtype hint. Specified for 'object' type values only. */
-            subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
+            subtype?: ('array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error' | 'proxy' | 'promise' | 'typedarray');
 
             /** Object class (constructor) name. Specified for 'object' type values only. */
             className?: string;
 
-            /** Remote object value in case of primitive values or JSON values (if it was requested), or description string if the value can not be JSON-stringified (like NaN, Infinity, -Infinity, -0). */
+            /** Remote object value in case of primitive values or JSON values (if it was requested). */
             value?: any;
+
+            /** Primitive value which can not be JSON-stringified does not have 'value', but gets this property. */
+            unserializableValue?: UnserializableValue;
 
             /** String representation of the object. */
             description?: string;
@@ -201,10 +207,10 @@ export namespace Crdp {
         /** Object containing abbreviated remote object value. */
         export interface ObjectPreview {
             /** Object type. */
-            type: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol';
+            type: ('object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol');
 
             /** Object subtype hint. Specified for 'object' type values only. */
-            subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
+            subtype?: ('array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error');
 
             /** String representation of the object. */
             description?: string;
@@ -225,7 +231,7 @@ export namespace Crdp {
             name: string;
 
             /** Object type. Accessor means that the property itself is an accessor property. */
-            type: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol' | 'accessor';
+            type: ('object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol' | 'accessor');
 
             /** User-friendly property value string. */
             value?: string;
@@ -234,7 +240,7 @@ export namespace Crdp {
             valuePreview?: ObjectPreview;
 
             /** Object subtype hint. Specified for 'object' type values only. */
-            subtype?: 'array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error';
+            subtype?: ('array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'iterator' | 'generator' | 'error');
 
         }
 
@@ -291,16 +297,16 @@ export namespace Crdp {
 
         }
 
-        /** Represents function call argument. Either remote object id 'objectId</code> or primitive <code>value' or neither of (for undefined) them should be specified. */
+        /** Represents function call argument. Either remote object id 'objectId</code>, primitive <code>value', unserializable primitive value or neither of (for undefined) them should be specified. */
         export interface CallArgument {
-            /** Primitive value, or description string if the value can not be JSON-stringified (like NaN, Infinity, -Infinity, -0). */
+            /** Primitive value. */
             value?: any;
+
+            /** Primitive value which can not be JSON-stringified. */
+            unserializableValue?: UnserializableValue;
 
             /** Remote object handle. */
             objectId?: RemoteObjectId;
-
-            /** Object type. */
-            type?: 'object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol';
 
         }
 
@@ -312,27 +318,24 @@ export namespace Crdp {
             /** Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed. */
             id: ExecutionContextId;
 
-            /** Whether context is the default page context (as opposite to e.g. context of content script). */
-            isDefault: boolean;
-
             /** Execution context origin. */
             origin: string;
 
             /** Human readable name describing given context. */
             name: string;
 
-            /** Id of the owning frame. May be an empty string if the context is not associated with a frame. */
-            frameId: string;
+            /** Embedder-specific auxiliary data. */
+            auxData?: any;
 
         }
 
         /** Detailed information about exception (or error) that was thrown during script compilation or execution. */
         export interface ExceptionDetails {
-            /** Exception text. */
-            text: string;
+            /** Exception id. */
+            exceptionId: integer;
 
-            /** Script ID of the exception location. */
-            scriptId: ScriptId;
+            /** Exception text, which should be used together with exception object when available. */
+            text: string;
 
             /** Line number of the exception location (0-based). */
             lineNumber: integer;
@@ -340,11 +343,20 @@ export namespace Crdp {
             /** Column number of the exception location (0-based). */
             columnNumber: integer;
 
+            /** Script ID of the exception location. */
+            scriptId?: ScriptId;
+
             /** URL of the exception location, to be used when the script was not reported. */
             url?: string;
 
             /** JavaScript stack trace if available. */
             stackTrace?: StackTrace;
+
+            /** Exception object if available. */
+            exception?: RemoteObject;
+
+            /** Identifier of the context where exception happened. */
+            executionContextId?: ExecutionContextId;
 
         }
 
@@ -393,10 +405,10 @@ export namespace Crdp {
             /** Determines whether Command Line API should be available during the evaluation. */
             includeCommandLineAPI?: boolean;
 
-            /** Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. */
-            doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            /** In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides 'setPauseOnException' state. */
+            silent?: boolean;
 
-            /** Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page. */
+            /** Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page. */
             contextId?: ExecutionContextId;
 
             /** Whether the result is expected to be a JSON object that should be sent by value. */
@@ -408,16 +420,37 @@ export namespace Crdp {
             /** Whether execution should be treated as initiated by user in the UI. */
             userGesture?: boolean;
 
+            /** Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error. */
+            awaitPromise?: boolean;
+
         }
 
         export interface EvaluateResponse {
             /** Evaluation result. */
             result: RemoteObject;
 
-            /** True if the result was thrown during the evaluation. */
-            wasThrown?: boolean;
-
             /** Exception details. */
+            exceptionDetails?: ExceptionDetails;
+
+        }
+
+        export interface AwaitPromiseRequest {
+            /** Identifier of the promise. */
+            promiseObjectId: RemoteObjectId;
+
+            /** Whether the result is expected to be a JSON object that should be sent by value. */
+            returnByValue?: boolean;
+
+            /** Whether preview should be generated for the result. */
+            generatePreview?: boolean;
+
+        }
+
+        export interface AwaitPromiseResponse {
+            /** Promise result. Will contain rejected value if promise was rejected. */
+            result: RemoteObject;
+
+            /** Exception details if stack strace is available. */
             exceptionDetails?: ExceptionDetails;
 
         }
@@ -432,8 +465,8 @@ export namespace Crdp {
             /** Call arguments. All call arguments must belong to the same JavaScript world as the target object. */
             arguments?: CallArgument[];
 
-            /** Specifies whether function call should stop on exceptions and mute console. Overrides setPauseOnException state. */
-            doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            /** In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides 'setPauseOnException' state. */
+            silent?: boolean;
 
             /** Whether the result is expected to be a JSON object which should be sent by value. */
             returnByValue?: boolean;
@@ -444,14 +477,17 @@ export namespace Crdp {
             /** Whether execution should be treated as initiated by user in the UI. */
             userGesture?: boolean;
 
+            /** Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error. */
+            awaitPromise?: boolean;
+
         }
 
         export interface CallFunctionOnResponse {
             /** Call result. */
             result: RemoteObject;
 
-            /** True if the result was thrown during the evaluation. */
-            wasThrown?: boolean;
+            /** Exception details. */
+            exceptionDetails?: ExceptionDetails;
 
         }
 
@@ -509,8 +545,8 @@ export namespace Crdp {
             /** Specifies whether the compiled script should be persisted. */
             persistScript: boolean;
 
-            /** Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter is used to specify one of those contexts. */
-            executionContextId: ExecutionContextId;
+            /** Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page. */
+            executionContextId?: ExecutionContextId;
 
         }
 
@@ -527,17 +563,26 @@ export namespace Crdp {
             /** Id of the script to run. */
             scriptId: ScriptId;
 
-            /** Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter is used to specify one of those contexts. */
-            executionContextId: ExecutionContextId;
+            /** Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page. */
+            executionContextId?: ExecutionContextId;
 
             /** Symbolic group name that can be used to release multiple objects. */
             objectGroup?: string;
 
-            /** Specifies whether script run should stop on exceptions and mute console. Overrides setPauseOnException state. */
-            doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            /** In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides 'setPauseOnException' state. */
+            silent?: boolean;
 
             /** Determines whether Command Line API should be available during the evaluation. */
             includeCommandLineAPI?: boolean;
+
+            /** Whether the result is expected to be a JSON object which should be sent by value. */
+            returnByValue?: boolean;
+
+            /** Whether preview should be generated for the result. */
+            generatePreview?: boolean;
+
+            /** Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error. */
+            awaitPromise?: boolean;
 
         }
 
@@ -563,25 +608,16 @@ export namespace Crdp {
         }
 
         export interface ExceptionThrownEvent {
-            /** Exception id. */
-            exceptionId: integer;
-
             /** Timestamp of the exception. */
             timestamp: Timestamp;
 
-            details: ExceptionDetails;
-
-            /** Exception object. */
-            exception?: RemoteObject;
-
-            /** Identifier of the context where exception happened. */
-            executionContextId?: ExecutionContextId;
+            exceptionDetails: ExceptionDetails;
 
         }
 
         export interface ExceptionRevokedEvent {
-            /** Message describing why exception was revoked. */
-            message: string;
+            /** Reason describing why exception was revoked. */
+            reason: string;
 
             /** The id of revoked exception, as reported in 'exceptionUnhandled'. */
             exceptionId: integer;
@@ -590,7 +626,7 @@ export namespace Crdp {
 
         export interface ConsoleAPICalledEvent {
             /** Type of the call. */
-            type: 'log' | 'debug' | 'info' | 'error' | 'warning' | 'dir' | 'dirxml' | 'table' | 'trace' | 'clear' | 'startGroup' | 'startGroupCollapsed' | 'endGroup' | 'assert' | 'profile' | 'profileEnd';
+            type: ('log' | 'debug' | 'info' | 'error' | 'warning' | 'dir' | 'dirxml' | 'table' | 'trace' | 'clear' | 'startGroup' | 'startGroupCollapsed' | 'endGroup' | 'assert' | 'profile' | 'profileEnd');
 
             /** Call arguments. */
             args: RemoteObject[];
@@ -618,6 +654,9 @@ export namespace Crdp {
         /** Evaluates expression on global object. */
         evaluate?: (params: Runtime.EvaluateRequest) => PromiseOrNot<Runtime.EvaluateResponse>;
 
+        /** Add handler to promise with given promise object id. */
+        awaitPromise?: (params: Runtime.AwaitPromiseRequest) => PromiseOrNot<Runtime.AwaitPromiseResponse>;
+
         /** Calls function with given declaration on the given object. Object group of the result is inherited from the target object. */
         callFunctionOn?: (params: Runtime.CallFunctionOnRequest) => PromiseOrNot<Runtime.CallFunctionOnResponse>;
 
@@ -630,8 +669,8 @@ export namespace Crdp {
         /** Releases all remote objects that belong to a given group. */
         releaseObjectGroup?: (params: Runtime.ReleaseObjectGroupRequest) => PromiseOrNot<void>;
 
-        /** Tells inspected instance(worker or page) that it can run in case it was started paused. */
-        run?: () => PromiseOrNot<void>;
+        /** Tells inspected instance to run if it was waiting for debugger to attach. */
+        runIfWaitingForDebugger?: () => PromiseOrNot<void>;
 
         /** Enables reporting of execution contexts creation by means of 'executionContextCreated' event. When the reporting gets enabled the event will be sent immediately for each existing execution context. */
         enable?: () => PromiseOrNot<void>;
@@ -671,6 +710,7 @@ export namespace Crdp {
         /** Issued when console API was called. */
         onConsoleAPICalled(handler: (params: Runtime.ConsoleAPICalledEvent) => void): void;
 
+        /** Issued when object should be inspected (for example, as a result of inspect() command line API call). */
         onInspectRequested(handler: (params: Runtime.InspectRequestedEvent) => void): void;
 
     }
@@ -694,6 +734,7 @@ export namespace Crdp {
         /** Issued when console API was called. */
         emitConsoleAPICalled(params: Runtime.ConsoleAPICalledEvent): void;
 
+        /** Issued when object should be inspected (for example, as a result of inspect() command line API call). */
         emitInspectRequested(params: Runtime.InspectRequestedEvent): void;
 
         expose(domain: RuntimeCommands): void;
@@ -758,7 +799,7 @@ export namespace Crdp {
         /** Scope description. */
         export interface Scope {
             /** Scope type. */
-            type: 'global' | 'local' | 'with' | 'closure' | 'catch' | 'block' | 'script';
+            type: ('global' | 'local' | 'with' | 'closure' | 'catch' | 'block' | 'script');
 
             /** Object representing the scope. For 'global</code> and <code>with' scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties. */
             object: Runtime.RemoteObject;
@@ -791,7 +832,7 @@ export namespace Crdp {
 
         export interface SetSkipAllPausesRequest {
             /** New value for skip pauses state. */
-            skipped: boolean;
+            skip: boolean;
 
         }
 
@@ -849,9 +890,6 @@ export namespace Crdp {
             /** Location to continue to. */
             location: Location;
 
-            /** Allows breakpoints at the intemediate positions inside statements. */
-            interstatementLocation?: boolean;
-
         }
 
         export interface SearchInContentRequest {
@@ -875,12 +913,6 @@ export namespace Crdp {
 
         }
 
-        export interface CanSetScriptSourceResponse {
-            /** True if 'setScriptSource' is supported. */
-            result: boolean;
-
-        }
-
         export interface SetScriptSourceRequest {
             /** Id of the script to edit. */
             scriptId: Runtime.ScriptId;
@@ -888,8 +920,8 @@ export namespace Crdp {
             /** New content of the script. */
             scriptSource: string;
 
-            /**  If true the change will not actually be applied. Preview mode may be used to get result description without actually modifying the code. */
-            preview?: boolean;
+            /**  If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code. */
+            dryRun?: boolean;
 
         }
 
@@ -903,8 +935,8 @@ export namespace Crdp {
             /** Async stack trace, if any. */
             asyncStackTrace?: Runtime.StackTrace;
 
-            /** Error data if any. */
-            compileError?: Runtime.ExceptionDetails;
+            /** Exception details if any. */
+            exceptionDetails?: Runtime.ExceptionDetails;
 
         }
 
@@ -937,7 +969,7 @@ export namespace Crdp {
 
         export interface SetPauseOnExceptionsRequest {
             /** Pause on exceptions mode. */
-            state: 'none' | 'uncaught' | 'all';
+            state: ('none' | 'uncaught' | 'all');
 
         }
 
@@ -954,8 +986,8 @@ export namespace Crdp {
             /** Specifies whether command line API should be available to the evaluated expression, defaults to false. */
             includeCommandLineAPI?: boolean;
 
-            /** Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. */
-            doNotPauseOnExceptionsAndMuteConsole?: boolean;
+            /** In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides 'setPauseOnException' state. */
+            silent?: boolean;
 
             /** Whether the result is expected to be a JSON object that should be sent by value. */
             returnByValue?: boolean;
@@ -968,9 +1000,6 @@ export namespace Crdp {
         export interface EvaluateOnCallFrameResponse {
             /** Object wrapper for the evaluation result. */
             result: Runtime.RemoteObject;
-
-            /** True if the result was thrown during the evaluation. */
-            wasThrown?: boolean;
 
             /** Exception details. */
             exceptionDetails?: Runtime.ExceptionDetails;
@@ -989,15 +1018,6 @@ export namespace Crdp {
 
             /** Id of callframe that holds variable. */
             callFrameId: CallFrameId;
-
-        }
-
-        export interface GetBacktraceResponse {
-            /** Call stack the virtual machine stopped on. */
-            callFrames: CallFrame[];
-
-            /** Async stack trace, if any. */
-            asyncStackTrace?: Runtime.StackTrace;
 
         }
 
@@ -1046,11 +1066,8 @@ export namespace Crdp {
             /** Content hash of the script. */
             hash: string;
 
-            /** Determines whether this script is a user extension script. */
-            isContentScript?: boolean;
-
-            /** Determines whether this script is an internal script. */
-            isInternalScript?: boolean;
+            /** Embedder-specific auxiliary data. */
+            executionContextAuxData?: any;
 
             /** True, if this script is generated as a result of the live edit operation. */
             isLiveEdit?: boolean;
@@ -1060,9 +1077,6 @@ export namespace Crdp {
 
             /** True, if this script has sourceURL. */
             hasSourceURL?: boolean;
-
-            /** True, if '//@ sourceURL' or '//@ sourceMappingURL' was used. */
-            deprecatedCommentWasUsed?: boolean;
 
         }
 
@@ -1091,20 +1105,14 @@ export namespace Crdp {
             /** Content hash of the script. */
             hash: string;
 
-            /** Determines whether this script is a user extension script. */
-            isContentScript?: boolean;
-
-            /** Determines whether this script is an internal script. */
-            isInternalScript?: boolean;
+            /** Embedder-specific auxiliary data. */
+            executionContextAuxData?: any;
 
             /** URL of source map associated with script (if any). */
             sourceMapURL?: string;
 
             /** True, if this script has sourceURL. */
             hasSourceURL?: boolean;
-
-            /** True, if '//@ sourceURL' or '//@ sourceMappingURL' was used. */
-            deprecatedCommentWasUsed?: boolean;
 
         }
 
@@ -1122,7 +1130,7 @@ export namespace Crdp {
             callFrames: CallFrame[];
 
             /** Pause reason. */
-            reason: 'XHR' | 'DOM' | 'EventListener' | 'exception' | 'assert' | 'debugCommand' | 'promiseRejection' | 'other';
+            reason: ('XHR' | 'DOM' | 'EventListener' | 'exception' | 'assert' | 'debugCommand' | 'promiseRejection' | 'other');
 
             /** Object containing break-specific auxiliary properties. */
             data?: any;
@@ -1179,9 +1187,6 @@ export namespace Crdp {
         /** Searches for given string in script content. */
         searchInContent?: (params: Debugger.SearchInContentRequest) => PromiseOrNot<Debugger.SearchInContentResponse>;
 
-        /** Always returns true. */
-        canSetScriptSource?: () => PromiseOrNot<Debugger.CanSetScriptSourceResponse>;
-
         /** Edits JavaScript source live. */
         setScriptSource?: (params: Debugger.SetScriptSourceRequest) => PromiseOrNot<Debugger.SetScriptSourceResponse>;
 
@@ -1199,9 +1204,6 @@ export namespace Crdp {
 
         /** Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually. */
         setVariableValue?: (params: Debugger.SetVariableValueRequest) => PromiseOrNot<void>;
-
-        /** Returns call stack including variables changed since VM was paused. VM must be paused. */
-        getBacktrace?: () => PromiseOrNot<Debugger.GetBacktraceResponse>;
 
         /** Enables or disables async call stacks tracking. */
         setAsyncCallStackDepth?: (params: Debugger.SetAsyncCallStackDepthRequest) => PromiseOrNot<void>;
@@ -1258,10 +1260,10 @@ export namespace Crdp {
         /** Console message. */
         export interface ConsoleMessage {
             /** Message source. */
-            source: 'xml' | 'javascript' | 'network' | 'console-api' | 'storage' | 'appcache' | 'rendering' | 'security' | 'other' | 'deprecation' | 'worker';
+            source: ('xml' | 'javascript' | 'network' | 'console-api' | 'storage' | 'appcache' | 'rendering' | 'security' | 'other' | 'deprecation' | 'worker');
 
             /** Message severity. */
-            level: 'log' | 'warning' | 'error' | 'debug' | 'info';
+            level: ('log' | 'warning' | 'error' | 'debug' | 'info');
 
             /** Message text. */
             text: string;
@@ -1282,15 +1284,6 @@ export namespace Crdp {
             message: ConsoleMessage;
 
         }
-
-        export interface MessageRepeatCountUpdatedEvent {
-            /** New repeat count value. */
-            count: integer;
-
-            /** Timestamp of most recent message in batch. */
-            timestamp: Runtime.Timestamp;
-
-        }
     }
 
     export interface ConsoleCommands {
@@ -1309,23 +1302,11 @@ export namespace Crdp {
         /** Issued when new console message is added. */
         onMessageAdded(handler: (params: Console.MessageAddedEvent) => void): void;
 
-        /** Not issued. */
-        onMessageRepeatCountUpdated(handler: (params: Console.MessageRepeatCountUpdatedEvent) => void): void;
-
-        /** Not issued. */
-        onMessagesCleared(handler: () => void): void;
-
     }
 
     export interface ConsoleServer {
         /** Issued when new console message is added. */
         emitMessageAdded(params: Console.MessageAddedEvent): void;
-
-        /** Not issued. */
-        emitMessageRepeatCountUpdated(params: Console.MessageRepeatCountUpdatedEvent): void;
-
-        /** Not issued. */
-        emitMessagesCleared(): void;
 
         expose(domain: ConsoleCommands): void;
 
@@ -1335,20 +1316,20 @@ export namespace Crdp {
 
         /** CPU Profile node. Holds callsite information, execution statistics and child nodes. */
         export interface CPUProfileNode {
+            /** Unique id of the node. */
+            id: integer;
+
             /** Function location. */
             callFrame: Runtime.CallFrame;
 
             /** Number of samples where this node was on top of the call stack. */
             hitCount: integer;
 
-            /** Child nodes. */
-            children: CPUProfileNode[];
+            /** Child node ids. */
+            children?: integer[];
 
             /** The reason of being not optimized. The function may be deoptimized or marked as don't optimize. */
             deoptReason: string;
-
-            /** Unique id of the node. */
-            id: integer;
 
             /** An array of source position ticks. */
             positionTicks: PositionTickInfo[];
@@ -1357,19 +1338,20 @@ export namespace Crdp {
 
         /** Profile. */
         export interface CPUProfile {
-            head: CPUProfileNode;
+            /** The list of profile nodes. First item is the root node. */
+            nodes: CPUProfileNode[];
 
-            /** Profiling start time in seconds. */
+            /** Profiling start timestamp in microseconds. */
             startTime: number;
 
-            /** Profiling end time in seconds. */
+            /** Profiling end timestamp in microseconds. */
             endTime: number;
 
             /** Ids of samples top nodes. */
             samples?: integer[];
 
-            /** Timestamps of the samples in microseconds. */
-            timestamps?: number[];
+            /** Deltas between adjacent sample timestamps in microseconds. The first delta is relative to the profile startTime. */
+            timestampDeltas?: integer[];
 
         }
 
@@ -1401,7 +1383,7 @@ export namespace Crdp {
             /** Location of console.profile(). */
             location: Debugger.Location;
 
-            /** Profile title passed as argument to console.profile(). */
+            /** Profile title passed as an argument to console.profile(). */
             title?: string;
 
         }
@@ -1414,7 +1396,7 @@ export namespace Crdp {
 
             profile: CPUProfile;
 
-            /** Profile title passed as argunet to console.profile(). */
+            /** Profile title passed as an argument to console.profile(). */
             title?: string;
 
         }
@@ -1664,7 +1646,7 @@ export namespace Crdp {
     export module Memory {
 
         /** Memory pressure level. */
-        export type PressureLevel = 'moderate' | 'critical';
+        export type PressureLevel = ('moderate' | 'critical');
 
         export interface GetDOMCountersResponse {
             documents: integer;
@@ -1711,7 +1693,7 @@ export namespace Crdp {
     export module Page {
 
         /** Resource type as it was perceived by the rendering engine. */
-        export type ResourceType = 'Document' | 'Stylesheet' | 'Image' | 'Media' | 'Font' | 'Script' | 'TextTrack' | 'XHR' | 'Fetch' | 'EventSource' | 'WebSocket' | 'Manifest' | 'Other';
+        export type ResourceType = ('Document' | 'Stylesheet' | 'Image' | 'Media' | 'Font' | 'Script' | 'TextTrack' | 'XHR' | 'Fetch' | 'EventSource' | 'WebSocket' | 'Manifest' | 'Other');
 
         /** Unique frame identifier. */
         export type FrameId = string;
@@ -1815,7 +1797,7 @@ export namespace Crdp {
         }
 
         /** Javascript dialog type. */
-        export type DialogType = 'alert' | 'confirm' | 'prompt' | 'beforeunload';
+        export type DialogType = ('alert' | 'confirm' | 'prompt' | 'beforeunload');
 
         /** Error while paring app manifest. */
         export interface AppManifestError {
@@ -1834,7 +1816,7 @@ export namespace Crdp {
         }
 
         /** Proceed: allow the navigation; Cancel: cancel the navigation; CancelAndIgnore: cancels the navigation and makes the requester of the navigation acts like the request was never made. */
-        export type NavigationResponse = 'Proceed' | 'Cancel' | 'CancelAndIgnore';
+        export type NavigationResponse = ('Proceed' | 'Cancel' | 'CancelAndIgnore');
 
         export interface AddScriptToEvaluateOnLoadRequest {
             scriptSource: string;
@@ -2037,7 +2019,7 @@ export namespace Crdp {
             enabled: boolean;
 
             /** Touch/gesture events configuration. Default: current platform. */
-            configuration?: 'mobile' | 'desktop';
+            configuration?: ('mobile' | 'desktop');
 
         }
 
@@ -2049,7 +2031,7 @@ export namespace Crdp {
 
         export interface StartScreencastRequest {
             /** Image compression format. */
-            format?: 'jpeg' | 'png';
+            format?: ('jpeg' | 'png');
 
             /** Compression quality from range [0..100]. */
             quality?: integer;
@@ -2086,8 +2068,11 @@ export namespace Crdp {
 
         }
 
-        export interface SetOverlayMessageRequest {
-            /** Overlay message to display when paused in debugger. */
+        export interface ConfigureOverlayRequest {
+            /** Whether overlay should be suspended and not consume any resources. */
+            suspended?: boolean;
+
+            /** Overlay message to display. */
             message?: string;
 
         }
@@ -2316,8 +2301,8 @@ export namespace Crdp {
         /** Shows / hides color picker */
         setColorPickerEnabled?: (params: Page.SetColorPickerEnabledRequest) => PromiseOrNot<void>;
 
-        /** Sets overlay message. */
-        setOverlayMessage?: (params: Page.SetOverlayMessageRequest) => PromiseOrNot<void>;
+        /** Configures overlay. */
+        configureOverlay?: (params: Page.ConfigureOverlayRequest) => PromiseOrNot<void>;
 
         getAppManifest?: () => PromiseOrNot<Page.GetAppManifestResponse>;
 
@@ -2509,7 +2494,7 @@ export namespace Crdp {
         /** Screen orientation. */
         export interface ScreenOrientation {
             /** Orientation type. */
-            type: 'portraitPrimary' | 'portraitSecondary' | 'landscapePrimary' | 'landscapeSecondary';
+            type: ('portraitPrimary' | 'portraitSecondary' | 'landscapePrimary' | 'landscapeSecondary');
 
             /** Orientation angle. */
             angle: integer;
@@ -2517,7 +2502,7 @@ export namespace Crdp {
         }
 
         /** advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to allow the next delayed task (if any) to run; pause: The virtual time base may not advance; pauseIfNetworkFetchesPending: The virtual time base may not advance if there are any pending resource fetches. */
-        export type VirtualTimePolicy = 'advance' | 'pause' | 'pauseIfNetworkFetchesPending';
+        export type VirtualTimePolicy = ('advance' | 'pause' | 'pauseIfNetworkFetchesPending');
 
         export interface SetDeviceMetricsOverrideRequest {
             /** Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override. */
@@ -2590,7 +2575,7 @@ export namespace Crdp {
             enabled: boolean;
 
             /** Touch/gesture events configuration. Default: current platform. */
-            configuration?: 'mobile' | 'desktop';
+            configuration?: ('mobile' | 'desktop');
 
         }
 
@@ -2614,6 +2599,9 @@ export namespace Crdp {
 
         export interface SetVirtualTimePolicyRequest {
             policy: VirtualTimePolicy;
+
+            /** If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent. */
+            budget?: integer;
 
         }
     }
@@ -2652,15 +2640,21 @@ export namespace Crdp {
         /** Tells whether emulation is supported. */
         canEmulate?: () => PromiseOrNot<Emulation.CanEmulateResponse>;
 
-        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy. */
+        /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget. */
         setVirtualTimePolicy?: (params: Emulation.SetVirtualTimePolicyRequest) => PromiseOrNot<void>;
 
     }
 
     export interface EmulationClient extends EmulationCommands {
+        /** Notification sent after the virual time budget for the current VirtualTimePolicy has run out. */
+        onVirtualTimeBudgetExpired(handler: () => void): void;
+
     }
 
     export interface EmulationServer {
+        /** Notification sent after the virual time budget for the current VirtualTimePolicy has run out. */
+        emitVirtualTimeBudgetExpired(): void;
+
         expose(domain: EmulationCommands): void;
 
     }
@@ -2672,7 +2666,7 @@ export namespace Crdp {
         export type CertificateId = integer;
 
         /** The security level of a page or resource. */
-        export type SecurityState = 'unknown' | 'neutral' | 'insecure' | 'warning' | 'secure' | 'info';
+        export type SecurityState = ('unknown' | 'neutral' | 'insecure' | 'warning' | 'secure' | 'info');
 
         /** An explanation of an factor contributing to the security state. */
         export interface SecurityStateExplanation {
@@ -2763,7 +2757,10 @@ export namespace Crdp {
         }
 
         /** Loading priority of a resource request. */
-        export type ConnectionType = 'none' | 'cellular2g' | 'cellular3g' | 'cellular4g' | 'bluetooth' | 'ethernet' | 'wifi' | 'wimax' | 'other';
+        export type ConnectionType = ('none' | 'cellular2g' | 'cellular3g' | 'cellular4g' | 'bluetooth' | 'ethernet' | 'wifi' | 'wimax' | 'other');
+
+        /** Represents the cookie's 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies */
+        export type CookieSameSite = ('Strict' | 'Lax');
 
         /** Timing information for the request. */
         export interface ResourceTiming {
@@ -2818,7 +2815,7 @@ export namespace Crdp {
         }
 
         /** Loading priority of a resource request. */
-        export type ResourcePriority = 'VeryLow' | 'Low' | 'Medium' | 'High' | 'VeryHigh';
+        export type ResourcePriority = ('VeryLow' | 'Low' | 'Medium' | 'High' | 'VeryHigh');
 
         /** HTTP request data. */
         export interface Request {
@@ -2835,7 +2832,7 @@ export namespace Crdp {
             postData?: string;
 
             /** The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/ */
-            mixedContentType?: 'blockable' | 'optionally-blockable' | 'none';
+            mixedContentType?: ('blockable' | 'optionally-blockable' | 'none');
 
             /** Priority of the resource request at the time request is sent. */
             initialPriority: ResourcePriority;
@@ -2868,19 +2865,6 @@ export namespace Crdp {
 
             /** Certificate valid to (expiration) date */
             validTo: Timestamp;
-
-        }
-
-        /** Details about the validation status of a request's certificate. */
-        export interface CertificateValidationDetails {
-            /** The number of SCTs from unknown logs. */
-            numUnknownScts: integer;
-
-            /** The number of invalid SCTs. */
-            numInvalidScts: integer;
-
-            /** The number of valid SCTs. */
-            numValidScts: integer;
 
         }
 
@@ -2929,16 +2913,13 @@ export namespace Crdp {
             /** Certificate ID value. */
             certificateId: Security.CertificateId;
 
-            /** Validation details for the request's certficate. */
-            certificateValidationDetails?: CertificateValidationDetails;
-
             /** List of signed certificate timestamps (SCTs). */
             signedCertificateTimestampList: SignedCertificateTimestamp[];
 
         }
 
         /** The reason why request was blocked. */
-        export type BlockedReason = 'csp' | 'mixed-content' | 'origin' | 'inspector' | 'subresource-filter' | 'other';
+        export type BlockedReason = ('csp' | 'mixed-content' | 'origin' | 'inspector' | 'subresource-filter' | 'other');
 
         /** HTTP response data. */
         export interface Response {
@@ -3062,7 +3043,7 @@ export namespace Crdp {
         /** Information about the request initiator. */
         export interface Initiator {
             /** Type of this initiator. */
-            type: 'parser' | 'script' | 'other';
+            type: ('parser' | 'script' | 'other');
 
             /** Initiator JavaScript stack trace, set for Script only. */
             stack?: Runtime.StackTrace;
@@ -3089,7 +3070,7 @@ export namespace Crdp {
             /** Cookie path. */
             path: string;
 
-            /** Cookie expires. */
+            /** Cookie expiration date as the number of seconds since the UNIX epoch. */
             expires: number;
 
             /** Cookie size. */
@@ -3104,8 +3085,8 @@ export namespace Crdp {
             /** True in case of session cookie. */
             session: boolean;
 
-            /** Represents the cookies' 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies */
-            sameSite?: 'Strict' | 'Lax';
+            /** Cookie SameSite type. */
+            sameSite?: CookieSameSite;
 
         }
 
@@ -3193,6 +3174,42 @@ export namespace Crdp {
 
             /** URL to match cooke domain and path. */
             url: string;
+
+        }
+
+        export interface SetCookieRequest {
+            /** The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie. */
+            url: string;
+
+            /** The name of the cookie. */
+            name: string;
+
+            /** The value of the cookie. */
+            value: string;
+
+            /** If omitted, the cookie becomes a host-only cookie. */
+            domain?: string;
+
+            /** Defaults to the path portion of the url parameter. */
+            path?: string;
+
+            /** Defaults ot false. */
+            secure?: boolean;
+
+            /** Defaults to false. */
+            httpOnly?: boolean;
+
+            /** Defaults to browser default behavior. */
+            sameSite?: CookieSameSite;
+
+            /** If omitted, the cookie becomes a session cookie. */
+            expirationDate?: Timestamp;
+
+        }
+
+        export interface SetCookieResponse {
+            /** True if successfully set cookie. */
+            success: boolean;
 
         }
 
@@ -3528,6 +3545,9 @@ export namespace Crdp {
         /** Deletes browser cookie with given name, domain and path. */
         deleteCookie?: (params: Network.DeleteCookieRequest) => PromiseOrNot<void>;
 
+        /** Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist. */
+        setCookie?: (params: Network.SetCookieRequest) => PromiseOrNot<Network.SetCookieResponse>;
+
         /** Tells whether emulation of network conditions is supported. */
         canEmulateNetworkConditions?: () => PromiseOrNot<Network.CanEmulateNetworkConditionsResponse>;
 
@@ -3787,7 +3807,7 @@ export namespace Crdp {
         /** Key. */
         export interface Key {
             /** Key type. */
-            type: 'number' | 'string' | 'date' | 'array';
+            type: ('number' | 'string' | 'date' | 'array');
 
             /** Number value. */
             number?: number;
@@ -3835,7 +3855,7 @@ export namespace Crdp {
         /** Key path. */
         export interface KeyPath {
             /** Key path type. */
-            type: 'null' | 'string' | 'array';
+            type: ('null' | 'string' | 'array');
 
             /** String value. */
             string?: string;
@@ -4312,10 +4332,10 @@ export namespace Crdp {
         }
 
         /** Pseudo element type. */
-        export type PseudoType = 'first-line' | 'first-letter' | 'before' | 'after' | 'backdrop' | 'selection' | 'first-line-inherited' | 'scrollbar' | 'scrollbar-thumb' | 'scrollbar-button' | 'scrollbar-track' | 'scrollbar-track-piece' | 'scrollbar-corner' | 'resizer' | 'input-list-button';
+        export type PseudoType = ('first-line' | 'first-letter' | 'before' | 'after' | 'backdrop' | 'selection' | 'first-line-inherited' | 'scrollbar' | 'scrollbar-thumb' | 'scrollbar-button' | 'scrollbar-track' | 'scrollbar-track-piece' | 'scrollbar-corner' | 'resizer' | 'input-list-button');
 
         /** Shadow root type. */
-        export type ShadowRootType = 'user-agent' | 'open' | 'closed';
+        export type ShadowRootType = ('user-agent' | 'open' | 'closed');
 
         /** DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type. */
         export interface Node {
@@ -4508,7 +4528,7 @@ export namespace Crdp {
 
         }
 
-        export type InspectMode = 'searchForNode' | 'searchForUAShadowDOM' | 'showLayoutEditor' | 'none';
+        export type InspectMode = ('searchForNode' | 'searchForUAShadowDOM' | 'showLayoutEditor' | 'none');
 
         export interface GetDocumentResponse {
             /** Resulting node. */
@@ -5284,7 +5304,7 @@ export namespace Crdp {
         export type StyleSheetId = string;
 
         /** Stylesheet type: "injected" for stylesheets injected via extension, "user-agent" for user-agent stylesheets, "inspector" for stylesheets created by the inspector (i.e. those holding the "via inspector" rules), "regular" for regular stylesheets. */
-        export type StyleSheetOrigin = 'injected' | 'user-agent' | 'inspector' | 'regular';
+        export type StyleSheetOrigin = ('injected' | 'user-agent' | 'inspector' | 'regular');
 
         /** CSS rule collection for a single pseudo style. */
         export interface PseudoElementMatches {
@@ -5485,7 +5505,7 @@ export namespace Crdp {
             text: string;
 
             /** Source of the media query: "mediaRule" if specified by a @media rule, "importRule" if specified by an @import rule, "linkedSheet" if specified by a "media" attribute in a linked stylesheet's LINK tag, "inlineSheet" if specified by a "media" attribute in an inline stylesheet's STYLE tag. */
-            source: 'mediaRule' | 'importRule' | 'linkedSheet' | 'inlineSheet';
+            source: ('mediaRule' | 'importRule' | 'linkedSheet' | 'inlineSheet');
 
             /** URL of the document containing the media query description. */
             sourceURL?: string;
@@ -5877,6 +5897,9 @@ export namespace Crdp {
         /** Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features. */
         onMediaQueryResultChanged(handler: () => void): void;
 
+        /** Fires whenever a web font gets loaded. */
+        onFontsUpdated(handler: () => void): void;
+
         /** Fired whenever a stylesheet is changed as a result of the client operation. */
         onStyleSheetChanged(handler: (params: CSS.StyleSheetChangedEvent) => void): void;
 
@@ -5893,6 +5916,9 @@ export namespace Crdp {
     export interface CSSServer {
         /** Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features. */
         emitMediaQueryResultChanged(): void;
+
+        /** Fires whenever a web font gets loaded. */
+        emitFontsUpdated(): void;
 
         /** Fired whenever a stylesheet is changed as a result of the client operation. */
         emitStyleSheetChanged(params: CSS.StyleSheetChangedEvent): void;
@@ -5963,7 +5989,7 @@ export namespace Crdp {
     export module DOMDebugger {
 
         /** DOM breakpoint type. */
-        export type DOMBreakpointType = 'subtree-modified' | 'attribute-modified' | 'node-removed';
+        export type DOMBreakpointType = ('subtree-modified' | 'attribute-modified' | 'node-removed');
 
         /** Object event listener. */
         export interface EventListener {
@@ -6186,9 +6212,9 @@ export namespace Crdp {
 
         }
 
-        export type ServiceWorkerVersionRunningStatus = 'stopped' | 'starting' | 'running' | 'stopping';
+        export type ServiceWorkerVersionRunningStatus = ('stopped' | 'starting' | 'running' | 'stopping');
 
-        export type ServiceWorkerVersionStatus = 'new' | 'installing' | 'installed' | 'activating' | 'activated' | 'redundant';
+        export type ServiceWorkerVersionStatus = ('new' | 'installing' | 'installed' | 'activating' | 'activated' | 'redundant');
 
         export type TargetID = string;
 
@@ -6429,7 +6455,7 @@ export namespace Crdp {
 
         export interface TouchPoint {
             /** State of the touch point. */
-            state: 'touchPressed' | 'touchReleased' | 'touchMoved' | 'touchStationary' | 'touchCancelled';
+            state: ('touchPressed' | 'touchReleased' | 'touchMoved' | 'touchStationary' | 'touchCancelled');
 
             /** X coordinate of the event relative to the main frame's viewport. */
             x: integer;
@@ -6454,11 +6480,11 @@ export namespace Crdp {
 
         }
 
-        export type GestureSourceType = 'default' | 'touch' | 'mouse';
+        export type GestureSourceType = ('default' | 'touch' | 'mouse');
 
         export interface DispatchKeyEventRequest {
             /** Type of the key event. */
-            type: 'keyDown' | 'keyUp' | 'rawKeyDown' | 'char';
+            type: ('keyDown' | 'keyUp' | 'rawKeyDown' | 'char');
 
             /** Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0). */
             modifiers?: integer;
@@ -6500,7 +6526,7 @@ export namespace Crdp {
 
         export interface DispatchMouseEventRequest {
             /** Type of the mouse event. */
-            type: 'mousePressed' | 'mouseReleased' | 'mouseMoved';
+            type: ('mousePressed' | 'mouseReleased' | 'mouseMoved');
 
             /** X coordinate of the event relative to the main frame's viewport. */
             x: integer;
@@ -6515,7 +6541,7 @@ export namespace Crdp {
             timestamp?: number;
 
             /** Mouse button (default: "none"). */
-            button?: 'none' | 'left' | 'middle' | 'right';
+            button?: ('none' | 'left' | 'middle' | 'right');
 
             /** Number of times the mouse button was clicked (default: 0). */
             clickCount?: integer;
@@ -6524,7 +6550,7 @@ export namespace Crdp {
 
         export interface DispatchTouchEventRequest {
             /** Type of the touch event. */
-            type: 'touchStart' | 'touchEnd' | 'touchMove';
+            type: ('touchStart' | 'touchEnd' | 'touchMove');
 
             /** Touch points. */
             touchPoints: TouchPoint[];
@@ -6539,7 +6565,7 @@ export namespace Crdp {
 
         export interface EmulateTouchFromMouseEventRequest {
             /** Type of the mouse event. */
-            type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel';
+            type: ('mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel');
 
             /** X coordinate of the mouse pointer in DIP. */
             x: integer;
@@ -6551,7 +6577,7 @@ export namespace Crdp {
             timestamp: number;
 
             /** Mouse button. */
-            button: 'none' | 'left' | 'middle' | 'right';
+            button: ('none' | 'left' | 'middle' | 'right');
 
             /** X delta in DIP for mouse wheel event (default: 0). */
             deltaX?: number;
@@ -6689,7 +6715,7 @@ export namespace Crdp {
             rect: DOM.Rect;
 
             /** Reason for rectangle to force scrolling on the main thread */
-            type: 'RepaintsOnScroll' | 'TouchEventHandler' | 'WheelEventHandler';
+            type: ('RepaintsOnScroll' | 'TouchEventHandler' | 'WheelEventHandler');
 
         }
 
@@ -6956,7 +6982,7 @@ export namespace Crdp {
 
         export interface TraceConfig {
             /** Controls how the trace buffer stores data. */
-            recordMode?: 'recordUntilFull' | 'recordContinuously' | 'recordAsMuchAsPossible' | 'echoToConsole';
+            recordMode?: ('recordUntilFull' | 'recordContinuously' | 'recordAsMuchAsPossible' | 'echoToConsole');
 
             /** Turns on JavaScript stack sampling. */
             enableSampling?: boolean;
@@ -6992,7 +7018,7 @@ export namespace Crdp {
             bufferUsageReportingInterval?: number;
 
             /** Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to 'ReportEvents'). */
-            transferMode?: 'ReportEvents' | 'ReturnAsStream';
+            transferMode?: ('ReportEvents' | 'ReturnAsStream');
 
             traceConfig?: TraceConfig;
 
@@ -7114,7 +7140,7 @@ export namespace Crdp {
             source: AnimationEffect;
 
             /** Animation type of 'Animation'. */
-            type: 'CSSTransition' | 'CSSAnimation' | 'WebAnimation';
+            type: ('CSSTransition' | 'CSSAnimation' | 'WebAnimation');
 
             /** A unique ID for 'Animation' representing the sources that triggered this CSS animation/transition. */
             cssId?: string;
@@ -7128,9 +7154,6 @@ export namespace Crdp {
 
             /** 'AnimationEffect''s end delay. */
             endDelay: number;
-
-            /** 'AnimationEffect''s playbackRate. */
-            playbackRate: number;
 
             /** 'AnimationEffect''s iteration start. */
             iterationStart: number;
@@ -7334,13 +7357,13 @@ export namespace Crdp {
         export type AXNodeId = string;
 
         /** Enum of possible property types. */
-        export type AXValueType = 'boolean' | 'tristate' | 'booleanOrUndefined' | 'idref' | 'idrefList' | 'integer' | 'node' | 'nodeList' | 'number' | 'string' | 'computedString' | 'token' | 'tokenList' | 'domRelation' | 'role' | 'internalRole' | 'valueUndefined';
+        export type AXValueType = ('boolean' | 'tristate' | 'booleanOrUndefined' | 'idref' | 'idrefList' | 'integer' | 'node' | 'nodeList' | 'number' | 'string' | 'computedString' | 'token' | 'tokenList' | 'domRelation' | 'role' | 'internalRole' | 'valueUndefined');
 
         /** Enum of possible property sources. */
-        export type AXValueSourceType = 'attribute' | 'implicit' | 'style' | 'contents' | 'placeholder' | 'relatedElement';
+        export type AXValueSourceType = ('attribute' | 'implicit' | 'style' | 'contents' | 'placeholder' | 'relatedElement');
 
         /** Enum of possible native property sources (as a subtype of a particular AXValueSourceType). */
-        export type AXValueNativeSourceType = 'figcaption' | 'label' | 'labelfor' | 'labelwrapped' | 'legend' | 'tablecaption' | 'title' | 'other';
+        export type AXValueNativeSourceType = ('figcaption' | 'label' | 'labelfor' | 'labelwrapped' | 'legend' | 'tablecaption' | 'title' | 'other');
 
         /** A single source for a computed AX property. */
         export interface AXValueSource {
@@ -7411,19 +7434,19 @@ export namespace Crdp {
         }
 
         /** States which apply to every AX node. */
-        export type AXGlobalStates = 'disabled' | 'hidden' | 'hiddenRoot' | 'invalid';
+        export type AXGlobalStates = ('disabled' | 'hidden' | 'hiddenRoot' | 'invalid');
 
         /** Attributes which apply to nodes in live regions. */
-        export type AXLiveRegionAttributes = 'live' | 'atomic' | 'relevant' | 'busy' | 'root';
+        export type AXLiveRegionAttributes = ('live' | 'atomic' | 'relevant' | 'busy' | 'root');
 
         /** Attributes which apply to widgets. */
-        export type AXWidgetAttributes = 'autocomplete' | 'haspopup' | 'level' | 'multiselectable' | 'orientation' | 'multiline' | 'readonly' | 'required' | 'valuemin' | 'valuemax' | 'valuetext';
+        export type AXWidgetAttributes = ('autocomplete' | 'haspopup' | 'level' | 'multiselectable' | 'orientation' | 'multiline' | 'readonly' | 'required' | 'valuemin' | 'valuemax' | 'valuetext');
 
         /** States which apply to widgets. */
-        export type AXWidgetStates = 'checked' | 'expanded' | 'pressed' | 'selected';
+        export type AXWidgetStates = ('checked' | 'expanded' | 'pressed' | 'selected');
 
         /** Relationships between elements other than parent/child/sibling. */
-        export type AXRelationshipAttributes = 'activedescendant' | 'flowto' | 'controls' | 'describedby' | 'labelledby' | 'owns';
+        export type AXRelationshipAttributes = ('activedescendant' | 'flowto' | 'controls' | 'describedby' | 'labelledby' | 'owns');
 
         /** A node in the accessibility tree. */
         export interface AXNode {
@@ -7483,7 +7506,7 @@ export namespace Crdp {
     export module Storage {
 
         /** Enum of possible storage types. */
-        export type StorageType = 'appcache' | 'cookies' | 'file_systems' | 'indexeddb' | 'local_storage' | 'shader_cache' | 'websql' | 'service_workers' | 'cache_storage' | 'all';
+        export type StorageType = ('appcache' | 'cookies' | 'file_systems' | 'indexeddb' | 'local_storage' | 'shader_cache' | 'websql' | 'service_workers' | 'cache_storage' | 'all');
 
         export interface ClearDataForOriginRequest {
             /** Security origin. */
@@ -7515,10 +7538,10 @@ export namespace Crdp {
         /** Log entry. */
         export interface LogEntry {
             /** Log entry source. */
-            source: 'xml' | 'javascript' | 'network' | 'storage' | 'appcache' | 'rendering' | 'security' | 'deprecation' | 'worker' | 'other';
+            source: ('xml' | 'javascript' | 'network' | 'storage' | 'appcache' | 'rendering' | 'security' | 'deprecation' | 'worker' | 'other');
 
             /** Log entry severity. */
-            level: 'log' | 'warning' | 'error' | 'debug' | 'info';
+            level: ('log' | 'warning' | 'error' | 'debug' | 'info');
 
             /** Logged text. */
             text: string;
@@ -7614,10 +7637,10 @@ export namespace Crdp {
             /** The initial URL the page will be navigated to. */
             url: string;
 
-            /** Window width (headless chrome only). */
+            /** Frame width in DIP (headless chrome only). */
             width?: integer;
 
-            /** Window height (headless chrome only). */
+            /** Frame height in DIP (headless chrome only). */
             height?: integer;
 
             /** The browser context to create the page in (headless chrome only). */

@@ -10,23 +10,17 @@ export module Protocol {
         minor: string
     }
 
-    export interface Domain {
+    export interface Domain extends BaseType {
         /** Name of domain */
         domain: string
-        /**  Description of the domain scope */
-        description?: string
         /** Dependencies on other domains */
         dependencies?: string[]
-        /** Is domain for internal use ? */
-        hidden?: boolean
         /** Types used by the domain. */
         types?: PropertyType[]
         /** Commands accepted by the domain */
         commands?: Command[]
         /** Events fired by domain */
         events?: Event[]
-        /** Is the domain deprecated for future use? */
-        deprecated?: boolean
     }
 
     export interface Command extends Event {
@@ -35,13 +29,10 @@ export module Protocol {
         redirect?: string
     }
 
-    export interface Event {
+    export interface Event extends BaseType {
         name: string
-        description?: string
         parameters?: ParameterType[]
-        hidden?: boolean
         handlers?: string[]
-        deprecated?: boolean
     }
 
     type PropertyType = (
@@ -109,12 +100,14 @@ export module Protocol {
     export interface BaseType {
         /** Description of the type */
         description?: string
-        /** Not for public use. Can change any time */
+        /** Not for public use */
         hidden?: boolean
         /** Is the api deprecated for future use ? */
         deprecated?: boolean
         /** Entities marked as exported:true have special generated C++ classes which can be used in public API */
         exported?: boolean
+        /** The structure is still experimental. */
+        experimental?: boolean
     }
 
     /** Interface that aids in the generation of client and adapter interfaces */
