@@ -38,8 +38,11 @@
   },
   "homepage": "https://github.com/nojvek/chrome-remote-debug-protocol#readme",
   "devDependencies": {
+    "coffee-script": "^1.10.0",
     "es6-simple-async": "^1.1.1",
+    "jake": "^8.0.12",
     "node-fetch": "^1.5.3",
-    "promisify-node": "^0.4.0"
+    "promisify-node": "^0.4.0",
+    "typescript": "^2.0.0"
   }
 }

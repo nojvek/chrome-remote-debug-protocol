@@ -13,10 +13,10 @@ error = jake.logger.error
 task 'default', ['download-protocols']
 
 desc 'Download latest protocol.json files from Chromium source and append typescript protocol stub to them'
-task 'download-protocols', async: true, async ->
+task 'download-protocols', async: true, async (version = 'master') ->
     try
-        jsProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json"
-        browserProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/inspector/browser_protocol.json"
+        jsProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/#{version}/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json"
+        browserProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/#{version}/third_party/WebKit/Source/core/inspector/browser_protocol.json"
         protocolDefDir = "#{__dirname}/src/protocolDef"
         jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + yield fetchProtocolJson("#{jsProtocolUrl}?format=TEXT")
         browserProtocolStr = getProtocolDefHeader(browserProtocolUrl) + yield fetchProtocolJson("#{browserProtocolUrl}?format=TEXT")
@@ -39,11 +39,16 @@ fetchProtocolJson = async (url) ->
     log("Downloading #{url}")
     res = yield fetch(url)
     contents = yield res.text()
-    # googlesource returns base64 encoded string, so lets decode it
-    return Buffer.from(contents, 'base64').toString()
+
+    if (res.ok)
+        # googlesource returns base64 encoded string, so lets decode it
+        return Buffer.from(contents, 'base64').toString()
+    else
+        log("Error - #{res.status} - #{res.statusText}")
+        return ""
 
 # Promisified version of exec
-exc  = (cmd, opts = {}) -> new Promise (resolve, reject) ->
+exc = (cmd, opts = {}) -> new Promise (resolve, reject) ->
     log (cmd)
     exec cmd, opts, (err, stdout, stderr) ->
         if stdout then return resolve(stdout)
