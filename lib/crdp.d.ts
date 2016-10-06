@@ -8,6 +8,8 @@ export namespace Crdp {
     export type PromiseOrNot<T> = T | Promise<T>;
 
     export interface CrdpClient {
+        Schema: SchemaClient;
+
         Runtime: RuntimeClient;
 
         Debugger: DebuggerClient;
@@ -50,6 +52,8 @@ export namespace Crdp {
 
         DOMDebugger: DOMDebuggerClient;
 
+        Target: TargetClient;
+
         Worker: WorkerClient;
 
         ServiceWorker: ServiceWorkerClient;
@@ -79,6 +83,8 @@ export namespace Crdp {
     }
 
     export interface CrdpServer {
+        Schema: SchemaServer;
+
         Runtime: RuntimeServer;
 
         Debugger: DebuggerServer;
@@ -121,6 +127,8 @@ export namespace Crdp {
 
         DOMDebugger: DOMDebuggerServer;
 
+        Target: TargetServer;
+
         Worker: WorkerServer;
 
         ServiceWorker: ServiceWorkerServer;
@@ -146,6 +154,40 @@ export namespace Crdp {
         SystemInfo: SystemInfoServer;
 
         Tethering: TetheringServer;
+
+    }
+
+    /** Provides information about the protocol schema. */
+    export module Schema {
+
+        /** Description of the protocol domain. */
+        export interface Domain {
+            /** Domain name. */
+            name: string;
+
+            /** Domain version. */
+            version: string;
+
+        }
+
+        export interface GetDomainsResponse {
+            /** List of supported domains. */
+            domains: Domain[];
+
+        }
+    }
+
+    export interface SchemaCommands {
+        /** Returns supported domains. */
+        getDomains?: () => PromiseOrNot<Schema.GetDomainsResponse>;
+
+    }
+
+    export interface SchemaClient extends SchemaCommands {
+    }
+
+    export interface SchemaServer {
+        expose(domain: SchemaCommands): void;
 
     }
 
@@ -1314,8 +1356,8 @@ export namespace Crdp {
 
     export module Profiler {
 
-        /** CPU Profile node. Holds callsite information, execution statistics and child nodes. */
-        export interface CPUProfileNode {
+        /** Profile node. Holds callsite information, execution statistics and child nodes. */
+        export interface ProfileNode {
             /** Unique id of the node. */
             id: integer;
 
@@ -1323,23 +1365,23 @@ export namespace Crdp {
             callFrame: Runtime.CallFrame;
 
             /** Number of samples where this node was on top of the call stack. */
-            hitCount: integer;
+            hitCount?: integer;
 
             /** Child node ids. */
             children?: integer[];
 
             /** The reason of being not optimized. The function may be deoptimized or marked as don't optimize. */
-            deoptReason: string;
+            deoptReason?: string;
 
             /** An array of source position ticks. */
-            positionTicks: PositionTickInfo[];
+            positionTicks?: PositionTickInfo[];
 
         }
 
         /** Profile. */
-        export interface CPUProfile {
+        export interface Profile {
             /** The list of profile nodes. First item is the root node. */
-            nodes: CPUProfileNode[];
+            nodes: ProfileNode[];
 
             /** Profiling start timestamp in microseconds. */
             startTime: number;
@@ -1350,8 +1392,8 @@ export namespace Crdp {
             /** Ids of samples top nodes. */
             samples?: integer[];
 
-            /** Deltas between adjacent sample timestamps in microseconds. The first delta is relative to the profile startTime. */
-            timestampDeltas?: integer[];
+            /** Time intervals between adjacent samples in microseconds. The first delta is relative to the profile startTime. */
+            timeDeltas?: integer[];
 
         }
 
@@ -1373,7 +1415,7 @@ export namespace Crdp {
 
         export interface StopResponse {
             /** Recorded profile. */
-            profile: CPUProfile;
+            profile: Profile;
 
         }
 
@@ -1394,7 +1436,7 @@ export namespace Crdp {
             /** Location of console.profileEnd(). */
             location: Debugger.Location;
 
-            profile: CPUProfile;
+            profile: Profile;
 
             /** Profile title passed as an argument to console.profile(). */
             title?: string;
@@ -2523,10 +2565,10 @@ export namespace Crdp {
             /** Scale to apply to resulting view image. Ignored in |fitWindow| mode. */
             scale?: number;
 
-            /** X offset to shift resulting view image by. Ignored in |fitWindow| mode. */
+            /** Not used. */
             offsetX?: number;
 
-            /** Y offset to shift resulting view image by. Ignored in |fitWindow| mode. */
+            /** Not used. */
             offsetY?: number;
 
             /** Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|. */
@@ -2546,9 +2588,30 @@ export namespace Crdp {
 
         }
 
+        export interface ForceViewportRequest {
+            /** X coordinate of top-left corner of the area (CSS pixels). */
+            x: number;
+
+            /** Y coordinate of top-left corner of the area (CSS pixels). */
+            y: number;
+
+            /** Scale to apply to the area (relative to a page scale of 1.0). */
+            scale: number;
+
+        }
+
         export interface SetPageScaleFactorRequest {
             /** Page scale factor. */
             pageScaleFactor: number;
+
+        }
+
+        export interface SetVisibleSizeRequest {
+            /** Frame width (DIP). */
+            width: integer;
+
+            /** Frame height (DIP). */
+            height: integer;
 
         }
 
@@ -2613,11 +2676,20 @@ export namespace Crdp {
         /** Clears the overriden device metrics. */
         clearDeviceMetricsOverride?: () => PromiseOrNot<void>;
 
+        /** Overrides the visible area of the page. The change is hidden from the page, i.e. the observable scroll position and page scale does not change. In effect, the command moves the specified area of the page into the top-left corner of the frame. */
+        forceViewport?: (params: Emulation.ForceViewportRequest) => PromiseOrNot<void>;
+
+        /** Resets the visible area of the page to the original viewport, undoing any effects of the 'forceViewport' command. */
+        resetViewport?: () => PromiseOrNot<void>;
+
         /** Requests that page scale factor is reset to initial values. */
         resetPageScaleFactor?: () => PromiseOrNot<void>;
 
         /** Sets a specified page scale factor. */
         setPageScaleFactor?: (params: Emulation.SetPageScaleFactorRequest) => PromiseOrNot<void>;
+
+        /** Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android. */
+        setVisibleSize?: (params: Emulation.SetVisibleSizeRequest) => PromiseOrNot<void>;
 
         /** Switches script execution in the page. */
         setScriptExecutionDisabled?: (params: Emulation.SetScriptExecutionDisabledRequest) => PromiseOrNot<void>;
@@ -2679,18 +2751,24 @@ export namespace Crdp {
             /** Full text explanation of the factor. */
             description: string;
 
-            /** Associated certificate id. */
-            certificateId?: CertificateId;
+            /** True if the page has a certificate. */
+            hasCertificate: boolean;
 
         }
 
-        /** Information about mixed content on the page. */
-        export interface MixedContentStatus {
-            /** True if the page ran insecure content such as scripts. */
-            ranInsecureContent: boolean;
+        /** Information about insecure content on the page. */
+        export interface InsecureContentStatus {
+            /** True if the page was loaded over HTTPS and ran mixed (HTTP) content such as scripts. */
+            ranMixedContent: boolean;
 
-            /** True if the page displayed insecure content such as images. */
-            displayedInsecureContent: boolean;
+            /** True if the page was loaded over HTTPS and displayed mixed (HTTP) content such as images. */
+            displayedMixedContent: boolean;
+
+            /** True if the page was loaded over HTTPS without certificate errors, and ran content such as scripts that were loaded with certificate errors. */
+            ranContentWithCertErrors: boolean;
+
+            /** True if the page was loaded over HTTPS without certificate errors, and displayed content such as images that were loaded with certificate errors. */
+            displayedContentWithCertErrors: boolean;
 
             /** Security state representing a page that ran insecure content. */
             ranInsecureContentStyle: SecurityState;
@@ -2707,8 +2785,8 @@ export namespace Crdp {
             /** List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included. */
             explanations?: SecurityStateExplanation[];
 
-            /** Information about mixed content on the page. */
-            mixedContentStatus?: MixedContentStatus;
+            /** Information about insecure content on the page. */
+            insecureContentStatus?: InsecureContentStatus;
 
             /** True if the page was loaded over cryptographic transport such as HTTPS. */
             schemeIsCryptographic?: boolean;
@@ -2722,6 +2800,9 @@ export namespace Crdp {
 
         /** Disables tracking security state changes. */
         disable?: () => PromiseOrNot<void>;
+
+        /** Displays native dialog with the certificate details. */
+        showCertificateViewer?: () => PromiseOrNot<void>;
 
     }
 
@@ -2839,35 +2920,6 @@ export namespace Crdp {
 
         }
 
-        /** Subject of a certificate. */
-        export interface CertificateSubject {
-            /** Certificate subject name. */
-            name: string;
-
-            /** Subject Alternative Name (SAN) DNS names. */
-            sanDnsNames: string[];
-
-            /** Subject Alternative Name (SAN) IP addresses. */
-            sanIpAddresses: string[];
-
-        }
-
-        /** Details about a request's certificate. */
-        export interface CertificateDetails {
-            /** Certificate subject. */
-            subject: CertificateSubject;
-
-            /** Name of the issuing CA. */
-            issuer: string;
-
-            /** Certificate valid from date. */
-            validFrom: Timestamp;
-
-            /** Certificate valid to (expiration) date */
-            validTo: Timestamp;
-
-        }
-
         /** Details of a signed certificate timestamp (SCT). */
         export interface SignedCertificateTimestamp {
             /** Validation status. */
@@ -2904,6 +2956,9 @@ export namespace Crdp {
             /** Key Exchange used by the connection. */
             keyExchange: string;
 
+            /** (EC)DH group used by the connection, if applicable. */
+            keyExchangeGroup?: string;
+
             /** Cipher name. */
             cipher: string;
 
@@ -2912,6 +2967,21 @@ export namespace Crdp {
 
             /** Certificate ID value. */
             certificateId: Security.CertificateId;
+
+            /** Certificate subject name. */
+            subjectName: string;
+
+            /** Subject Alternative Name (SAN) DNS names and IP addresses. */
+            sanList: string[];
+
+            /** Name of the issuing CA. */
+            issuer: string;
+
+            /** Certificate valid from date. */
+            validFrom: Timestamp;
+
+            /** Certificate valid to (expiration) date */
+            validTo: Timestamp;
 
             /** List of signed certificate timestamps (SCTs). */
             signedCertificateTimestampList: SignedCertificateTimestamp[];
@@ -3258,21 +3328,14 @@ export namespace Crdp {
 
         }
 
-        export interface GetCertificateDetailsRequest {
-            /** ID of the certificate to get details for. */
-            certificateId: Security.CertificateId;
+        export interface GetCertificateRequest {
+            /** Origin to get certificate for. */
+            origin: string;
 
         }
 
-        export interface GetCertificateDetailsResponse {
-            /** Certificate details. */
-            result: CertificateDetails;
-
-        }
-
-        export interface ShowCertificateViewerRequest {
-            /** Certificate id. */
-            certificateId: Security.CertificateId;
+        export interface GetCertificateResponse {
+            tableNames: string[];
 
         }
 
@@ -3563,11 +3626,8 @@ export namespace Crdp {
         /** For testing. */
         setDataSizeLimitsForTest?: (params: Network.SetDataSizeLimitsForTestRequest) => PromiseOrNot<void>;
 
-        /** Returns details for the given certificate. */
-        getCertificateDetails?: (params: Network.GetCertificateDetailsRequest) => PromiseOrNot<Network.GetCertificateDetailsResponse>;
-
-        /** Displays native dialog with the certificate details. */
-        showCertificateViewer?: (params: Network.ShowCertificateViewerRequest) => PromiseOrNot<void>;
+        /** Returns the DER-encoded certificate. */
+        getCertificate?: (params: Network.GetCertificateRequest) => PromiseOrNot<Network.GetCertificateResponse>;
 
     }
 
@@ -4536,6 +4596,18 @@ export namespace Crdp {
 
         }
 
+        export interface CollectClassNamesFromSubtreeRequest {
+            /** Id of the node to collect class names. */
+            nodeId: NodeId;
+
+        }
+
+        export interface CollectClassNamesFromSubtreeResponse {
+            /** Class name list. */
+            classNames: string[];
+
+        }
+
         export interface RequestChildNodesRequest {
             /** Id of the node to get children for. */
             nodeId: NodeId;
@@ -5082,6 +5154,9 @@ export namespace Crdp {
 
         /** Returns the root DOM node to the caller. */
         getDocument?: () => PromiseOrNot<DOM.GetDocumentResponse>;
+
+        /** Collects class names for the node with given id and all of it's child nodes. */
+        collectClassNamesFromSubtree?: (params: DOM.CollectClassNamesFromSubtreeRequest) => PromiseOrNot<DOM.CollectClassNamesFromSubtreeResponse>;
 
         /** Requests that children of the node with given id are returned to the caller in form of 'setChildNodes' events where not only immediate children are retrieved, but all children down to the specified depth. */
         requestChildNodes?: (params: DOM.RequestChildNodesRequest) => PromiseOrNot<void>;
@@ -5675,6 +5750,17 @@ export namespace Crdp {
 
         }
 
+        export interface CollectClassNamesRequest {
+            styleSheetId: StyleSheetId;
+
+        }
+
+        export interface CollectClassNamesResponse {
+            /** Class name list. */
+            classNames: string[];
+
+        }
+
         export interface SetStyleSheetTextRequest {
             styleSheetId: StyleSheetId;
 
@@ -5858,6 +5944,9 @@ export namespace Crdp {
 
         /** Returns the current textual content and the URL for a stylesheet. */
         getStyleSheetText?: (params: CSS.GetStyleSheetTextRequest) => PromiseOrNot<CSS.GetStyleSheetTextResponse>;
+
+        /** Returns all class names from specified stylesheet. */
+        collectClassNames?: (params: CSS.CollectClassNamesRequest) => PromiseOrNot<CSS.CollectClassNamesResponse>;
 
         /** Sets the new stylesheet text. */
         setStyleSheetText?: (params: CSS.SetStyleSheetTextRequest) => PromiseOrNot<CSS.SetStyleSheetTextResponse>;
@@ -6133,6 +6222,162 @@ export namespace Crdp {
 
     }
 
+    /** Supports additional targets discovery and allows to attach to them. */
+    export module Target {
+
+        export type TargetID = string;
+
+        export type TargetType = ('page' | 'iframe' | 'worker' | 'service_worker');
+
+        export interface TargetInfo {
+            targetId: TargetID;
+
+            type: TargetType;
+
+            title: string;
+
+            url: string;
+
+        }
+
+        export interface SetDiscoverTargetsRequest {
+            /** Whether to discover available targets. */
+            discover: boolean;
+
+        }
+
+        export interface SetAutoAttachRequest {
+            /** Whether to auto-attach to related targets. */
+            autoAttach: boolean;
+
+            /** Whether to pause new targets when attaching to them. Use 'Runtime.runIfWaitingForDebugger' to run paused targets. */
+            waitForDebuggerOnStart: boolean;
+
+        }
+
+        export interface SetAttachToFramesRequest {
+            /** Whether to attach to frames. */
+            value: boolean;
+
+        }
+
+        export interface SendMessageToTargetRequest {
+            targetId: string;
+
+            message: string;
+
+        }
+
+        export interface GetTargetInfoRequest {
+            targetId: TargetID;
+
+        }
+
+        export interface GetTargetInfoResponse {
+            targetInfo: TargetInfo;
+
+        }
+
+        export interface ActivateTargetRequest {
+            targetId: TargetID;
+
+        }
+
+        export interface AttachToTargetRequest {
+            targetId: TargetID;
+
+        }
+
+        export interface AttachToTargetResponse {
+            /** Whether attach succeeded. */
+            success: boolean;
+
+        }
+
+        export interface DetachFromTargetRequest {
+            targetId: TargetID;
+
+        }
+
+        export interface TargetCreatedEvent {
+            targetInfo: TargetInfo;
+
+        }
+
+        export interface TargetRemovedEvent {
+            targetId: TargetID;
+
+        }
+
+        export interface AttachedToTargetEvent {
+            targetId: TargetID;
+
+            waitingForDebugger: boolean;
+
+        }
+
+        export interface DetachedFromTargetEvent {
+            targetId: TargetID;
+
+        }
+
+        export interface ReceivedMessageFromTargetEvent {
+            targetId: TargetID;
+
+            message: string;
+
+        }
+    }
+
+    export interface TargetCommands {
+        /** Controls whether to discover available targets and notify via 'targetCreated/targetRemoved' events. */
+        setDiscoverTargets?: (params: Target.SetDiscoverTargetsRequest) => PromiseOrNot<void>;
+
+        /** Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets. */
+        setAutoAttach?: (params: Target.SetAutoAttachRequest) => PromiseOrNot<void>;
+
+        setAttachToFrames?: (params: Target.SetAttachToFramesRequest) => PromiseOrNot<void>;
+
+        sendMessageToTarget?: (params: Target.SendMessageToTargetRequest) => PromiseOrNot<void>;
+
+        getTargetInfo?: (params: Target.GetTargetInfoRequest) => PromiseOrNot<Target.GetTargetInfoResponse>;
+
+        activateTarget?: (params: Target.ActivateTargetRequest) => PromiseOrNot<void>;
+
+        attachToTarget?: (params: Target.AttachToTargetRequest) => PromiseOrNot<Target.AttachToTargetResponse>;
+
+        detachFromTarget?: (params: Target.DetachFromTargetRequest) => PromiseOrNot<void>;
+
+    }
+
+    export interface TargetClient extends TargetCommands {
+        onTargetCreated(handler: (params: Target.TargetCreatedEvent) => void): void;
+
+        onTargetRemoved(handler: (params: Target.TargetRemovedEvent) => void): void;
+
+        onAttachedToTarget(handler: (params: Target.AttachedToTargetEvent) => void): void;
+
+        onDetachedFromTarget(handler: (params: Target.DetachedFromTargetEvent) => void): void;
+
+        onReceivedMessageFromTarget(handler: (params: Target.ReceivedMessageFromTargetEvent) => void): void;
+
+    }
+
+    export interface TargetServer {
+        emitTargetCreated(params: Target.TargetCreatedEvent): void;
+
+        emitTargetRemoved(params: Target.TargetRemovedEvent): void;
+
+        emitAttachedToTarget(params: Target.AttachedToTargetEvent): void;
+
+        emitDetachedFromTarget(params: Target.DetachedFromTargetEvent): void;
+
+        emitReceivedMessageFromTarget(params: Target.ReceivedMessageFromTargetEvent): void;
+
+        expose(domain: TargetCommands): void;
+
+    }
+
     export module Worker {
 
         export interface SendMessageToWorkerRequest {
@@ -6216,8 +6461,6 @@ export namespace Crdp {
 
         export type ServiceWorkerVersionStatus = ('new' | 'installing' | 'installed' | 'activating' | 'activated' | 'redundant');
 
-        export type TargetID = string;
-
         /** ServiceWorker version. */
         export interface ServiceWorkerVersion {
             versionId: string;
@@ -6236,7 +6479,9 @@ export namespace Crdp {
             /** The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated. */
             scriptResponseTime?: number;
 
-            controlledClients?: TargetID[];
+            controlledClients?: Target.TargetID[];
+
+            targetId?: Target.TargetID;
 
         }
 
@@ -6253,29 +6498,6 @@ export namespace Crdp {
             lineNumber: integer;
 
             columnNumber: integer;
-
-        }
-
-        export interface TargetInfo {
-            id: TargetID;
-
-            type: string;
-
-            title: string;
-
-            url: string;
-
-        }
-
-        export interface SendMessageRequest {
-            workerId: string;
-
-            message: string;
-
-        }
-
-        export interface StopRequest {
-            workerId: string;
 
         }
 
@@ -6334,42 +6556,6 @@ export namespace Crdp {
 
         }
 
-        export interface GetTargetInfoRequest {
-            targetId: TargetID;
-
-        }
-
-        export interface GetTargetInfoResponse {
-            targetInfo: TargetInfo;
-
-        }
-
-        export interface ActivateTargetRequest {
-            targetId: TargetID;
-
-        }
-
-        export interface WorkerCreatedEvent {
-            workerId: string;
-
-            url: string;
-
-            versionId: string;
-
-        }
-
-        export interface WorkerTerminatedEvent {
-            workerId: string;
-
-        }
-
-        export interface DispatchMessageEvent {
-            workerId: string;
-
-            message: string;
-
-        }
-
         export interface WorkerRegistrationUpdatedEvent {
             registrations: ServiceWorkerRegistration[];
 
@@ -6391,10 +6577,6 @@ export namespace Crdp {
 
         disable?: () => PromiseOrNot<void>;
 
-        sendMessage?: (params: ServiceWorker.SendMessageRequest) => PromiseOrNot<void>;
-
-        stop?: (params: ServiceWorker.StopRequest) => PromiseOrNot<void>;
-
         unregister?: (params: ServiceWorker.UnregisterRequest) => PromiseOrNot<void>;
 
         updateRegistration?: (params: ServiceWorker.UpdateRegistrationRequest) => PromiseOrNot<void>;
@@ -6413,19 +6595,9 @@ export namespace Crdp {
 
         dispatchSyncEvent?: (params: ServiceWorker.DispatchSyncEventRequest) => PromiseOrNot<void>;
 
-        getTargetInfo?: (params: ServiceWorker.GetTargetInfoRequest) => PromiseOrNot<ServiceWorker.GetTargetInfoResponse>;
-
-        activateTarget?: (params: ServiceWorker.ActivateTargetRequest) => PromiseOrNot<void>;
-
     }
 
     export interface ServiceWorkerClient extends ServiceWorkerCommands {
-        onWorkerCreated(handler: (params: ServiceWorker.WorkerCreatedEvent) => void): void;
-
-        onWorkerTerminated(handler: (params: ServiceWorker.WorkerTerminatedEvent) => void): void;
-
-        onDispatchMessage(handler: (params: ServiceWorker.DispatchMessageEvent) => void): void;
-
         onWorkerRegistrationUpdated(handler: (params: ServiceWorker.WorkerRegistrationUpdatedEvent) => void): void;
 
         onWorkerVersionUpdated(handler: (params: ServiceWorker.WorkerVersionUpdatedEvent) => void): void;
@@ -6435,12 +6607,6 @@ export namespace Crdp {
     }
 
     export interface ServiceWorkerServer {
-        emitWorkerCreated(params: ServiceWorker.WorkerCreatedEvent): void;
-
-        emitWorkerTerminated(params: ServiceWorker.WorkerTerminatedEvent): void;
-
-        emitDispatchMessage(params: ServiceWorker.DispatchMessageEvent): void;
-
         emitWorkerRegistrationUpdated(params: ServiceWorker.WorkerRegistrationUpdatedEvent): void;
 
         emitWorkerVersionUpdated(params: ServiceWorker.WorkerVersionUpdatedEvent): void;
@@ -7476,22 +7642,25 @@ export namespace Crdp {
 
         }
 
-        export interface GetAXNodeRequest {
+        export interface GetAXNodeChainRequest {
             /** ID of node to get accessibility node for. */
             nodeId: DOM.NodeId;
 
+            /** Whether to also push down a partial tree (parent chain). */
+            fetchAncestors: boolean;
+
         }
 
-        export interface GetAXNodeResponse {
-            /** The 'Accessibility.AXNode' for this DOM node, if it exists. */
-            accessibilityNode?: AXNode;
+        export interface GetAXNodeChainResponse {
+            /** The 'Accessibility.AXNode' for this DOM node, if it exists, plus ancestors if requested. */
+            nodes: AXNode[];
 
         }
     }
 
     export interface AccessibilityCommands {
         /** Fetches the accessibility node for this DOM node, if it exists. */
-        getAXNode?: (params: Accessibility.GetAXNodeRequest) => PromiseOrNot<Accessibility.GetAXNodeResponse>;
+        getAXNodeChain?: (params: Accessibility.GetAXNodeChainRequest) => PromiseOrNot<Accessibility.GetAXNodeChainResponse>;
 
     }
 
@@ -7617,6 +7786,13 @@ export namespace Crdp {
 
         }
 
+        export interface RemoteLocation {
+            host: string;
+
+            port: integer;
+
+        }
+
         export interface CreateBrowserContextResponse {
             /** The id of the context created. */
             browserContextId: BrowserContextID;
@@ -7669,14 +7845,32 @@ export namespace Crdp {
 
         }
 
+        export interface SetRemoteLocationsRequest {
+            /** List of remote locations */
+            locations: RemoteLocation[];
+
+        }
+
         export interface AttachRequest {
             /** Target id. */
             targetId: TargetID;
 
         }
 
+        export interface AttachResponse {
+            /** Whether attach succeeded. */
+            success: boolean;
+
+        }
+
         export interface DetachRequest {
             targetId: TargetID;
+
+        }
+
+        export interface DetachResponse {
+            /** Whether detach succeeded. */
+            success: boolean;
 
         }
 
@@ -7711,11 +7905,14 @@ export namespace Crdp {
         /** Returns target information for all potential targets. */
         getTargets?: () => PromiseOrNot<Browser.GetTargetsResponse>;
 
+        /** Enables target discovery for the specified locations. */
+        setRemoteLocations?: (params: Browser.SetRemoteLocationsRequest) => PromiseOrNot<void>;
+
         /** Attaches to the target with given id. */
-        attach?: (params: Browser.AttachRequest) => PromiseOrNot<void>;
+        attach?: (params: Browser.AttachRequest) => PromiseOrNot<Browser.AttachResponse>;
 
         /** Detaches from the target with given id. */
-        detach?: (params: Browser.DetachRequest) => PromiseOrNot<void>;
+        detach?: (params: Browser.DetachRequest) => PromiseOrNot<Browser.DetachResponse>;
 
         /** Sends protocol message to the target with given id. */
         sendMessage?: (params: Browser.SendMessageRequest) => PromiseOrNot<void>;

@@ -15,7 +15,7 @@ task 'default', ['download-protocols']
 desc 'Download latest protocol.json files from Chromium source and append typescript protocol stub to them'
 task 'download-protocols', async: true, async (version = 'master') ->
     try
-        jsProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/#{version}/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json"
+        jsProtocolUrl = "https://chromium.googlesource.com/v8/v8.git/+/#{version}/src/inspector/js_protocol.json"
         browserProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/#{version}/third_party/WebKit/Source/core/inspector/browser_protocol.json"
         protocolDefDir = "#{__dirname}/src/protocolDef"
         jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + yield fetchProtocolJson("#{jsProtocolUrl}?format=TEXT")

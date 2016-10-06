@@ -1,4 +1,4 @@
-import Crdp from '../lib/crdp.d.ts'
+import Crdp from '../lib/crdp'
 
 // Smoke test to ensure that crdp.d.ts will compile as an interface when imported as ES6 module
 async function run() {

@@ -2,7 +2,7 @@
 import {IProtocol} from '../protocol'
 export const protocol: IProtocol =
 {
-    "version": { "major": "1", "minor": "1" },
+    "version": { "major": "1", "minor": "2" },
     "domains": [{
         "domain": "Inspector",
         "experimental": true,
@@ -450,7 +450,6 @@ export const protocol: IProtocol =
                     { "name": "accept", "type": "boolean", "description": "Whether to accept or dismiss the dialog." },
                     { "name": "promptText", "type": "string", "optional": true, "description": "The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog." }
                 ],
-                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -591,16 +590,14 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "message", "type": "string", "description": "Message that will be displayed by the dialog." },
                     { "name": "type", "$ref": "DialogType", "description": "Dialog type." }
-                ],
-                "experimental": true
+                ]
             },
             {
                 "name": "javascriptDialogClosed",
                 "description": "Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.",
                 "parameters": [
                     { "name": "result", "type": "boolean", "description": "Whether dialog was confirmed." }
-                ],
-                "experimental": true
+                ]
             },
             {
                 "name": "screencastFrame",
@@ -634,13 +631,11 @@ export const protocol: IProtocol =
             {
                 "name": "interstitialShown",
                 "description": "Fired when interstitial page was shown",
-                "experimental": true,
                 "handlers": ["browser"]
             },
             {
                 "name": "interstitialHidden",
                 "description": "Fired when interstitial page was hidden",
-                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -701,7 +696,6 @@ export const protocol: IProtocol =
     {
         "domain": "Emulation",
         "description": "This domain emulates different environments for the page.",
-        "experimental": true,
         "types": [
             {
                 "id": "ScreenOrientation",
@@ -720,6 +714,7 @@ export const protocol: IProtocol =
                     "pause",
                     "pauseIfNetworkFetchesPending"
                 ],
+                "experimental": true,
                 "description": "advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to allow the next delayed task (if any) to run; pause: The virtual time base may not advance; pauseIfNetworkFetchesPending: The virtual time base may not advance if there are any pending resource fetches."
             }
         ],
@@ -733,13 +728,13 @@ export const protocol: IProtocol =
                     { "name": "deviceScaleFactor", "type": "number", "description": "Overriding device scale factor value. 0 disables the override." },
                     { "name": "mobile", "type": "boolean", "description": "Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more." },
                     { "name": "fitWindow", "type": "boolean", "description": "Whether a view that exceeds the available browser window area should be scaled down to fit." },
-                    { "name": "scale", "type": "number", "optional": true, "description": "Scale to apply to resulting view image. Ignored in |fitWindow| mode." },
-                    { "name": "offsetX", "type": "number", "optional": true, "description": "X offset to shift resulting view image by. Ignored in |fitWindow| mode." },
-                    { "name": "offsetY", "type": "number", "optional": true, "description": "Y offset to shift resulting view image by. Ignored in |fitWindow| mode." },
-                    { "name": "screenWidth", "type": "integer", "optional": true, "description": "Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
-                    { "name": "screenHeight", "type": "integer", "optional": true, "description": "Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
-                    { "name": "positionX", "type": "integer", "optional": true, "description": "Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
-                    { "name": "positionY", "type": "integer", "optional": true, "description": "Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
+                    { "name": "scale", "type": "number", "optional": true, "experimental": true, "description": "Scale to apply to resulting view image. Ignored in |fitWindow| mode." },
+                    { "name": "offsetX", "type": "number", "optional": true, "deprecated": true, "experimental": true, "description": "Not used." },
+                    { "name": "offsetY", "type": "number", "optional": true, "deprecated": true, "experimental": true, "description": "Not used." },
+                    { "name": "screenWidth", "type": "integer", "optional": true, "experimental": true, "description": "Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
+                    { "name": "screenHeight", "type": "integer", "optional": true, "experimental": true, "description": "Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
+                    { "name": "positionX", "type": "integer", "optional": true, "experimental": true, "description": "Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
+                    { "name": "positionY", "type": "integer", "optional": true, "experimental": true, "description": "Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
                     { "name": "screenOrientation", "$ref": "ScreenOrientation", "optional": true, "description": "Screen orientation override." }
                 ],
                 "handlers": ["browser"]
@@ -750,19 +745,47 @@ export const protocol: IProtocol =
                 "handlers": ["browser"]
             },
             {
+                "name": "forceViewport",
+                "description": "Overrides the visible area of the page. The change is hidden from the page, i.e. the observable scroll position and page scale does not change. In effect, the command moves the specified area of the page into the top-left corner of the frame.",
+                "experimental": true,
+                "parameters": [
+                    { "name": "x", "type": "number", "description": "X coordinate of top-left corner of the area (CSS pixels)." },
+                    { "name": "y", "type": "number", "description": "Y coordinate of top-left corner of the area (CSS pixels)." },
+                    { "name": "scale", "type": "number", "description": "Scale to apply to the area (relative to a page scale of 1.0)." }
+                ]
+            },
+            {
+                "name": "resetViewport",
+                "description": "Resets the visible area of the page to the original viewport, undoing any effects of the <code>forceViewport</code> command.",
+                "experimental": true
+            },
+            {
                 "name": "resetPageScaleFactor",
+                "experimental": true,
                 "description": "Requests that page scale factor is reset to initial values."
             },
             {
                 "name": "setPageScaleFactor",
                 "description": "Sets a specified page scale factor.",
+                "experimental": true,
                 "parameters": [
                     { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." }
                 ]
             },
             {
+                "name": "setVisibleSize",
+                "description": "Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android.",
+                "experimental": true,
+                "parameters": [
+                    { "name": "width", "type": "integer", "description": "Frame width (DIP)." },
+                    { "name": "height", "type": "integer", "description": "Frame height (DIP)." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
                 "name": "setScriptExecutionDisabled",
                 "description": "Switches script execution in the page.",
+                "experimental": true,
                 "parameters": [
                     { "name": "value", "type": "boolean", "description": "Whether script execution should be disabled in the page." }
                 ]
@@ -770,6 +793,7 @@ export const protocol: IProtocol =
             {
                 "name": "setGeolocationOverride",
                 "description": "Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.",
+                "experimental": true,
                 "parameters": [
                     { "name": "latitude", "type": "number", "optional": true, "description": "Mock latitude"},
                     { "name": "longitude", "type": "number", "optional": true, "description": "Mock longitude"},
@@ -780,6 +804,7 @@ export const protocol: IProtocol =
             {
                 "name": "clearGeolocationOverride",
                 "description": "Clears the overriden Geolocation Position and Error.",
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -803,6 +828,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "rate", "type": "number", "description": "Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc)." }
                 ],
+                "experimental": true,
                 "description": "Enables CPU throttling to emulate slow CPUs."
             },
             {
@@ -811,6 +837,7 @@ export const protocol: IProtocol =
                 "returns": [
                     { "name": "result", "type": "boolean", "description": "True if emulation is supported." }
                 ],
+                "experimental": true,
                 "handlers": ["browser"]
             },
             {
@@ -826,6 +853,7 @@ export const protocol: IProtocol =
         "events": [
             {
                 "name": "virtualTimeBudgetExpired",
+                "experimental": true,
                 "description": "Notification sent after the virual time budget for the current VirtualTimePolicy has run out."
             }
         ]
@@ -853,20 +881,22 @@ export const protocol: IProtocol =
                     { "name": "securityState", "$ref": "SecurityState", "description": "Security state representing the severity of the factor being explained." },
                     { "name": "summary", "type": "string", "description": "Short phrase describing the type of factor." },
                     { "name": "description", "type": "string", "description": "Full text explanation of the factor." },
-                    { "name": "certificateId", "$ref": "CertificateId", "optional": true, "description": "Associated certificate id." }
+                    { "name": "hasCertificate", "type": "boolean", "description": "True if the page has a certificate." }
                 ],
                 "description": "An explanation of an factor contributing to the security state."
             },
             {
-                "id": "MixedContentStatus",
+                "id": "InsecureContentStatus",
                 "type": "object",
                 "properties": [
-                    { "name": "ranInsecureContent", "type": "boolean", "description": "True if the page ran insecure content such as scripts." },
-                    { "name": "displayedInsecureContent", "type": "boolean", "description": "True if the page displayed insecure content such as images." },
+                    { "name": "ranMixedContent", "type": "boolean", "description": "True if the page was loaded over HTTPS and ran mixed (HTTP) content such as scripts." },
+                    { "name": "displayedMixedContent", "type": "boolean", "description": "True if the page was loaded over HTTPS and displayed mixed (HTTP) content such as images." },
+                    { "name": "ranContentWithCertErrors", "type": "boolean", "description": "True if the page was loaded over HTTPS without certificate errors, and ran content such as scripts that were loaded with certificate errors." },
+                    { "name": "displayedContentWithCertErrors", "type": "boolean", "description": "True if the page was loaded over HTTPS without certificate errors, and displayed content such as images that were loaded with certificate errors." },
                     { "name": "ranInsecureContentStyle", "$ref": "SecurityState", "description": "Security state representing a page that ran insecure content." },
                     { "name": "displayedInsecureContentStyle", "$ref": "SecurityState", "description": "Security state representing a page that displayed insecure content." }
                 ],
-                "description": "Information about mixed content on the page."
+                "description": "Information about insecure content on the page."
             }
         ],
         "commands": [
@@ -879,6 +909,11 @@ export const protocol: IProtocol =
                 "name": "disable",
                 "description": "Disables tracking security state changes.",
                 "handlers": ["browser"]
+            },
+            {
+                "name": "showCertificateViewer",
+                "description": "Displays native dialog with the certificate details.",
+                "handlers": ["browser"]
             }
         ],
         "events": [
@@ -888,7 +923,7 @@ export const protocol: IProtocol =
                 "parameters": [
                     { "name": "securityState", "$ref": "SecurityState", "description": "Security state." },
                     { "name": "explanations", "type": "array", "items": { "$ref": "SecurityStateExplanation" }, "description": "List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included.", "optional": true },
-                    { "name": "mixedContentStatus", "$ref": "MixedContentStatus", "description": "Information about mixed content on the page.", "optional": true },
+                    { "name": "insecureContentStatus", "$ref": "InsecureContentStatus", "description": "Information about insecure content on the page.", "optional": true },
                     { "name": "schemeIsCryptographic", "type": "boolean", "description": "True if the page was loaded over cryptographic transport such as HTTPS.", "optional": true }
                 ],
                 "handlers": ["browser"]
@@ -975,27 +1010,6 @@ export const protocol: IProtocol =
                 ]
             },
             {
-                "id": "CertificateSubject",
-                "type": "object",
-                "description": "Subject of a certificate.",
-                "properties": [
-                    { "name": "name", "type": "string", "description": "Certificate subject name." },
-                    { "name": "sanDnsNames", "type": "array", "items": { "type": "string" }, "description": "Subject Alternative Name (SAN) DNS names." },
-                    { "name": "sanIpAddresses", "type": "array", "items": { "type": "string" }, "description": "Subject Alternative Name (SAN) IP addresses." }
-                ]
-            },
-            {
-                "id": "CertificateDetails",
-                "type": "object",
-                "description": "Details about a request's certificate.",
-                "properties": [
-                    { "name": "subject", "$ref": "CertificateSubject", "description": "Certificate subject." },
-                    { "name": "issuer", "type": "string", "description": "Name of the issuing CA." },
-                    { "name": "validFrom", "$ref": "Timestamp", "description": "Certificate valid from date." },
-                    { "name": "validTo", "$ref": "Timestamp", "description": "Certificate valid to (expiration) date" }
-                ]
-            },
-            {
                 "id": "SignedCertificateTimestamp",
                 "type" : "object",
                 "description": "Details of a signed certificate timestamp (SCT).",
@@ -1017,9 +1031,15 @@ export const protocol: IProtocol =
                 "properties": [
                     { "name": "protocol", "type": "string", "description": "Protocol name (e.g. \"TLS 1.2\" or \"QUIC\")." },
                     { "name": "keyExchange", "type": "string", "description": "Key Exchange used by the connection." },
+                    { "name": "keyExchangeGroup", "type": "string", "optional": true, "description": "(EC)DH group used by the connection, if applicable." },
                     { "name": "cipher", "type": "string", "description": "Cipher name." },
                     { "name": "mac", "type": "string", "optional": true, "description": "TLS MAC. Note that AEAD ciphers do not have separate MACs." },
                     { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate ID value." },
+                    { "name": "subjectName", "type": "string", "description": "Certificate subject name." },
+                    { "name": "sanList", "type": "array", "items": { "type": "string" }, "description": "Subject Alternative Name (SAN) DNS names and IP addresses." },
+                    { "name": "issuer", "type": "string", "description": "Name of the issuing CA." },
+                    { "name": "validFrom", "$ref": "Timestamp", "description": "Certificate valid from date." },
+                    { "name": "validTo", "$ref": "Timestamp", "description": "Certificate valid to (expiration) date" },
                     { "name": "signedCertificateTimestampList", "type": "array", "items": { "$ref": "SignedCertificateTimestamp" }, "description": "List of signed certificate timestamps (SCTs)." }
                 ]
             },
@@ -1287,7 +1307,6 @@ export const protocol: IProtocol =
                     { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." },
                     { "name": "connectionType", "$ref": "ConnectionType", "optional": true, "description": "Connection type if known."}
                 ],
-                "experimental": true,
                 "handlers": ["browser", "renderer"]
             },
             {
@@ -1315,23 +1334,16 @@ export const protocol: IProtocol =
                 "experimental": true
             },
             {
-                "name": "getCertificateDetails",
-                "description": "Returns details for the given certificate.",
+                "name": "getCertificate",
+                "description": "Returns the DER-encoded certificate.",
                 "parameters": [
-                    { "name": "certificateId", "$ref": "Security.CertificateId", "description": "ID of the certificate to get details for." }
+                    { "name": "origin", "type": "string", "description": "Origin to get certificate for." }
                 ],
                 "returns": [
-                    { "name": "result", "$ref": "CertificateDetails", "description": "Certificate details." }
+                    { "name": "tableNames", "type": "array", "items": { "type": "string" } }
                 ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "showCertificateViewer",
-                "description": "Displays native dialog with the certificate details.",
-                "parameters": [
-                    { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate id." }
-                ],
-                "handlers": ["browser"]
+                "handlers": ["renderer"],
+                "experimental": true
             }
         ],
         "events": [
@@ -2157,6 +2169,17 @@ export const protocol: IProtocol =
                 "description": "Returns the root DOM node to the caller."
             },
             {
+                "name": "collectClassNamesFromSubtree",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to collect class names." }
+                ],
+                "returns": [
+                    {"name": "classNames", "type": "array", "items": { "type": "string" }, "description": "Class name list." }
+                ],
+                "description": "Collects class names for the node with given id and all of it's child nodes.",
+                "experimental": true
+            },
+            {
                 "name": "requestChildNodes",
                 "parameters": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get children for." },
@@ -2936,6 +2959,17 @@ export const protocol: IProtocol =
                 "description": "Returns the current textual content and the URL for a stylesheet."
             },
             {
+                "name": "collectClassNames",
+                "parameters": [
+                    { "name": "styleSheetId", "$ref": "StyleSheetId" }
+                ],
+                "returns": [
+                    {"name": "classNames", "type": "array", "items": { "type": "string" }, "description": "Class name list." }
+                ],
+                "description": "Returns all class names from specified stylesheet.",
+                "experimental": true
+            },
+            {
                 "name": "setStyleSheetText",
                 "parameters": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId" },
@@ -3232,6 +3266,139 @@ export const protocol: IProtocol =
         ]
     },
     {
+        "domain": "Target",
+        "description": "Supports additional targets discovery and allows to attach to them.",
+        "experimental": true,
+        "types": [
+            {
+                "id": "TargetID",
+                "type": "string"
+            },
+            {
+                "id": "TargetType",
+                "type": "string",
+                "enum": ["page", "iframe", "worker", "service_worker"]
+            },
+            {
+                "id": "TargetInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "type", "$ref": "TargetType" },
+                    { "name": "title", "type": "string" },
+                    { "name": "url", "type": "string" }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "setDiscoverTargets",
+                "description": "Controls whether to discover available targets and notify via <code>targetCreated/targetRemoved</code> events.",
+                "parameters": [
+                    { "name": "discover", "type": "boolean", "description": "Whether to discover available targets." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "setAutoAttach",
+                "description": "Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.",
+                "parameters": [
+                    { "name": "autoAttach", "type": "boolean", "description": "Whether to auto-attach to related targets." },
+                    { "name": "waitForDebuggerOnStart", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run paused targets." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "setAttachToFrames",
+                "parameters": [
+                    { "name": "value", "type": "boolean", "description": "Whether to attach to frames." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "sendMessageToTarget",
+                "parameters": [
+                    { "name": "targetId", "type": "string" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "getTargetInfo",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "targetInfo","$ref": "TargetInfo" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "activateTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "attachToTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "Whether attach succeeded." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "detachFromTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "targetCreated",
+                "parameters": [
+                    { "name": "targetInfo", "$ref": "TargetInfo" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "targetRemoved",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "attachedToTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "waitingForDebugger", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "detachedFromTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "receivedMessageFromTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
+    },
+    {
         "domain": "Worker",
         "experimental": true,
         "types": [],
@@ -3305,10 +3472,6 @@ export const protocol: IProtocol =
                 "enum": ["new", "installing", "installed", "activating", "activated", "redundant"]
             },
             {
-                "id": "TargetID",
-                "type": "string"
-            },
-            {
                 "id": "ServiceWorkerVersion",
                 "type": "object",
                 "description": "ServiceWorker version.",
@@ -3320,7 +3483,8 @@ export const protocol: IProtocol =
                     { "name": "status", "$ref": "ServiceWorkerVersionStatus" },
                     { "name": "scriptLastModified", "type": "number", "optional": true, "description": "The Last-Modified header value of the main script." },
                     { "name": "scriptResponseTime", "type": "number", "optional": true, "description": "The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated." },
-                    { "name": "controlledClients", "type": "array", "optional": true, "items": { "$ref": "TargetID" } }
+                    { "name": "controlledClients", "type": "array", "optional": true, "items": { "$ref": "Target.TargetID" } },
+                    { "name": "targetId", "$ref": "Target.TargetID", "optional": true }
                 ]
             },
             {
@@ -3335,16 +3499,6 @@ export const protocol: IProtocol =
                     { "name": "lineNumber", "type": "integer" },
                     { "name": "columnNumber", "type": "integer" }
                 ]
-            },
-            {
-                "id": "TargetInfo",
-                "type": "object",
-                "properties": [
-                    { "name": "id", "$ref": "TargetID" },
-                    { "name": "type", "type": "string" },
-                    { "name": "title", "type": "string" },
-                    { "name": "url", "type": "string" }
-                ]
             }
         ],
         "commands": [
@@ -3354,21 +3508,6 @@ export const protocol: IProtocol =
             },
             {
                 "name": "disable",
-                "handlers": ["browser"]
-            },
-            {
-                "name": "sendMessage",
-                "parameters": [
-                    { "name": "workerId", "type": "string" },
-                    { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "stop",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ],
                 "handlers": ["browser"]
             },
             {
@@ -3438,50 +3577,9 @@ export const protocol: IProtocol =
                     { "name": "lastChance", "type": "boolean" }
                 ],
                 "handlers": ["browser"]
-            },
-            {
-                "name": "getTargetInfo",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "returns": [
-                    { "name": "targetInfo","$ref": "TargetInfo" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "activateTarget",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "handlers": ["browser"]
             }
         ],
         "events": [
-            {
-                "name": "workerCreated",
-                "parameters": [
-                    { "name": "workerId", "type": "string" },
-                    { "name": "url", "type": "string" },
-                    { "name": "versionId", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "workerTerminated",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "dispatchMessage",
-                "parameters": [
-                    { "name": "workerId", "type": "string" },
-                    { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
             {
                 "name": "workerRegistrationUpdated",
                 "parameters": [
@@ -3830,6 +3928,7 @@ export const protocol: IProtocol =
     },
     {
         "domain": "Tracing",
+        "experimental": true,
         "types": [
             {
                 "id": "MemoryDumpConfig",
@@ -4206,12 +4305,13 @@ export const protocol: IProtocol =
         ],
         "commands": [
             {
-                "name": "getAXNode",
+                "name": "getAXNodeChain",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." }
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." },
+                    { "name": "fetchAncestors", "type": "boolean", "description": "Whether to also push down a partial tree (parent chain)." }
                 ],
                 "returns": [
-                    { "name": "accessibilityNode", "$ref": "AXNode", "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists.", "optional": true }
+                    { "name": "nodes", "type": "array", "items": { "$ref": "AXNode" }, "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus ancestors if requested." }
                 ],
                 "description": "Fetches the accessibility node for this DOM node, if it exists.",
                 "experimental": true
@@ -4321,6 +4421,14 @@ export const protocol: IProtocol =
                     { "name": "title", "type": "string" },
                     { "name": "url", "type": "string" }
                 ]
+            },
+            {
+                "id": "RemoteLocation",
+                "type": "object",
+                "properties": [
+                    { "name": "host", "type": "string" },
+                    { "name": "port", "type": "integer" }
+                ]
             }
         ],
         "commands": [
@@ -4374,6 +4482,16 @@ export const protocol: IProtocol =
                     { "name": "targetInfo", "type": "array", "items": { "$ref": "TargetInfo" } }
                 ],
                 "description": "Returns target information for all potential targets.",
+                "handlers": ["browser"],
+                "async": true
+            },
+            {
+                "name": "setRemoteLocations",
+                "parameters": [
+
+                    { "name": "locations", "type": "array", "items": { "$ref": "RemoteLocation" }, "description": "List of remote locations" }
+                ],
+                "description": "Enables target discovery for the specified locations.",
                 "handlers": ["browser"]
             },
             {
@@ -4382,13 +4500,20 @@ export const protocol: IProtocol =
                 "parameters": [
                     {"name": "targetId", "$ref": "TargetID", "description": "Target id." }
                 ],
-                "handlers": ["browser"]
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "Whether attach succeeded." }
+                ],
+                "handlers": ["browser"],
+                "async": true
             },
             {
                 "name": "detach",
                 "description": "Detaches from the target with given id.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "Whether detach succeeded." }
                 ],
                 "handlers": ["browser"]
             },
