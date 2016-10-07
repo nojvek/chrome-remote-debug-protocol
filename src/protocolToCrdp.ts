@@ -229,7 +229,3 @@ const protocolDomains: P.Domain[] = jsProtocol.domains.concat(browserProtocol.do
 emitModule(moduleName, protocolDomains)
 console.log(`Writing to ${destFilePath}`)
 fs.writeFileSync(destFilePath, emitStr, 'utf-8')
-
-function a(): Promise<void> {
-    return Promise.resolve()
-}
