@@ -72,7 +72,6 @@ const emitModule = (moduleName:string, domains: P.Domain[]) => {
 const emitGlobalTypeDefs = () => {
     emitLine()
     emitLine(`export type integer = number`)
-    emitLine(`export type PromiseOrNot<T> = T | Promise<T>;`)
 }
 
 const emitDomain = (domain: P.Domain) => {
@@ -164,7 +163,7 @@ const emitCommand = (command: P.Command, domain: string): ClientServerDef => {
         name: command.name,
         optional: true,
         accepts: paramsDef,
-        returns: `PromiseOrNot<${responseType || 'void'}>`
+        returns: `Promise<${responseType || 'void'}>`
     }
 
     const serverDef: P.FunctionType = {

@@ -5,7 +5,6 @@
 export namespace Crdp {
 
     export type integer = number
-    export type PromiseOrNot<T> = T | Promise<T>;
 
     export interface CrdpClient {
         Schema: SchemaClient;
@@ -179,7 +178,7 @@ export namespace Crdp {
 
     export interface SchemaCommands {
         /** Returns supported domains. */
-        getDomains?: () => PromiseOrNot<Schema.GetDomainsResponse>;
+        getDomains?: () => Promise<Schema.GetDomainsResponse>;
 
     }
 
@@ -694,42 +693,42 @@ export namespace Crdp {
 
     export interface RuntimeCommands {
         /** Evaluates expression on global object. */
-        evaluate?: (params: Runtime.EvaluateRequest) => PromiseOrNot<Runtime.EvaluateResponse>;
+        evaluate?: (params: Runtime.EvaluateRequest) => Promise<Runtime.EvaluateResponse>;
 
         /** Add handler to promise with given promise object id. */
-        awaitPromise?: (params: Runtime.AwaitPromiseRequest) => PromiseOrNot<Runtime.AwaitPromiseResponse>;
+        awaitPromise?: (params: Runtime.AwaitPromiseRequest) => Promise<Runtime.AwaitPromiseResponse>;
 
         /** Calls function with given declaration on the given object. Object group of the result is inherited from the target object. */
-        callFunctionOn?: (params: Runtime.CallFunctionOnRequest) => PromiseOrNot<Runtime.CallFunctionOnResponse>;
+        callFunctionOn?: (params: Runtime.CallFunctionOnRequest) => Promise<Runtime.CallFunctionOnResponse>;
 
         /** Returns properties of a given object. Object group of the result is inherited from the target object. */
-        getProperties?: (params: Runtime.GetPropertiesRequest) => PromiseOrNot<Runtime.GetPropertiesResponse>;
+        getProperties?: (params: Runtime.GetPropertiesRequest) => Promise<Runtime.GetPropertiesResponse>;
 
         /** Releases remote object with given id. */
-        releaseObject?: (params: Runtime.ReleaseObjectRequest) => PromiseOrNot<void>;
+        releaseObject?: (params: Runtime.ReleaseObjectRequest) => Promise<void>;
 
         /** Releases all remote objects that belong to a given group. */
-        releaseObjectGroup?: (params: Runtime.ReleaseObjectGroupRequest) => PromiseOrNot<void>;
+        releaseObjectGroup?: (params: Runtime.ReleaseObjectGroupRequest) => Promise<void>;
 
         /** Tells inspected instance to run if it was waiting for debugger to attach. */
-        runIfWaitingForDebugger?: () => PromiseOrNot<void>;
+        runIfWaitingForDebugger?: () => Promise<void>;
 
         /** Enables reporting of execution contexts creation by means of 'executionContextCreated' event. When the reporting gets enabled the event will be sent immediately for each existing execution context. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables reporting of execution contexts creation. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Discards collected exceptions and console API calls. */
-        discardConsoleEntries?: () => PromiseOrNot<void>;
+        discardConsoleEntries?: () => Promise<void>;
 
-        setCustomObjectFormatterEnabled?: (params: Runtime.SetCustomObjectFormatterEnabledRequest) => PromiseOrNot<void>;
+        setCustomObjectFormatterEnabled?: (params: Runtime.SetCustomObjectFormatterEnabledRequest) => Promise<void>;
 
         /** Compiles expression. */
-        compileScript?: (params: Runtime.CompileScriptRequest) => PromiseOrNot<Runtime.CompileScriptResponse>;
+        compileScript?: (params: Runtime.CompileScriptRequest) => Promise<Runtime.CompileScriptResponse>;
 
         /** Runs script with given id in a given context. */
-        runScript?: (params: Runtime.RunScriptRequest) => PromiseOrNot<Runtime.RunScriptResponse>;
+        runScript?: (params: Runtime.RunScriptRequest) => Promise<Runtime.RunScriptResponse>;
 
     }
 
@@ -1188,73 +1187,73 @@ export namespace Crdp {
 
     export interface DebuggerCommands {
         /** Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables debugger for given page. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Activates / deactivates all breakpoints on the page. */
-        setBreakpointsActive?: (params: Debugger.SetBreakpointsActiveRequest) => PromiseOrNot<void>;
+        setBreakpointsActive?: (params: Debugger.SetBreakpointsActiveRequest) => Promise<void>;
 
         /** Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc). */
-        setSkipAllPauses?: (params: Debugger.SetSkipAllPausesRequest) => PromiseOrNot<void>;
+        setSkipAllPauses?: (params: Debugger.SetSkipAllPausesRequest) => Promise<void>;
 
         /** Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in 'locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved' events issued. This logical breakpoint will survive page reloads. */
-        setBreakpointByUrl?: (params: Debugger.SetBreakpointByUrlRequest) => PromiseOrNot<Debugger.SetBreakpointByUrlResponse>;
+        setBreakpointByUrl?: (params: Debugger.SetBreakpointByUrlRequest) => Promise<Debugger.SetBreakpointByUrlResponse>;
 
         /** Sets JavaScript breakpoint at a given location. */
-        setBreakpoint?: (params: Debugger.SetBreakpointRequest) => PromiseOrNot<Debugger.SetBreakpointResponse>;
+        setBreakpoint?: (params: Debugger.SetBreakpointRequest) => Promise<Debugger.SetBreakpointResponse>;
 
         /** Removes JavaScript breakpoint. */
-        removeBreakpoint?: (params: Debugger.RemoveBreakpointRequest) => PromiseOrNot<void>;
+        removeBreakpoint?: (params: Debugger.RemoveBreakpointRequest) => Promise<void>;
 
         /** Continues execution until specific location is reached. */
-        continueToLocation?: (params: Debugger.ContinueToLocationRequest) => PromiseOrNot<void>;
+        continueToLocation?: (params: Debugger.ContinueToLocationRequest) => Promise<void>;
 
         /** Steps over the statement. */
-        stepOver?: () => PromiseOrNot<void>;
+        stepOver?: () => Promise<void>;
 
         /** Steps into the function call. */
-        stepInto?: () => PromiseOrNot<void>;
+        stepInto?: () => Promise<void>;
 
         /** Steps out of the function call. */
-        stepOut?: () => PromiseOrNot<void>;
+        stepOut?: () => Promise<void>;
 
         /** Stops on the next JavaScript statement. */
-        pause?: () => PromiseOrNot<void>;
+        pause?: () => Promise<void>;
 
         /** Resumes JavaScript execution. */
-        resume?: () => PromiseOrNot<void>;
+        resume?: () => Promise<void>;
 
         /** Searches for given string in script content. */
-        searchInContent?: (params: Debugger.SearchInContentRequest) => PromiseOrNot<Debugger.SearchInContentResponse>;
+        searchInContent?: (params: Debugger.SearchInContentRequest) => Promise<Debugger.SearchInContentResponse>;
 
         /** Edits JavaScript source live. */
-        setScriptSource?: (params: Debugger.SetScriptSourceRequest) => PromiseOrNot<Debugger.SetScriptSourceResponse>;
+        setScriptSource?: (params: Debugger.SetScriptSourceRequest) => Promise<Debugger.SetScriptSourceResponse>;
 
         /** Restarts particular call frame from the beginning. */
-        restartFrame?: (params: Debugger.RestartFrameRequest) => PromiseOrNot<Debugger.RestartFrameResponse>;
+        restartFrame?: (params: Debugger.RestartFrameRequest) => Promise<Debugger.RestartFrameResponse>;
 
         /** Returns source for the script with given id. */
-        getScriptSource?: (params: Debugger.GetScriptSourceRequest) => PromiseOrNot<Debugger.GetScriptSourceResponse>;
+        getScriptSource?: (params: Debugger.GetScriptSourceRequest) => Promise<Debugger.GetScriptSourceResponse>;
 
         /** Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is 'none'. */
-        setPauseOnExceptions?: (params: Debugger.SetPauseOnExceptionsRequest) => PromiseOrNot<void>;
+        setPauseOnExceptions?: (params: Debugger.SetPauseOnExceptionsRequest) => Promise<void>;
 
         /** Evaluates expression on a given call frame. */
-        evaluateOnCallFrame?: (params: Debugger.EvaluateOnCallFrameRequest) => PromiseOrNot<Debugger.EvaluateOnCallFrameResponse>;
+        evaluateOnCallFrame?: (params: Debugger.EvaluateOnCallFrameRequest) => Promise<Debugger.EvaluateOnCallFrameResponse>;
 
         /** Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually. */
-        setVariableValue?: (params: Debugger.SetVariableValueRequest) => PromiseOrNot<void>;
+        setVariableValue?: (params: Debugger.SetVariableValueRequest) => Promise<void>;
 
         /** Enables or disables async call stacks tracking. */
-        setAsyncCallStackDepth?: (params: Debugger.SetAsyncCallStackDepthRequest) => PromiseOrNot<void>;
+        setAsyncCallStackDepth?: (params: Debugger.SetAsyncCallStackDepthRequest) => Promise<void>;
 
         /** Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. */
-        setBlackboxPatterns?: (params: Debugger.SetBlackboxPatternsRequest) => PromiseOrNot<void>;
+        setBlackboxPatterns?: (params: Debugger.SetBlackboxPatternsRequest) => Promise<void>;
 
         /** Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted. */
-        setBlackboxedRanges?: (params: Debugger.SetBlackboxedRangesRequest) => PromiseOrNot<void>;
+        setBlackboxedRanges?: (params: Debugger.SetBlackboxedRangesRequest) => Promise<void>;
 
     }
 
@@ -1330,13 +1329,13 @@ export namespace Crdp {
 
     export interface ConsoleCommands {
         /** Enables console domain, sends the messages collected so far to the client by means of the 'messageAdded' notification. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables console domain, prevents further console messages from being reported to the client. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Does nothing. */
-        clearMessages?: () => PromiseOrNot<void>;
+        clearMessages?: () => Promise<void>;
 
     }
 
@@ -1445,16 +1444,16 @@ export namespace Crdp {
     }
 
     export interface ProfilerCommands {
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Changes CPU profiler sampling interval. Must be called before CPU profiles recording started. */
-        setSamplingInterval?: (params: Profiler.SetSamplingIntervalRequest) => PromiseOrNot<void>;
+        setSamplingInterval?: (params: Profiler.SetSamplingIntervalRequest) => Promise<void>;
 
-        start?: () => PromiseOrNot<void>;
+        start?: () => Promise<void>;
 
-        stop?: () => PromiseOrNot<Profiler.StopResponse>;
+        stop?: () => Promise<Profiler.StopResponse>;
 
     }
 
@@ -1590,28 +1589,28 @@ export namespace Crdp {
     }
 
     export interface HeapProfilerCommands {
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
-        startTrackingHeapObjects?: (params: HeapProfiler.StartTrackingHeapObjectsRequest) => PromiseOrNot<void>;
+        startTrackingHeapObjects?: (params: HeapProfiler.StartTrackingHeapObjectsRequest) => Promise<void>;
 
-        stopTrackingHeapObjects?: (params: HeapProfiler.StopTrackingHeapObjectsRequest) => PromiseOrNot<void>;
+        stopTrackingHeapObjects?: (params: HeapProfiler.StopTrackingHeapObjectsRequest) => Promise<void>;
 
-        takeHeapSnapshot?: (params: HeapProfiler.TakeHeapSnapshotRequest) => PromiseOrNot<void>;
+        takeHeapSnapshot?: (params: HeapProfiler.TakeHeapSnapshotRequest) => Promise<void>;
 
-        collectGarbage?: () => PromiseOrNot<void>;
+        collectGarbage?: () => Promise<void>;
 
-        getObjectByHeapObjectId?: (params: HeapProfiler.GetObjectByHeapObjectIdRequest) => PromiseOrNot<HeapProfiler.GetObjectByHeapObjectIdResponse>;
+        getObjectByHeapObjectId?: (params: HeapProfiler.GetObjectByHeapObjectIdRequest) => Promise<HeapProfiler.GetObjectByHeapObjectIdResponse>;
 
         /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
-        addInspectedHeapObject?: (params: HeapProfiler.AddInspectedHeapObjectRequest) => PromiseOrNot<void>;
+        addInspectedHeapObject?: (params: HeapProfiler.AddInspectedHeapObjectRequest) => Promise<void>;
 
-        getHeapObjectId?: (params: HeapProfiler.GetHeapObjectIdRequest) => PromiseOrNot<HeapProfiler.GetHeapObjectIdResponse>;
+        getHeapObjectId?: (params: HeapProfiler.GetHeapObjectIdRequest) => Promise<HeapProfiler.GetHeapObjectIdResponse>;
 
-        startSampling?: (params: HeapProfiler.StartSamplingRequest) => PromiseOrNot<void>;
+        startSampling?: (params: HeapProfiler.StartSamplingRequest) => Promise<void>;
 
-        stopSampling?: () => PromiseOrNot<HeapProfiler.StopSamplingResponse>;
+        stopSampling?: () => Promise<HeapProfiler.StopSamplingResponse>;
 
     }
 
@@ -1658,10 +1657,10 @@ export namespace Crdp {
 
     export interface InspectorCommands {
         /** Enables inspector domain notifications. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables inspector domain notifications. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
     }
 
@@ -1713,13 +1712,13 @@ export namespace Crdp {
     }
 
     export interface MemoryCommands {
-        getDOMCounters?: () => PromiseOrNot<Memory.GetDOMCountersResponse>;
+        getDOMCounters?: () => Promise<Memory.GetDOMCountersResponse>;
 
         /** Enable/disable suppressing memory pressure notifications in all processes. */
-        setPressureNotificationsSuppressed?: (params: Memory.SetPressureNotificationsSuppressedRequest) => PromiseOrNot<void>;
+        setPressureNotificationsSuppressed?: (params: Memory.SetPressureNotificationsSuppressedRequest) => Promise<void>;
 
         /** Simulate a memory pressure notification in all processes. */
-        simulatePressureNotification?: (params: Memory.SimulatePressureNotificationRequest) => PromiseOrNot<void>;
+        simulatePressureNotification?: (params: Memory.SimulatePressureNotificationRequest) => Promise<void>;
 
     }
 
@@ -2262,101 +2261,101 @@ export namespace Crdp {
 
     export interface PageCommands {
         /** Enables page domain notifications. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables page domain notifications. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
-        addScriptToEvaluateOnLoad?: (params: Page.AddScriptToEvaluateOnLoadRequest) => PromiseOrNot<Page.AddScriptToEvaluateOnLoadResponse>;
+        addScriptToEvaluateOnLoad?: (params: Page.AddScriptToEvaluateOnLoadRequest) => Promise<Page.AddScriptToEvaluateOnLoadResponse>;
 
-        removeScriptToEvaluateOnLoad?: (params: Page.RemoveScriptToEvaluateOnLoadRequest) => PromiseOrNot<void>;
+        removeScriptToEvaluateOnLoad?: (params: Page.RemoveScriptToEvaluateOnLoadRequest) => Promise<void>;
 
         /** Controls whether browser will open a new inspector window for connected pages. */
-        setAutoAttachToCreatedPages?: (params: Page.SetAutoAttachToCreatedPagesRequest) => PromiseOrNot<void>;
+        setAutoAttachToCreatedPages?: (params: Page.SetAutoAttachToCreatedPagesRequest) => Promise<void>;
 
         /** Reloads given page optionally ignoring the cache. */
-        reload?: (params: Page.ReloadRequest) => PromiseOrNot<void>;
+        reload?: (params: Page.ReloadRequest) => Promise<void>;
 
         /** Navigates current page to the given URL. */
-        navigate?: (params: Page.NavigateRequest) => PromiseOrNot<Page.NavigateResponse>;
+        navigate?: (params: Page.NavigateRequest) => Promise<Page.NavigateResponse>;
 
         /** Returns navigation history for the current page. */
-        getNavigationHistory?: () => PromiseOrNot<Page.GetNavigationHistoryResponse>;
+        getNavigationHistory?: () => Promise<Page.GetNavigationHistoryResponse>;
 
         /** Navigates current page to the given history entry. */
-        navigateToHistoryEntry?: (params: Page.NavigateToHistoryEntryRequest) => PromiseOrNot<void>;
+        navigateToHistoryEntry?: (params: Page.NavigateToHistoryEntryRequest) => Promise<void>;
 
         /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
-        getCookies?: () => PromiseOrNot<Page.GetCookiesResponse>;
+        getCookies?: () => Promise<Page.GetCookiesResponse>;
 
         /** Deletes browser cookie with given name, domain and path. */
-        deleteCookie?: (params: Page.DeleteCookieRequest) => PromiseOrNot<void>;
+        deleteCookie?: (params: Page.DeleteCookieRequest) => Promise<void>;
 
         /** Returns present frame / resource tree structure. */
-        getResourceTree?: () => PromiseOrNot<Page.GetResourceTreeResponse>;
+        getResourceTree?: () => Promise<Page.GetResourceTreeResponse>;
 
         /** Returns content of the given resource. */
-        getResourceContent?: (params: Page.GetResourceContentRequest) => PromiseOrNot<Page.GetResourceContentResponse>;
+        getResourceContent?: (params: Page.GetResourceContentRequest) => Promise<Page.GetResourceContentResponse>;
 
         /** Searches for given string in resource content. */
-        searchInResource?: (params: Page.SearchInResourceRequest) => PromiseOrNot<Page.SearchInResourceResponse>;
+        searchInResource?: (params: Page.SearchInResourceRequest) => Promise<Page.SearchInResourceResponse>;
 
         /** Sets given markup as the document's HTML. */
-        setDocumentContent?: (params: Page.SetDocumentContentRequest) => PromiseOrNot<void>;
+        setDocumentContent?: (params: Page.SetDocumentContentRequest) => Promise<void>;
 
         /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
-        setDeviceMetricsOverride?: (params: Page.SetDeviceMetricsOverrideRequest) => PromiseOrNot<void>;
+        setDeviceMetricsOverride?: (params: Page.SetDeviceMetricsOverrideRequest) => Promise<void>;
 
         /** Clears the overriden device metrics. */
-        clearDeviceMetricsOverride?: () => PromiseOrNot<void>;
+        clearDeviceMetricsOverride?: () => Promise<void>;
 
         /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
-        setGeolocationOverride?: (params: Page.SetGeolocationOverrideRequest) => PromiseOrNot<void>;
+        setGeolocationOverride?: (params: Page.SetGeolocationOverrideRequest) => Promise<void>;
 
         /** Clears the overriden Geolocation Position and Error. */
-        clearGeolocationOverride?: () => PromiseOrNot<void>;
+        clearGeolocationOverride?: () => Promise<void>;
 
         /** Overrides the Device Orientation. */
-        setDeviceOrientationOverride?: (params: Page.SetDeviceOrientationOverrideRequest) => PromiseOrNot<void>;
+        setDeviceOrientationOverride?: (params: Page.SetDeviceOrientationOverrideRequest) => Promise<void>;
 
         /** Clears the overridden Device Orientation. */
-        clearDeviceOrientationOverride?: () => PromiseOrNot<void>;
+        clearDeviceOrientationOverride?: () => Promise<void>;
 
         /** Toggles mouse event-based touch event emulation. */
-        setTouchEmulationEnabled?: (params: Page.SetTouchEmulationEnabledRequest) => PromiseOrNot<void>;
+        setTouchEmulationEnabled?: (params: Page.SetTouchEmulationEnabledRequest) => Promise<void>;
 
         /** Capture page screenshot. */
-        captureScreenshot?: () => PromiseOrNot<Page.CaptureScreenshotResponse>;
+        captureScreenshot?: () => Promise<Page.CaptureScreenshotResponse>;
 
         /** Starts sending each frame using the 'screencastFrame' event. */
-        startScreencast?: (params: Page.StartScreencastRequest) => PromiseOrNot<void>;
+        startScreencast?: (params: Page.StartScreencastRequest) => Promise<void>;
 
         /** Stops sending each frame in the 'screencastFrame'. */
-        stopScreencast?: () => PromiseOrNot<void>;
+        stopScreencast?: () => Promise<void>;
 
         /** Acknowledges that a screencast frame has been received by the frontend. */
-        screencastFrameAck?: (params: Page.ScreencastFrameAckRequest) => PromiseOrNot<void>;
+        screencastFrameAck?: (params: Page.ScreencastFrameAckRequest) => Promise<void>;
 
         /** Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload). */
-        handleJavaScriptDialog?: (params: Page.HandleJavaScriptDialogRequest) => PromiseOrNot<void>;
+        handleJavaScriptDialog?: (params: Page.HandleJavaScriptDialogRequest) => Promise<void>;
 
         /** Shows / hides color picker */
-        setColorPickerEnabled?: (params: Page.SetColorPickerEnabledRequest) => PromiseOrNot<void>;
+        setColorPickerEnabled?: (params: Page.SetColorPickerEnabledRequest) => Promise<void>;
 
         /** Configures overlay. */
-        configureOverlay?: (params: Page.ConfigureOverlayRequest) => PromiseOrNot<void>;
+        configureOverlay?: (params: Page.ConfigureOverlayRequest) => Promise<void>;
 
-        getAppManifest?: () => PromiseOrNot<Page.GetAppManifestResponse>;
+        getAppManifest?: () => Promise<Page.GetAppManifestResponse>;
 
-        requestAppBanner?: () => PromiseOrNot<void>;
+        requestAppBanner?: () => Promise<void>;
 
-        setBlockedEventsWarningThreshold?: (params: Page.SetBlockedEventsWarningThresholdRequest) => PromiseOrNot<void>;
+        setBlockedEventsWarningThreshold?: (params: Page.SetBlockedEventsWarningThresholdRequest) => Promise<void>;
 
         /** Toggles navigation throttling which allows programatic control over navigation and redirect response. */
-        setControlNavigations?: (params: Page.SetControlNavigationsRequest) => PromiseOrNot<void>;
+        setControlNavigations?: (params: Page.SetControlNavigationsRequest) => Promise<void>;
 
         /** Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation. */
-        processNavigation?: (params: Page.ProcessNavigationRequest) => PromiseOrNot<void>;
+        processNavigation?: (params: Page.ProcessNavigationRequest) => Promise<void>;
 
     }
 
@@ -2506,19 +2505,19 @@ export namespace Crdp {
 
     export interface RenderingCommands {
         /** Requests that backend shows paint rectangles */
-        setShowPaintRects?: (params: Rendering.SetShowPaintRectsRequest) => PromiseOrNot<void>;
+        setShowPaintRects?: (params: Rendering.SetShowPaintRectsRequest) => Promise<void>;
 
         /** Requests that backend shows debug borders on layers */
-        setShowDebugBorders?: (params: Rendering.SetShowDebugBordersRequest) => PromiseOrNot<void>;
+        setShowDebugBorders?: (params: Rendering.SetShowDebugBordersRequest) => Promise<void>;
 
         /** Requests that backend shows the FPS counter */
-        setShowFPSCounter?: (params: Rendering.SetShowFPSCounterRequest) => PromiseOrNot<void>;
+        setShowFPSCounter?: (params: Rendering.SetShowFPSCounterRequest) => Promise<void>;
 
         /** Requests that backend shows scroll bottleneck rects */
-        setShowScrollBottleneckRects?: (params: Rendering.SetShowScrollBottleneckRectsRequest) => PromiseOrNot<void>;
+        setShowScrollBottleneckRects?: (params: Rendering.SetShowScrollBottleneckRectsRequest) => Promise<void>;
 
         /** Paints viewport size upon main frame resize. */
-        setShowViewportSizeOnResize?: (params: Rendering.SetShowViewportSizeOnResizeRequest) => PromiseOrNot<void>;
+        setShowViewportSizeOnResize?: (params: Rendering.SetShowViewportSizeOnResizeRequest) => Promise<void>;
 
     }
 
@@ -2671,49 +2670,49 @@ export namespace Crdp {
 
     export interface EmulationCommands {
         /** Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results). */
-        setDeviceMetricsOverride?: (params: Emulation.SetDeviceMetricsOverrideRequest) => PromiseOrNot<void>;
+        setDeviceMetricsOverride?: (params: Emulation.SetDeviceMetricsOverrideRequest) => Promise<void>;
 
         /** Clears the overriden device metrics. */
-        clearDeviceMetricsOverride?: () => PromiseOrNot<void>;
+        clearDeviceMetricsOverride?: () => Promise<void>;
 
         /** Overrides the visible area of the page. The change is hidden from the page, i.e. the observable scroll position and page scale does not change. In effect, the command moves the specified area of the page into the top-left corner of the frame. */
-        forceViewport?: (params: Emulation.ForceViewportRequest) => PromiseOrNot<void>;
+        forceViewport?: (params: Emulation.ForceViewportRequest) => Promise<void>;
 
         /** Resets the visible area of the page to the original viewport, undoing any effects of the 'forceViewport' command. */
-        resetViewport?: () => PromiseOrNot<void>;
+        resetViewport?: () => Promise<void>;
 
         /** Requests that page scale factor is reset to initial values. */
-        resetPageScaleFactor?: () => PromiseOrNot<void>;
+        resetPageScaleFactor?: () => Promise<void>;
 
         /** Sets a specified page scale factor. */
-        setPageScaleFactor?: (params: Emulation.SetPageScaleFactorRequest) => PromiseOrNot<void>;
+        setPageScaleFactor?: (params: Emulation.SetPageScaleFactorRequest) => Promise<void>;
 
         /** Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android. */
-        setVisibleSize?: (params: Emulation.SetVisibleSizeRequest) => PromiseOrNot<void>;
+        setVisibleSize?: (params: Emulation.SetVisibleSizeRequest) => Promise<void>;
 
         /** Switches script execution in the page. */
-        setScriptExecutionDisabled?: (params: Emulation.SetScriptExecutionDisabledRequest) => PromiseOrNot<void>;
+        setScriptExecutionDisabled?: (params: Emulation.SetScriptExecutionDisabledRequest) => Promise<void>;
 
         /** Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable. */
-        setGeolocationOverride?: (params: Emulation.SetGeolocationOverrideRequest) => PromiseOrNot<void>;
+        setGeolocationOverride?: (params: Emulation.SetGeolocationOverrideRequest) => Promise<void>;
 
         /** Clears the overriden Geolocation Position and Error. */
-        clearGeolocationOverride?: () => PromiseOrNot<void>;
+        clearGeolocationOverride?: () => Promise<void>;
 
         /** Toggles mouse event-based touch event emulation. */
-        setTouchEmulationEnabled?: (params: Emulation.SetTouchEmulationEnabledRequest) => PromiseOrNot<void>;
+        setTouchEmulationEnabled?: (params: Emulation.SetTouchEmulationEnabledRequest) => Promise<void>;
 
         /** Emulates the given media for CSS media queries. */
-        setEmulatedMedia?: (params: Emulation.SetEmulatedMediaRequest) => PromiseOrNot<void>;
+        setEmulatedMedia?: (params: Emulation.SetEmulatedMediaRequest) => Promise<void>;
 
         /** Enables CPU throttling to emulate slow CPUs. */
-        setCPUThrottlingRate?: (params: Emulation.SetCPUThrottlingRateRequest) => PromiseOrNot<void>;
+        setCPUThrottlingRate?: (params: Emulation.SetCPUThrottlingRateRequest) => Promise<void>;
 
         /** Tells whether emulation is supported. */
-        canEmulate?: () => PromiseOrNot<Emulation.CanEmulateResponse>;
+        canEmulate?: () => Promise<Emulation.CanEmulateResponse>;
 
         /** Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget. */
-        setVirtualTimePolicy?: (params: Emulation.SetVirtualTimePolicyRequest) => PromiseOrNot<void>;
+        setVirtualTimePolicy?: (params: Emulation.SetVirtualTimePolicyRequest) => Promise<void>;
 
     }
 
@@ -2796,13 +2795,13 @@ export namespace Crdp {
 
     export interface SecurityCommands {
         /** Enables tracking security state changes. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables tracking security state changes. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Displays native dialog with the certificate details. */
-        showCertificateViewer?: () => PromiseOrNot<void>;
+        showCertificateViewer?: () => Promise<void>;
 
     }
 
@@ -3564,70 +3563,70 @@ export namespace Crdp {
 
     export interface NetworkCommands {
         /** Enables network tracking, network events will now be delivered to the client. */
-        enable?: (params: Network.EnableRequest) => PromiseOrNot<void>;
+        enable?: (params: Network.EnableRequest) => Promise<void>;
 
         /** Disables network tracking, prevents network events from being sent to the client. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Allows overriding user agent with the given string. */
-        setUserAgentOverride?: (params: Network.SetUserAgentOverrideRequest) => PromiseOrNot<void>;
+        setUserAgentOverride?: (params: Network.SetUserAgentOverrideRequest) => Promise<void>;
 
         /** Specifies whether to always send extra HTTP headers with the requests from this page. */
-        setExtraHTTPHeaders?: (params: Network.SetExtraHTTPHeadersRequest) => PromiseOrNot<void>;
+        setExtraHTTPHeaders?: (params: Network.SetExtraHTTPHeadersRequest) => Promise<void>;
 
         /** Returns content served for the given request. */
-        getResponseBody?: (params: Network.GetResponseBodyRequest) => PromiseOrNot<Network.GetResponseBodyResponse>;
+        getResponseBody?: (params: Network.GetResponseBodyRequest) => Promise<Network.GetResponseBodyResponse>;
 
         /** Blocks specific URL from loading. */
-        addBlockedURL?: (params: Network.AddBlockedURLRequest) => PromiseOrNot<void>;
+        addBlockedURL?: (params: Network.AddBlockedURLRequest) => Promise<void>;
 
         /** Cancels blocking of a specific URL from loading. */
-        removeBlockedURL?: (params: Network.RemoveBlockedURLRequest) => PromiseOrNot<void>;
+        removeBlockedURL?: (params: Network.RemoveBlockedURLRequest) => Promise<void>;
 
         /** This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password. */
-        replayXHR?: (params: Network.ReplayXHRRequest) => PromiseOrNot<void>;
+        replayXHR?: (params: Network.ReplayXHRRequest) => Promise<void>;
 
         /** Toggles monitoring of XMLHttpRequest. If 'true', console will receive messages upon each XHR issued. */
-        setMonitoringXHREnabled?: (params: Network.SetMonitoringXHREnabledRequest) => PromiseOrNot<void>;
+        setMonitoringXHREnabled?: (params: Network.SetMonitoringXHREnabledRequest) => Promise<void>;
 
         /** Tells whether clearing browser cache is supported. */
-        canClearBrowserCache?: () => PromiseOrNot<Network.CanClearBrowserCacheResponse>;
+        canClearBrowserCache?: () => Promise<Network.CanClearBrowserCacheResponse>;
 
         /** Clears browser cache. */
-        clearBrowserCache?: () => PromiseOrNot<void>;
+        clearBrowserCache?: () => Promise<void>;
 
         /** Tells whether clearing browser cookies is supported. */
-        canClearBrowserCookies?: () => PromiseOrNot<Network.CanClearBrowserCookiesResponse>;
+        canClearBrowserCookies?: () => Promise<Network.CanClearBrowserCookiesResponse>;
 
         /** Clears browser cookies. */
-        clearBrowserCookies?: () => PromiseOrNot<void>;
+        clearBrowserCookies?: () => Promise<void>;
 
         /** Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the 'cookies' field. */
-        getCookies?: () => PromiseOrNot<Network.GetCookiesResponse>;
+        getCookies?: () => Promise<Network.GetCookiesResponse>;
 
         /** Deletes browser cookie with given name, domain and path. */
-        deleteCookie?: (params: Network.DeleteCookieRequest) => PromiseOrNot<void>;
+        deleteCookie?: (params: Network.DeleteCookieRequest) => Promise<void>;
 
         /** Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist. */
-        setCookie?: (params: Network.SetCookieRequest) => PromiseOrNot<Network.SetCookieResponse>;
+        setCookie?: (params: Network.SetCookieRequest) => Promise<Network.SetCookieResponse>;
 
         /** Tells whether emulation of network conditions is supported. */
-        canEmulateNetworkConditions?: () => PromiseOrNot<Network.CanEmulateNetworkConditionsResponse>;
+        canEmulateNetworkConditions?: () => Promise<Network.CanEmulateNetworkConditionsResponse>;
 
         /** Activates emulation of network conditions. */
-        emulateNetworkConditions?: (params: Network.EmulateNetworkConditionsRequest) => PromiseOrNot<void>;
+        emulateNetworkConditions?: (params: Network.EmulateNetworkConditionsRequest) => Promise<void>;
 
         /** Toggles ignoring cache for each request. If 'true', cache will not be used. */
-        setCacheDisabled?: (params: Network.SetCacheDisabledRequest) => PromiseOrNot<void>;
+        setCacheDisabled?: (params: Network.SetCacheDisabledRequest) => Promise<void>;
 
         /** Toggles ignoring of service worker for each request. */
-        setBypassServiceWorker?: (params: Network.SetBypassServiceWorkerRequest) => PromiseOrNot<void>;
+        setBypassServiceWorker?: (params: Network.SetBypassServiceWorkerRequest) => Promise<void>;
 
         /** For testing. */
-        setDataSizeLimitsForTest?: (params: Network.SetDataSizeLimitsForTestRequest) => PromiseOrNot<void>;
+        setDataSizeLimitsForTest?: (params: Network.SetDataSizeLimitsForTestRequest) => Promise<void>;
 
         /** Returns the DER-encoded certificate. */
-        getCertificate?: (params: Network.GetCertificateRequest) => PromiseOrNot<Network.GetCertificateResponse>;
+        getCertificate?: (params: Network.GetCertificateRequest) => Promise<Network.GetCertificateResponse>;
 
     }
 
@@ -3794,14 +3793,14 @@ export namespace Crdp {
 
     export interface DatabaseCommands {
         /** Enables database tracking, database events will now be delivered to the client. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables database tracking, prevents database events from being sent to the client. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
-        getDatabaseTableNames?: (params: Database.GetDatabaseTableNamesRequest) => PromiseOrNot<Database.GetDatabaseTableNamesResponse>;
+        getDatabaseTableNames?: (params: Database.GetDatabaseTableNamesRequest) => Promise<Database.GetDatabaseTableNamesResponse>;
 
-        executeSQL?: (params: Database.ExecuteSQLRequest) => PromiseOrNot<Database.ExecuteSQLResponse>;
+        executeSQL?: (params: Database.ExecuteSQLRequest) => Promise<Database.ExecuteSQLResponse>;
 
     }
 
@@ -4003,22 +4002,22 @@ export namespace Crdp {
 
     export interface IndexedDBCommands {
         /** Enables events from backend. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables events from backend. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Requests database names for given security origin. */
-        requestDatabaseNames?: (params: IndexedDB.RequestDatabaseNamesRequest) => PromiseOrNot<IndexedDB.RequestDatabaseNamesResponse>;
+        requestDatabaseNames?: (params: IndexedDB.RequestDatabaseNamesRequest) => Promise<IndexedDB.RequestDatabaseNamesResponse>;
 
         /** Requests database with given name in given frame. */
-        requestDatabase?: (params: IndexedDB.RequestDatabaseRequest) => PromiseOrNot<IndexedDB.RequestDatabaseResponse>;
+        requestDatabase?: (params: IndexedDB.RequestDatabaseRequest) => Promise<IndexedDB.RequestDatabaseResponse>;
 
         /** Requests data from object store or index. */
-        requestData?: (params: IndexedDB.RequestDataRequest) => PromiseOrNot<IndexedDB.RequestDataResponse>;
+        requestData?: (params: IndexedDB.RequestDataRequest) => Promise<IndexedDB.RequestDataResponse>;
 
         /** Clears all entries from an object store. */
-        clearObjectStore?: (params: IndexedDB.ClearObjectStoreRequest) => PromiseOrNot<IndexedDB.ClearObjectStoreResponse>;
+        clearObjectStore?: (params: IndexedDB.ClearObjectStoreRequest) => Promise<IndexedDB.ClearObjectStoreResponse>;
 
     }
 
@@ -4109,16 +4108,16 @@ export namespace Crdp {
 
     export interface CacheStorageCommands {
         /** Requests cache names. */
-        requestCacheNames?: (params: CacheStorage.RequestCacheNamesRequest) => PromiseOrNot<CacheStorage.RequestCacheNamesResponse>;
+        requestCacheNames?: (params: CacheStorage.RequestCacheNamesRequest) => Promise<CacheStorage.RequestCacheNamesResponse>;
 
         /** Requests data from cache. */
-        requestEntries?: (params: CacheStorage.RequestEntriesRequest) => PromiseOrNot<CacheStorage.RequestEntriesResponse>;
+        requestEntries?: (params: CacheStorage.RequestEntriesRequest) => Promise<CacheStorage.RequestEntriesResponse>;
 
         /** Deletes a cache. */
-        deleteCache?: (params: CacheStorage.DeleteCacheRequest) => PromiseOrNot<void>;
+        deleteCache?: (params: CacheStorage.DeleteCacheRequest) => Promise<void>;
 
         /** Deletes a cache entry. */
-        deleteEntry?: (params: CacheStorage.DeleteEntryRequest) => PromiseOrNot<void>;
+        deleteEntry?: (params: CacheStorage.DeleteEntryRequest) => Promise<void>;
 
     }
 
@@ -4207,16 +4206,16 @@ export namespace Crdp {
 
     export interface DOMStorageCommands {
         /** Enables storage tracking, storage events will now be delivered to the client. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables storage tracking, prevents storage events from being sent to the client. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
-        getDOMStorageItems?: (params: DOMStorage.GetDOMStorageItemsRequest) => PromiseOrNot<DOMStorage.GetDOMStorageItemsResponse>;
+        getDOMStorageItems?: (params: DOMStorage.GetDOMStorageItemsRequest) => Promise<DOMStorage.GetDOMStorageItemsResponse>;
 
-        setDOMStorageItem?: (params: DOMStorage.SetDOMStorageItemRequest) => PromiseOrNot<void>;
+        setDOMStorageItem?: (params: DOMStorage.SetDOMStorageItemRequest) => Promise<void>;
 
-        removeDOMStorageItem?: (params: DOMStorage.RemoveDOMStorageItemRequest) => PromiseOrNot<void>;
+        removeDOMStorageItem?: (params: DOMStorage.RemoveDOMStorageItemRequest) => Promise<void>;
 
     }
 
@@ -4341,16 +4340,16 @@ export namespace Crdp {
 
     export interface ApplicationCacheCommands {
         /** Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache. */
-        getFramesWithManifests?: () => PromiseOrNot<ApplicationCache.GetFramesWithManifestsResponse>;
+        getFramesWithManifests?: () => Promise<ApplicationCache.GetFramesWithManifestsResponse>;
 
         /** Enables application cache domain notifications. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Returns manifest URL for document in the given frame. */
-        getManifestForFrame?: (params: ApplicationCache.GetManifestForFrameRequest) => PromiseOrNot<ApplicationCache.GetManifestForFrameResponse>;
+        getManifestForFrame?: (params: ApplicationCache.GetManifestForFrameRequest) => Promise<ApplicationCache.GetManifestForFrameResponse>;
 
         /** Returns relevant application cache data for the document in given frame. */
-        getApplicationCacheForFrame?: (params: ApplicationCache.GetApplicationCacheForFrameRequest) => PromiseOrNot<ApplicationCache.GetApplicationCacheForFrameResponse>;
+        getApplicationCacheForFrame?: (params: ApplicationCache.GetApplicationCacheForFrameRequest) => Promise<ApplicationCache.GetApplicationCacheForFrameResponse>;
 
     }
 
@@ -5147,127 +5146,127 @@ export namespace Crdp {
 
     export interface DOMCommands {
         /** Enables DOM agent for the given page. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables DOM agent for the given page. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Returns the root DOM node to the caller. */
-        getDocument?: () => PromiseOrNot<DOM.GetDocumentResponse>;
+        getDocument?: () => Promise<DOM.GetDocumentResponse>;
 
         /** Collects class names for the node with given id and all of it's child nodes. */
-        collectClassNamesFromSubtree?: (params: DOM.CollectClassNamesFromSubtreeRequest) => PromiseOrNot<DOM.CollectClassNamesFromSubtreeResponse>;
+        collectClassNamesFromSubtree?: (params: DOM.CollectClassNamesFromSubtreeRequest) => Promise<DOM.CollectClassNamesFromSubtreeResponse>;
 
         /** Requests that children of the node with given id are returned to the caller in form of 'setChildNodes' events where not only immediate children are retrieved, but all children down to the specified depth. */
-        requestChildNodes?: (params: DOM.RequestChildNodesRequest) => PromiseOrNot<void>;
+        requestChildNodes?: (params: DOM.RequestChildNodesRequest) => Promise<void>;
 
         /** Executes 'querySelector' on a given node. */
-        querySelector?: (params: DOM.QuerySelectorRequest) => PromiseOrNot<DOM.QuerySelectorResponse>;
+        querySelector?: (params: DOM.QuerySelectorRequest) => Promise<DOM.QuerySelectorResponse>;
 
         /** Executes 'querySelectorAll' on a given node. */
-        querySelectorAll?: (params: DOM.QuerySelectorAllRequest) => PromiseOrNot<DOM.QuerySelectorAllResponse>;
+        querySelectorAll?: (params: DOM.QuerySelectorAllRequest) => Promise<DOM.QuerySelectorAllResponse>;
 
         /** Sets node name for a node with given id. */
-        setNodeName?: (params: DOM.SetNodeNameRequest) => PromiseOrNot<DOM.SetNodeNameResponse>;
+        setNodeName?: (params: DOM.SetNodeNameRequest) => Promise<DOM.SetNodeNameResponse>;
 
         /** Sets node value for a node with given id. */
-        setNodeValue?: (params: DOM.SetNodeValueRequest) => PromiseOrNot<void>;
+        setNodeValue?: (params: DOM.SetNodeValueRequest) => Promise<void>;
 
         /** Removes node with given id. */
-        removeNode?: (params: DOM.RemoveNodeRequest) => PromiseOrNot<void>;
+        removeNode?: (params: DOM.RemoveNodeRequest) => Promise<void>;
 
         /** Sets attribute for an element with given id. */
-        setAttributeValue?: (params: DOM.SetAttributeValueRequest) => PromiseOrNot<void>;
+        setAttributeValue?: (params: DOM.SetAttributeValueRequest) => Promise<void>;
 
         /** Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs. */
-        setAttributesAsText?: (params: DOM.SetAttributesAsTextRequest) => PromiseOrNot<void>;
+        setAttributesAsText?: (params: DOM.SetAttributesAsTextRequest) => Promise<void>;
 
         /** Removes attribute with given name from an element with given id. */
-        removeAttribute?: (params: DOM.RemoveAttributeRequest) => PromiseOrNot<void>;
+        removeAttribute?: (params: DOM.RemoveAttributeRequest) => Promise<void>;
 
         /** Returns node's HTML markup. */
-        getOuterHTML?: (params: DOM.GetOuterHTMLRequest) => PromiseOrNot<DOM.GetOuterHTMLResponse>;
+        getOuterHTML?: (params: DOM.GetOuterHTMLRequest) => Promise<DOM.GetOuterHTMLResponse>;
 
         /** Sets node HTML markup, returns new node id. */
-        setOuterHTML?: (params: DOM.SetOuterHTMLRequest) => PromiseOrNot<void>;
+        setOuterHTML?: (params: DOM.SetOuterHTMLRequest) => Promise<void>;
 
         /** Searches for a given string in the DOM tree. Use 'getSearchResults</code> to access search results or <code>cancelSearch' to end this search session. */
-        performSearch?: (params: DOM.PerformSearchRequest) => PromiseOrNot<DOM.PerformSearchResponse>;
+        performSearch?: (params: DOM.PerformSearchRequest) => Promise<DOM.PerformSearchResponse>;
 
         /** Returns search results from given 'fromIndex</code> to given <code>toIndex' from the sarch with the given identifier. */
-        getSearchResults?: (params: DOM.GetSearchResultsRequest) => PromiseOrNot<DOM.GetSearchResultsResponse>;
+        getSearchResults?: (params: DOM.GetSearchResultsRequest) => Promise<DOM.GetSearchResultsResponse>;
 
         /** Discards search results from the session with the given id. 'getSearchResults' should no longer be called for that search. */
-        discardSearchResults?: (params: DOM.DiscardSearchResultsRequest) => PromiseOrNot<void>;
+        discardSearchResults?: (params: DOM.DiscardSearchResultsRequest) => Promise<void>;
 
         /** Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of 'setChildNodes' notifications. */
-        requestNode?: (params: DOM.RequestNodeRequest) => PromiseOrNot<DOM.RequestNodeResponse>;
+        requestNode?: (params: DOM.RequestNodeRequest) => Promise<DOM.RequestNodeResponse>;
 
         /** Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection. */
-        setInspectMode?: (params: DOM.SetInspectModeRequest) => PromiseOrNot<void>;
+        setInspectMode?: (params: DOM.SetInspectModeRequest) => Promise<void>;
 
         /** Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport. */
-        highlightRect?: (params: DOM.HighlightRectRequest) => PromiseOrNot<void>;
+        highlightRect?: (params: DOM.HighlightRectRequest) => Promise<void>;
 
         /** Highlights given quad. Coordinates are absolute with respect to the main frame viewport. */
-        highlightQuad?: (params: DOM.HighlightQuadRequest) => PromiseOrNot<void>;
+        highlightQuad?: (params: DOM.HighlightQuadRequest) => Promise<void>;
 
         /** Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified. */
-        highlightNode?: (params: DOM.HighlightNodeRequest) => PromiseOrNot<void>;
+        highlightNode?: (params: DOM.HighlightNodeRequest) => Promise<void>;
 
         /** Hides DOM node highlight. */
-        hideHighlight?: () => PromiseOrNot<void>;
+        hideHighlight?: () => Promise<void>;
 
         /** Highlights owner element of the frame with given id. */
-        highlightFrame?: (params: DOM.HighlightFrameRequest) => PromiseOrNot<void>;
+        highlightFrame?: (params: DOM.HighlightFrameRequest) => Promise<void>;
 
         /** Requests that the node is sent to the caller given its path. // FIXME, use XPath */
-        pushNodeByPathToFrontend?: (params: DOM.PushNodeByPathToFrontendRequest) => PromiseOrNot<DOM.PushNodeByPathToFrontendResponse>;
+        pushNodeByPathToFrontend?: (params: DOM.PushNodeByPathToFrontendRequest) => Promise<DOM.PushNodeByPathToFrontendResponse>;
 
         /** Requests that a batch of nodes is sent to the caller given their backend node ids. */
-        pushNodesByBackendIdsToFrontend?: (params: DOM.PushNodesByBackendIdsToFrontendRequest) => PromiseOrNot<DOM.PushNodesByBackendIdsToFrontendResponse>;
+        pushNodesByBackendIdsToFrontend?: (params: DOM.PushNodesByBackendIdsToFrontendRequest) => Promise<DOM.PushNodesByBackendIdsToFrontendResponse>;
 
         /** Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions). */
-        setInspectedNode?: (params: DOM.SetInspectedNodeRequest) => PromiseOrNot<void>;
+        setInspectedNode?: (params: DOM.SetInspectedNodeRequest) => Promise<void>;
 
         /** Resolves JavaScript node object for given node id. */
-        resolveNode?: (params: DOM.ResolveNodeRequest) => PromiseOrNot<DOM.ResolveNodeResponse>;
+        resolveNode?: (params: DOM.ResolveNodeRequest) => Promise<DOM.ResolveNodeResponse>;
 
         /** Returns attributes for the specified node. */
-        getAttributes?: (params: DOM.GetAttributesRequest) => PromiseOrNot<DOM.GetAttributesResponse>;
+        getAttributes?: (params: DOM.GetAttributesRequest) => Promise<DOM.GetAttributesResponse>;
 
         /** Creates a deep copy of the specified node and places it into the target container before the given anchor. */
-        copyTo?: (params: DOM.CopyToRequest) => PromiseOrNot<DOM.CopyToResponse>;
+        copyTo?: (params: DOM.CopyToRequest) => Promise<DOM.CopyToResponse>;
 
         /** Moves node into the new container, places it before the given anchor. */
-        moveTo?: (params: DOM.MoveToRequest) => PromiseOrNot<DOM.MoveToResponse>;
+        moveTo?: (params: DOM.MoveToRequest) => Promise<DOM.MoveToResponse>;
 
         /** Undoes the last performed action. */
-        undo?: () => PromiseOrNot<void>;
+        undo?: () => Promise<void>;
 
         /** Re-does the last undone action. */
-        redo?: () => PromiseOrNot<void>;
+        redo?: () => Promise<void>;
 
         /** Marks last undoable state. */
-        markUndoableState?: () => PromiseOrNot<void>;
+        markUndoableState?: () => Promise<void>;
 
         /** Focuses the given element. */
-        focus?: (params: DOM.FocusRequest) => PromiseOrNot<void>;
+        focus?: (params: DOM.FocusRequest) => Promise<void>;
 
         /** Sets files for the given file input element. */
-        setFileInputFiles?: (params: DOM.SetFileInputFilesRequest) => PromiseOrNot<void>;
+        setFileInputFiles?: (params: DOM.SetFileInputFilesRequest) => Promise<void>;
 
         /** Returns boxes for the currently selected nodes. */
-        getBoxModel?: (params: DOM.GetBoxModelRequest) => PromiseOrNot<DOM.GetBoxModelResponse>;
+        getBoxModel?: (params: DOM.GetBoxModelRequest) => Promise<DOM.GetBoxModelResponse>;
 
         /** Returns node id at given location. */
-        getNodeForLocation?: (params: DOM.GetNodeForLocationRequest) => PromiseOrNot<DOM.GetNodeForLocationResponse>;
+        getNodeForLocation?: (params: DOM.GetNodeForLocationRequest) => Promise<DOM.GetNodeForLocationResponse>;
 
         /** Returns the id of the nearest ancestor that is a relayout boundary. */
-        getRelayoutBoundary?: (params: DOM.GetRelayoutBoundaryRequest) => PromiseOrNot<DOM.GetRelayoutBoundaryResponse>;
+        getRelayoutBoundary?: (params: DOM.GetRelayoutBoundaryRequest) => Promise<DOM.GetRelayoutBoundaryResponse>;
 
         /** For testing. */
-        getHighlightObjectForTest?: (params: DOM.GetHighlightObjectForTestRequest) => PromiseOrNot<DOM.GetHighlightObjectForTestResponse>;
+        getHighlightObjectForTest?: (params: DOM.GetHighlightObjectForTestRequest) => Promise<DOM.GetHighlightObjectForTestResponse>;
 
     }
 
@@ -5925,60 +5924,60 @@ export namespace Crdp {
 
     export interface CSSCommands {
         /** Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables the CSS agent for the given page. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Returns requested styles for a DOM node identified by 'nodeId'. */
-        getMatchedStylesForNode?: (params: CSS.GetMatchedStylesForNodeRequest) => PromiseOrNot<CSS.GetMatchedStylesForNodeResponse>;
+        getMatchedStylesForNode?: (params: CSS.GetMatchedStylesForNodeRequest) => Promise<CSS.GetMatchedStylesForNodeResponse>;
 
         /** Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by 'nodeId'. */
-        getInlineStylesForNode?: (params: CSS.GetInlineStylesForNodeRequest) => PromiseOrNot<CSS.GetInlineStylesForNodeResponse>;
+        getInlineStylesForNode?: (params: CSS.GetInlineStylesForNodeRequest) => Promise<CSS.GetInlineStylesForNodeResponse>;
 
         /** Returns the computed style for a DOM node identified by 'nodeId'. */
-        getComputedStyleForNode?: (params: CSS.GetComputedStyleForNodeRequest) => PromiseOrNot<CSS.GetComputedStyleForNodeResponse>;
+        getComputedStyleForNode?: (params: CSS.GetComputedStyleForNodeRequest) => Promise<CSS.GetComputedStyleForNodeResponse>;
 
         /** Requests information about platform fonts which we used to render child TextNodes in the given node. */
-        getPlatformFontsForNode?: (params: CSS.GetPlatformFontsForNodeRequest) => PromiseOrNot<CSS.GetPlatformFontsForNodeResponse>;
+        getPlatformFontsForNode?: (params: CSS.GetPlatformFontsForNodeRequest) => Promise<CSS.GetPlatformFontsForNodeResponse>;
 
         /** Returns the current textual content and the URL for a stylesheet. */
-        getStyleSheetText?: (params: CSS.GetStyleSheetTextRequest) => PromiseOrNot<CSS.GetStyleSheetTextResponse>;
+        getStyleSheetText?: (params: CSS.GetStyleSheetTextRequest) => Promise<CSS.GetStyleSheetTextResponse>;
 
         /** Returns all class names from specified stylesheet. */
-        collectClassNames?: (params: CSS.CollectClassNamesRequest) => PromiseOrNot<CSS.CollectClassNamesResponse>;
+        collectClassNames?: (params: CSS.CollectClassNamesRequest) => Promise<CSS.CollectClassNamesResponse>;
 
         /** Sets the new stylesheet text. */
-        setStyleSheetText?: (params: CSS.SetStyleSheetTextRequest) => PromiseOrNot<CSS.SetStyleSheetTextResponse>;
+        setStyleSheetText?: (params: CSS.SetStyleSheetTextRequest) => Promise<CSS.SetStyleSheetTextResponse>;
 
         /** Modifies the rule selector. */
-        setRuleSelector?: (params: CSS.SetRuleSelectorRequest) => PromiseOrNot<CSS.SetRuleSelectorResponse>;
+        setRuleSelector?: (params: CSS.SetRuleSelectorRequest) => Promise<CSS.SetRuleSelectorResponse>;
 
         /** Modifies the keyframe rule key text. */
-        setKeyframeKey?: (params: CSS.SetKeyframeKeyRequest) => PromiseOrNot<CSS.SetKeyframeKeyResponse>;
+        setKeyframeKey?: (params: CSS.SetKeyframeKeyRequest) => Promise<CSS.SetKeyframeKeyResponse>;
 
         /** Applies specified style edits one after another in the given order. */
-        setStyleTexts?: (params: CSS.SetStyleTextsRequest) => PromiseOrNot<CSS.SetStyleTextsResponse>;
+        setStyleTexts?: (params: CSS.SetStyleTextsRequest) => Promise<CSS.SetStyleTextsResponse>;
 
         /** Modifies the rule selector. */
-        setMediaText?: (params: CSS.SetMediaTextRequest) => PromiseOrNot<CSS.SetMediaTextResponse>;
+        setMediaText?: (params: CSS.SetMediaTextRequest) => Promise<CSS.SetMediaTextResponse>;
 
         /** Creates a new special "via-inspector" stylesheet in the frame with given 'frameId'. */
-        createStyleSheet?: (params: CSS.CreateStyleSheetRequest) => PromiseOrNot<CSS.CreateStyleSheetResponse>;
+        createStyleSheet?: (params: CSS.CreateStyleSheetRequest) => Promise<CSS.CreateStyleSheetResponse>;
 
         /** Inserts a new rule with the given 'ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location'. */
-        addRule?: (params: CSS.AddRuleRequest) => PromiseOrNot<CSS.AddRuleResponse>;
+        addRule?: (params: CSS.AddRuleRequest) => Promise<CSS.AddRuleResponse>;
 
         /** Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser. */
-        forcePseudoState?: (params: CSS.ForcePseudoStateRequest) => PromiseOrNot<void>;
+        forcePseudoState?: (params: CSS.ForcePseudoStateRequest) => Promise<void>;
 
         /** Returns all media queries parsed by the rendering engine. */
-        getMediaQueries?: () => PromiseOrNot<CSS.GetMediaQueriesResponse>;
+        getMediaQueries?: () => Promise<CSS.GetMediaQueriesResponse>;
 
         /** Find a rule with the given active property for the given node and set the new value for this property */
-        setEffectivePropertyValueForNode?: (params: CSS.SetEffectivePropertyValueForNodeRequest) => PromiseOrNot<void>;
+        setEffectivePropertyValueForNode?: (params: CSS.SetEffectivePropertyValueForNodeRequest) => Promise<void>;
 
-        getBackgroundColors?: (params: CSS.GetBackgroundColorsRequest) => PromiseOrNot<CSS.GetBackgroundColorsResponse>;
+        getBackgroundColors?: (params: CSS.GetBackgroundColorsRequest) => Promise<CSS.GetBackgroundColorsResponse>;
 
     }
 
@@ -6059,10 +6058,10 @@ export namespace Crdp {
 
     export interface IOCommands {
         /** Read a chunk of the stream */
-        read?: (params: IO.ReadRequest) => PromiseOrNot<IO.ReadResponse>;
+        read?: (params: IO.ReadRequest) => Promise<IO.ReadResponse>;
 
         /** Close the stream, discard any temporary backing storage. */
-        close?: (params: IO.CloseRequest) => PromiseOrNot<void>;
+        close?: (params: IO.CloseRequest) => Promise<void>;
 
     }
 
@@ -6186,31 +6185,31 @@ export namespace Crdp {
 
     export interface DOMDebuggerCommands {
         /** Sets breakpoint on particular operation with DOM. */
-        setDOMBreakpoint?: (params: DOMDebugger.SetDOMBreakpointRequest) => PromiseOrNot<void>;
+        setDOMBreakpoint?: (params: DOMDebugger.SetDOMBreakpointRequest) => Promise<void>;
 
         /** Removes DOM breakpoint that was set using 'setDOMBreakpoint'. */
-        removeDOMBreakpoint?: (params: DOMDebugger.RemoveDOMBreakpointRequest) => PromiseOrNot<void>;
+        removeDOMBreakpoint?: (params: DOMDebugger.RemoveDOMBreakpointRequest) => Promise<void>;
 
         /** Sets breakpoint on particular DOM event. */
-        setEventListenerBreakpoint?: (params: DOMDebugger.SetEventListenerBreakpointRequest) => PromiseOrNot<void>;
+        setEventListenerBreakpoint?: (params: DOMDebugger.SetEventListenerBreakpointRequest) => Promise<void>;
 
         /** Removes breakpoint on particular DOM event. */
-        removeEventListenerBreakpoint?: (params: DOMDebugger.RemoveEventListenerBreakpointRequest) => PromiseOrNot<void>;
+        removeEventListenerBreakpoint?: (params: DOMDebugger.RemoveEventListenerBreakpointRequest) => Promise<void>;
 
         /** Sets breakpoint on particular native event. */
-        setInstrumentationBreakpoint?: (params: DOMDebugger.SetInstrumentationBreakpointRequest) => PromiseOrNot<void>;
+        setInstrumentationBreakpoint?: (params: DOMDebugger.SetInstrumentationBreakpointRequest) => Promise<void>;
 
         /** Removes breakpoint on particular native event. */
-        removeInstrumentationBreakpoint?: (params: DOMDebugger.RemoveInstrumentationBreakpointRequest) => PromiseOrNot<void>;
+        removeInstrumentationBreakpoint?: (params: DOMDebugger.RemoveInstrumentationBreakpointRequest) => Promise<void>;
 
         /** Sets breakpoint on XMLHttpRequest. */
-        setXHRBreakpoint?: (params: DOMDebugger.SetXHRBreakpointRequest) => PromiseOrNot<void>;
+        setXHRBreakpoint?: (params: DOMDebugger.SetXHRBreakpointRequest) => Promise<void>;
 
         /** Removes breakpoint from XMLHttpRequest. */
-        removeXHRBreakpoint?: (params: DOMDebugger.RemoveXHRBreakpointRequest) => PromiseOrNot<void>;
+        removeXHRBreakpoint?: (params: DOMDebugger.RemoveXHRBreakpointRequest) => Promise<void>;
 
         /** Returns event listeners of the given object. */
-        getEventListeners?: (params: DOMDebugger.GetEventListenersRequest) => PromiseOrNot<DOMDebugger.GetEventListenersResponse>;
+        getEventListeners?: (params: DOMDebugger.GetEventListenersRequest) => Promise<DOMDebugger.GetEventListenersResponse>;
 
     }
 
@@ -6331,22 +6330,22 @@ export namespace Crdp {
 
     export interface TargetCommands {
         /** Controls whether to discover available targets and notify via 'targetCreated/targetRemoved' events. */
-        setDiscoverTargets?: (params: Target.SetDiscoverTargetsRequest) => PromiseOrNot<void>;
+        setDiscoverTargets?: (params: Target.SetDiscoverTargetsRequest) => Promise<void>;
 
         /** Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets. */
-        setAutoAttach?: (params: Target.SetAutoAttachRequest) => PromiseOrNot<void>;
+        setAutoAttach?: (params: Target.SetAutoAttachRequest) => Promise<void>;
 
-        setAttachToFrames?: (params: Target.SetAttachToFramesRequest) => PromiseOrNot<void>;
+        setAttachToFrames?: (params: Target.SetAttachToFramesRequest) => Promise<void>;
 
-        sendMessageToTarget?: (params: Target.SendMessageToTargetRequest) => PromiseOrNot<void>;
+        sendMessageToTarget?: (params: Target.SendMessageToTargetRequest) => Promise<void>;
 
-        getTargetInfo?: (params: Target.GetTargetInfoRequest) => PromiseOrNot<Target.GetTargetInfoResponse>;
+        getTargetInfo?: (params: Target.GetTargetInfoRequest) => Promise<Target.GetTargetInfoResponse>;
 
-        activateTarget?: (params: Target.ActivateTargetRequest) => PromiseOrNot<void>;
+        activateTarget?: (params: Target.ActivateTargetRequest) => Promise<void>;
 
-        attachToTarget?: (params: Target.AttachToTargetRequest) => PromiseOrNot<Target.AttachToTargetResponse>;
+        attachToTarget?: (params: Target.AttachToTargetRequest) => Promise<Target.AttachToTargetResponse>;
 
-        detachFromTarget?: (params: Target.DetachFromTargetRequest) => PromiseOrNot<void>;
+        detachFromTarget?: (params: Target.DetachFromTargetRequest) => Promise<void>;
 
     }
 
@@ -6415,13 +6414,13 @@ export namespace Crdp {
     }
 
     export interface WorkerCommands {
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
-        sendMessageToWorker?: (params: Worker.SendMessageToWorkerRequest) => PromiseOrNot<void>;
+        sendMessageToWorker?: (params: Worker.SendMessageToWorkerRequest) => Promise<void>;
 
-        setWaitForDebuggerOnStart?: (params: Worker.SetWaitForDebuggerOnStartRequest) => PromiseOrNot<void>;
+        setWaitForDebuggerOnStart?: (params: Worker.SetWaitForDebuggerOnStartRequest) => Promise<void>;
 
     }
 
@@ -6573,27 +6572,27 @@ export namespace Crdp {
     }
 
     export interface ServiceWorkerCommands {
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
-        unregister?: (params: ServiceWorker.UnregisterRequest) => PromiseOrNot<void>;
+        unregister?: (params: ServiceWorker.UnregisterRequest) => Promise<void>;
 
-        updateRegistration?: (params: ServiceWorker.UpdateRegistrationRequest) => PromiseOrNot<void>;
+        updateRegistration?: (params: ServiceWorker.UpdateRegistrationRequest) => Promise<void>;
 
-        startWorker?: (params: ServiceWorker.StartWorkerRequest) => PromiseOrNot<void>;
+        startWorker?: (params: ServiceWorker.StartWorkerRequest) => Promise<void>;
 
-        skipWaiting?: (params: ServiceWorker.SkipWaitingRequest) => PromiseOrNot<void>;
+        skipWaiting?: (params: ServiceWorker.SkipWaitingRequest) => Promise<void>;
 
-        stopWorker?: (params: ServiceWorker.StopWorkerRequest) => PromiseOrNot<void>;
+        stopWorker?: (params: ServiceWorker.StopWorkerRequest) => Promise<void>;
 
-        inspectWorker?: (params: ServiceWorker.InspectWorkerRequest) => PromiseOrNot<void>;
+        inspectWorker?: (params: ServiceWorker.InspectWorkerRequest) => Promise<void>;
 
-        setForceUpdateOnPageLoad?: (params: ServiceWorker.SetForceUpdateOnPageLoadRequest) => PromiseOrNot<void>;
+        setForceUpdateOnPageLoad?: (params: ServiceWorker.SetForceUpdateOnPageLoadRequest) => Promise<void>;
 
-        deliverPushMessage?: (params: ServiceWorker.DeliverPushMessageRequest) => PromiseOrNot<void>;
+        deliverPushMessage?: (params: ServiceWorker.DeliverPushMessageRequest) => Promise<void>;
 
-        dispatchSyncEvent?: (params: ServiceWorker.DispatchSyncEventRequest) => PromiseOrNot<void>;
+        dispatchSyncEvent?: (params: ServiceWorker.DispatchSyncEventRequest) => Promise<void>;
 
     }
 
@@ -6837,25 +6836,25 @@ export namespace Crdp {
 
     export interface InputCommands {
         /** Dispatches a key event to the page. */
-        dispatchKeyEvent?: (params: Input.DispatchKeyEventRequest) => PromiseOrNot<void>;
+        dispatchKeyEvent?: (params: Input.DispatchKeyEventRequest) => Promise<void>;
 
         /** Dispatches a mouse event to the page. */
-        dispatchMouseEvent?: (params: Input.DispatchMouseEventRequest) => PromiseOrNot<void>;
+        dispatchMouseEvent?: (params: Input.DispatchMouseEventRequest) => Promise<void>;
 
         /** Dispatches a touch event to the page. */
-        dispatchTouchEvent?: (params: Input.DispatchTouchEventRequest) => PromiseOrNot<void>;
+        dispatchTouchEvent?: (params: Input.DispatchTouchEventRequest) => Promise<void>;
 
         /** Emulates touch event from the mouse event parameters. */
-        emulateTouchFromMouseEvent?: (params: Input.EmulateTouchFromMouseEventRequest) => PromiseOrNot<void>;
+        emulateTouchFromMouseEvent?: (params: Input.EmulateTouchFromMouseEventRequest) => Promise<void>;
 
         /** Synthesizes a pinch gesture over a time period by issuing appropriate touch events. */
-        synthesizePinchGesture?: (params: Input.SynthesizePinchGestureRequest) => PromiseOrNot<void>;
+        synthesizePinchGesture?: (params: Input.SynthesizePinchGestureRequest) => Promise<void>;
 
         /** Synthesizes a scroll gesture over a time period by issuing appropriate touch events. */
-        synthesizeScrollGesture?: (params: Input.SynthesizeScrollGestureRequest) => PromiseOrNot<void>;
+        synthesizeScrollGesture?: (params: Input.SynthesizeScrollGestureRequest) => Promise<void>;
 
         /** Synthesizes a tap gesture over a time period by issuing appropriate touch events. */
-        synthesizeTapGesture?: (params: Input.SynthesizeTapGestureRequest) => PromiseOrNot<void>;
+        synthesizeTapGesture?: (params: Input.SynthesizeTapGestureRequest) => Promise<void>;
 
     }
 
@@ -7064,30 +7063,30 @@ export namespace Crdp {
 
     export interface LayerTreeCommands {
         /** Enables compositing tree inspection. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables compositing tree inspection. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Provides the reasons why the given layer was composited. */
-        compositingReasons?: (params: LayerTree.CompositingReasonsRequest) => PromiseOrNot<LayerTree.CompositingReasonsResponse>;
+        compositingReasons?: (params: LayerTree.CompositingReasonsRequest) => Promise<LayerTree.CompositingReasonsResponse>;
 
         /** Returns the layer snapshot identifier. */
-        makeSnapshot?: (params: LayerTree.MakeSnapshotRequest) => PromiseOrNot<LayerTree.MakeSnapshotResponse>;
+        makeSnapshot?: (params: LayerTree.MakeSnapshotRequest) => Promise<LayerTree.MakeSnapshotResponse>;
 
         /** Returns the snapshot identifier. */
-        loadSnapshot?: (params: LayerTree.LoadSnapshotRequest) => PromiseOrNot<LayerTree.LoadSnapshotResponse>;
+        loadSnapshot?: (params: LayerTree.LoadSnapshotRequest) => Promise<LayerTree.LoadSnapshotResponse>;
 
         /** Releases layer snapshot captured by the back-end. */
-        releaseSnapshot?: (params: LayerTree.ReleaseSnapshotRequest) => PromiseOrNot<void>;
+        releaseSnapshot?: (params: LayerTree.ReleaseSnapshotRequest) => Promise<void>;
 
-        profileSnapshot?: (params: LayerTree.ProfileSnapshotRequest) => PromiseOrNot<LayerTree.ProfileSnapshotResponse>;
+        profileSnapshot?: (params: LayerTree.ProfileSnapshotRequest) => Promise<LayerTree.ProfileSnapshotResponse>;
 
         /** Replays the layer snapshot and returns the resulting bitmap. */
-        replaySnapshot?: (params: LayerTree.ReplaySnapshotRequest) => PromiseOrNot<LayerTree.ReplaySnapshotResponse>;
+        replaySnapshot?: (params: LayerTree.ReplaySnapshotRequest) => Promise<LayerTree.ReplaySnapshotResponse>;
 
         /** Replays the layer snapshot and returns canvas log. */
-        snapshotCommandLog?: (params: LayerTree.SnapshotCommandLogRequest) => PromiseOrNot<LayerTree.SnapshotCommandLogResponse>;
+        snapshotCommandLog?: (params: LayerTree.SnapshotCommandLogRequest) => Promise<LayerTree.SnapshotCommandLogResponse>;
 
     }
 
@@ -7124,10 +7123,10 @@ export namespace Crdp {
 
     export interface DeviceOrientationCommands {
         /** Overrides the Device Orientation. */
-        setDeviceOrientationOverride?: (params: DeviceOrientation.SetDeviceOrientationOverrideRequest) => PromiseOrNot<void>;
+        setDeviceOrientationOverride?: (params: DeviceOrientation.SetDeviceOrientationOverrideRequest) => Promise<void>;
 
         /** Clears the overridden Device Orientation. */
-        clearDeviceOrientationOverride?: () => PromiseOrNot<void>;
+        clearDeviceOrientationOverride?: () => Promise<void>;
 
     }
 
@@ -7237,19 +7236,19 @@ export namespace Crdp {
 
     export interface TracingCommands {
         /** Start trace events collection. */
-        start?: (params: Tracing.StartRequest) => PromiseOrNot<void>;
+        start?: (params: Tracing.StartRequest) => Promise<void>;
 
         /** Stop trace events collection. */
-        end?: () => PromiseOrNot<void>;
+        end?: () => Promise<void>;
 
         /** Gets supported tracing categories. */
-        getCategories?: () => PromiseOrNot<Tracing.GetCategoriesResponse>;
+        getCategories?: () => Promise<Tracing.GetCategoriesResponse>;
 
         /** Request a global memory dump. */
-        requestMemoryDump?: () => PromiseOrNot<Tracing.RequestMemoryDumpResponse>;
+        requestMemoryDump?: () => Promise<Tracing.RequestMemoryDumpResponse>;
 
         /** Record a clock sync marker in the trace. */
-        recordClockSyncMarker?: (params: Tracing.RecordClockSyncMarkerRequest) => PromiseOrNot<void>;
+        recordClockSyncMarker?: (params: Tracing.RecordClockSyncMarkerRequest) => Promise<void>;
 
     }
 
@@ -7460,34 +7459,34 @@ export namespace Crdp {
 
     export interface AnimationCommands {
         /** Enables animation domain notifications. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables animation domain notifications. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Gets the playback rate of the document timeline. */
-        getPlaybackRate?: () => PromiseOrNot<Animation.GetPlaybackRateResponse>;
+        getPlaybackRate?: () => Promise<Animation.GetPlaybackRateResponse>;
 
         /** Sets the playback rate of the document timeline. */
-        setPlaybackRate?: (params: Animation.SetPlaybackRateRequest) => PromiseOrNot<void>;
+        setPlaybackRate?: (params: Animation.SetPlaybackRateRequest) => Promise<void>;
 
         /** Returns the current time of the an animation. */
-        getCurrentTime?: (params: Animation.GetCurrentTimeRequest) => PromiseOrNot<Animation.GetCurrentTimeResponse>;
+        getCurrentTime?: (params: Animation.GetCurrentTimeRequest) => Promise<Animation.GetCurrentTimeResponse>;
 
         /** Sets the paused state of a set of animations. */
-        setPaused?: (params: Animation.SetPausedRequest) => PromiseOrNot<void>;
+        setPaused?: (params: Animation.SetPausedRequest) => Promise<void>;
 
         /** Sets the timing of an animation node. */
-        setTiming?: (params: Animation.SetTimingRequest) => PromiseOrNot<void>;
+        setTiming?: (params: Animation.SetTimingRequest) => Promise<void>;
 
         /** Seek a set of animations to a particular time within each animation. */
-        seekAnimations?: (params: Animation.SeekAnimationsRequest) => PromiseOrNot<void>;
+        seekAnimations?: (params: Animation.SeekAnimationsRequest) => Promise<void>;
 
         /** Releases a set of animations to no longer be manipulated. */
-        releaseAnimations?: (params: Animation.ReleaseAnimationsRequest) => PromiseOrNot<void>;
+        releaseAnimations?: (params: Animation.ReleaseAnimationsRequest) => Promise<void>;
 
         /** Gets the remote object of the Animation. */
-        resolveAnimation?: (params: Animation.ResolveAnimationRequest) => PromiseOrNot<Animation.ResolveAnimationResponse>;
+        resolveAnimation?: (params: Animation.ResolveAnimationRequest) => Promise<Animation.ResolveAnimationResponse>;
 
     }
 
@@ -7660,7 +7659,7 @@ export namespace Crdp {
 
     export interface AccessibilityCommands {
         /** Fetches the accessibility node for this DOM node, if it exists. */
-        getAXNodeChain?: (params: Accessibility.GetAXNodeChainRequest) => PromiseOrNot<Accessibility.GetAXNodeChainResponse>;
+        getAXNodeChain?: (params: Accessibility.GetAXNodeChainRequest) => Promise<Accessibility.GetAXNodeChainResponse>;
 
     }
 
@@ -7689,7 +7688,7 @@ export namespace Crdp {
 
     export interface StorageCommands {
         /** Clears storage for origin. */
-        clearDataForOrigin?: (params: Storage.ClearDataForOriginRequest) => PromiseOrNot<void>;
+        clearDataForOrigin?: (params: Storage.ClearDataForOriginRequest) => Promise<void>;
 
     }
 
@@ -7744,13 +7743,13 @@ export namespace Crdp {
 
     export interface LogCommands {
         /** Enables log domain, sends the entries collected so far to the client by means of the 'entryAdded' notification. */
-        enable?: () => PromiseOrNot<void>;
+        enable?: () => Promise<void>;
 
         /** Disables log domain, prevents further log entries from being reported to the client. */
-        disable?: () => PromiseOrNot<void>;
+        disable?: () => Promise<void>;
 
         /** Clears the log. */
-        clear?: () => PromiseOrNot<void>;
+        clear?: () => Promise<void>;
 
     }
 
@@ -7891,31 +7890,31 @@ export namespace Crdp {
 
     export interface BrowserCommands {
         /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one. */
-        createBrowserContext?: () => PromiseOrNot<Browser.CreateBrowserContextResponse>;
+        createBrowserContext?: () => Promise<Browser.CreateBrowserContextResponse>;
 
         /** Deletes a BrowserContext, will fail of any open page uses it. */
-        disposeBrowserContext?: (params: Browser.DisposeBrowserContextRequest) => PromiseOrNot<Browser.DisposeBrowserContextResponse>;
+        disposeBrowserContext?: (params: Browser.DisposeBrowserContextRequest) => Promise<Browser.DisposeBrowserContextResponse>;
 
         /** Creates a new page. */
-        createTarget?: (params: Browser.CreateTargetRequest) => PromiseOrNot<Browser.CreateTargetResponse>;
+        createTarget?: (params: Browser.CreateTargetRequest) => Promise<Browser.CreateTargetResponse>;
 
         /** Closes the target. If the target is a page that gets closed too. */
-        closeTarget?: (params: Browser.CloseTargetRequest) => PromiseOrNot<Browser.CloseTargetResponse>;
+        closeTarget?: (params: Browser.CloseTargetRequest) => Promise<Browser.CloseTargetResponse>;
 
         /** Returns target information for all potential targets. */
-        getTargets?: () => PromiseOrNot<Browser.GetTargetsResponse>;
+        getTargets?: () => Promise<Browser.GetTargetsResponse>;
 
         /** Enables target discovery for the specified locations. */
-        setRemoteLocations?: (params: Browser.SetRemoteLocationsRequest) => PromiseOrNot<void>;
+        setRemoteLocations?: (params: Browser.SetRemoteLocationsRequest) => Promise<void>;
 
         /** Attaches to the target with given id. */
-        attach?: (params: Browser.AttachRequest) => PromiseOrNot<Browser.AttachResponse>;
+        attach?: (params: Browser.AttachRequest) => Promise<Browser.AttachResponse>;
 
         /** Detaches from the target with given id. */
-        detach?: (params: Browser.DetachRequest) => PromiseOrNot<Browser.DetachResponse>;
+        detach?: (params: Browser.DetachRequest) => Promise<Browser.DetachResponse>;
 
         /** Sends protocol message to the target with given id. */
-        sendMessage?: (params: Browser.SendMessageRequest) => PromiseOrNot<void>;
+        sendMessage?: (params: Browser.SendMessageRequest) => Promise<void>;
 
     }
 
@@ -7983,7 +7982,7 @@ export namespace Crdp {
 
     export interface SystemInfoCommands {
         /** Returns information about the system. */
-        getInfo?: () => PromiseOrNot<SystemInfo.GetInfoResponse>;
+        getInfo?: () => Promise<SystemInfo.GetInfoResponse>;
 
     }
 
@@ -8022,10 +8021,10 @@ export namespace Crdp {
 
     export interface TetheringCommands {
         /** Request browser port binding. */
-        bind?: (params: Tethering.BindRequest) => PromiseOrNot<void>;
+        bind?: (params: Tethering.BindRequest) => Promise<void>;
 
         /** Request browser port unbinding. */
-        unbind?: (params: Tethering.UnbindRequest) => PromiseOrNot<void>;
+        unbind?: (params: Tethering.UnbindRequest) => Promise<void>;
 
     }
 
