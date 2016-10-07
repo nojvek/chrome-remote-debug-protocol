@@ -8,13 +8,11 @@
 
 ## How
 
-This package is purely a typings typescript d.ts interface that is automatically published nightly by travis.
+This package is purely a typings typescript d.ts interface that is automatically generated.
 
-It downloads the latest protocol.json files from the [Chromium repo](https://chromium.googlesource.com/) and verifies structural integrity based on [protocol.d.ts](generator/protocol.d.ts)
+It has scripts to download the latest protocol.json files from the [Chromium repo](https://chromium.googlesource.com/), verify structural integrity based on [protocol.d.ts](generator/protocol.d.ts) and generate a crdp.d.ts typescript interface. 
 
-It then generates a crdp.d.ts typescript interface. 
-
-Travis CI runs a nightly job to publish the latest typings
+Travis CI runs a nightly job to check that protocol.json from google doesn't have structural breaks. Thanks to this project, a few have already been detected and fixed.
 
 ## Usage
 
@@ -23,6 +21,15 @@ crdp.d.ts is a JsonRpc2 compliant interface. It is meant to be used with [noice-
 Rather than callbacks, [noice-json-rpc](https://github.com/nojvek/noice-json-rpc) returns Promises. This means it can be used async-await style. 
 
 [noice-json-rpc](https://github.com/nojvek/noice-json-rpc) also provides a `.api()` to return an ES6 proxy which provides a clean api.Domain.function() calls.
+
+## Building
+
+Checkout this project. Install the dependencies (see [.travis.yml](.travis.yml)) and run
+
+```
+npm run download-protocols
+npm run generate-crdp
+```
 
 ## Example
 
