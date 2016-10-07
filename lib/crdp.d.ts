@@ -4475,6 +4475,35 @@ export namespace Crdp {
 
         }
 
+        /** Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions. */
+        export interface InlineTextBox {
+            /** The absolute position bounding box. */
+            boundingBox: Rect;
+
+            /** The starting index in characters, for this post layout textbox substring. */
+            startCharacterIndex: integer;
+
+            /** The number of characters in this post layout textbox substring. */
+            numCharacters: integer;
+
+        }
+
+        /** Details of an element in the DOM tree with a LayoutObject. */
+        export interface LayoutTreeNode {
+            /** The BackendNodeId of the related DOM node. */
+            backendNodeId: BackendNodeId;
+
+            /** The absolute position bounding box. */
+            boundingBox: Rect;
+
+            /** Contents of the LayoutText if any */
+            layoutText?: string;
+
+            /** The post layout inline text nodes, if any. */
+            inlineTextNodes?: InlineTextBox[];
+
+        }
+
         /** A structure holding an RGBA color. */
         export interface RGBA {
             /** The red component, in the [0-255] range. */
@@ -4592,6 +4621,11 @@ export namespace Crdp {
         export interface GetDocumentResponse {
             /** Resulting node. */
             root: Node;
+
+        }
+
+        export interface GetLayoutTreeNodesResponse {
+            layoutTreeNodes: LayoutTreeNode[];
 
         }
 
@@ -5153,6 +5187,9 @@ export namespace Crdp {
 
         /** Returns the root DOM node to the caller. */
         getDocument?: () => Promise<DOM.GetDocumentResponse>;
+
+        /** Returns the document's LayoutTreeNodes to the caller, and those of any iframes too. */
+        getLayoutTreeNodes?: () => Promise<DOM.GetLayoutTreeNodesResponse>;
 
         /** Collects class names for the node with given id and all of it's child nodes. */
         collectClassNamesFromSubtree?: (params: DOM.CollectClassNamesFromSubtreeRequest) => Promise<DOM.CollectClassNamesFromSubtreeResponse>;
