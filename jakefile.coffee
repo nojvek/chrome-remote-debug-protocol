@@ -13,13 +13,13 @@ error = jake.logger.error
 task 'default', ['download-protocols']
 
 desc 'Download latest protocol.json files from Chromium source and append typescript protocol stub to them'
-task 'download-protocols', async: true, async (version = 'master') ->
+task 'download-protocols', async: true, async ->
     try
-        jsProtocolUrl = "https://chromium.googlesource.com/v8/v8.git/+/#{version}/src/inspector/js_protocol.json"
-        browserProtocolUrl = "https://chromium.googlesource.com/chromium/src/+/#{version}/third_party/WebKit/Source/core/inspector/browser_protocol.json"
+        jsProtocolUrl = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/js_protocol.json"
+        browserProtocolUrl = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json"
         protocolDefDir = "#{__dirname}/src/protocolDef"
-        jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + yield fetchProtocolJson("#{jsProtocolUrl}?format=TEXT")
-        browserProtocolStr = getProtocolDefHeader(browserProtocolUrl) + yield fetchProtocolJson("#{browserProtocolUrl}?format=TEXT")
+        jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + yield fetchProtocolJson(jsProtocolUrl)
+        browserProtocolStr = getProtocolDefHeader(browserProtocolUrl) + yield fetchProtocolJson(browserProtocolUrl)
         yield fs.writeFile("#{protocolDefDir}/js_protocol.ts", jsProtocolStr ,'utf-8')
         yield fs.writeFile("#{protocolDefDir}/browser_protocol.ts", browserProtocolStr ,'utf-8')
         log("protocolDefs updated")
@@ -41,8 +41,7 @@ fetchProtocolJson = async (url) ->
     contents = yield res.text()
 
     if (res.ok)
-        # googlesource returns base64 encoded string, so lets decode it
-        return Buffer.from(contents, 'base64').toString()
+        return contents
     else
         log("Error - #{res.status} - #{res.statusText}")
         return ""
