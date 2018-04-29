@@ -546,6 +546,22 @@ breakpoint if this expression evaluates to true. */
 
         }
 
+        export interface SetBreakpointOnFunctionCallRequest {
+            /** Function object id. */
+            objectId: Runtime.RemoteObjectId;
+
+            /** Expression to use as a breakpoint condition. When specified, debugger will
+stop on the breakpoint if this expression evaluates to true. */
+            condition?: string;
+
+        }
+
+        export interface SetBreakpointOnFunctionCallResponse {
+            /** Id of the created breakpoint for further reference. */
+            breakpointId: BreakpointId;
+
+        }
+
         export interface SetBreakpointsActiveRequest {
             /** New value for breakpoints active state. */
             active: boolean;
@@ -821,6 +837,11 @@ command is issued, all existing parsed scripts will have breakpoints resolved an
 `locations` property. Further matching script parsing will result in subsequent
 `breakpointResolved` events issued. This logical breakpoint will survive page reloads. */
         setBreakpointByUrl?: (params: Debugger.SetBreakpointByUrlRequest) => Promise<Debugger.SetBreakpointByUrlResponse>;
+
+        /** Sets JavaScript breakpoint before each call to the given function.
+If another function was created from the same source as a given one,
+calling it will also trigger the breakpoint. */
+        setBreakpointOnFunctionCall?: (params: Debugger.SetBreakpointOnFunctionCallRequest) => Promise<Debugger.SetBreakpointOnFunctionCallResponse>;
 
         /** Activates / deactivates all breakpoints on the page. */
         setBreakpointsActive?: (params: Debugger.SetBreakpointsActiveRequest) => Promise<void>;
