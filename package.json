@@ -10,7 +10,8 @@
   "scripts": {
     "download-protocols": "node download_protocols.js",
     "generate-crdp": "tsc -p src/tsconfig.json && node out/protocolToCrdp.js",
-    "smoke-test": "tsc -p test/tsconfig.json"
+    "smoke-test": "tsc -p test/tsconfig.json",
+    "build": "npm run download-protocols && npm run generate-crdp && npm run smoke-test"
   },
   "repository": {
     "type": "git",
@@ -39,7 +40,8 @@
   },
   "homepage": "https://github.com/nojvek/chrome-remote-debug-protocol#readme",
   "devDependencies": {
-    "node-fetch": "^1.5.3",
-    "typescript": "^2.0.0"
+    "@types/node": "^8.10.10",
+    "node-fetch": "^1.7.3",
+    "typescript": "^2.8.3"
   }
 }
