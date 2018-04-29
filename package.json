@@ -40,7 +40,6 @@
   "homepage": "https://github.com/nojvek/chrome-remote-debug-protocol#readme",
   "devDependencies": {
     "node-fetch": "^1.5.3",
-    "promisify-node": "^0.4.0",
     "typescript": "^2.0.0"
   }
 }

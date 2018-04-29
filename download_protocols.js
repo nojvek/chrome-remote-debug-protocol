@@ -1,5 +1,4 @@
-const promisify = require('promisify-node');
-const fs = promisify('fs');
+const fs = require('fs');
 const fetch = require('node-fetch');
 
 getProtocolDefHeader = function(url) {
@@ -8,8 +7,8 @@ getProtocolDefHeader = function(url) {
 
 async function fetchProtocolJson (url) {
   console.log(`Downloading ${url}`);
-  const res = await(fetch(url));
-  const contents = await(res.text());
+  const res = await fetch(url);
+  const contents = await res.text();
   if (res.ok) {
     return contents;
   } else {
@@ -22,10 +21,10 @@ async function downloadProtocolJsons() {
     jsProtocolUrl = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/js_protocol.json";
     browserProtocolUrl = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json";
     protocolDefDir = `${__dirname}/src/protocolDef`;
-    jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + await(fetchProtocolJson(jsProtocolUrl));
-    browserProtocolStr = getProtocolDefHeader(browserProtocolUrl) + await(fetchProtocolJson(browserProtocolUrl));
-    await fs.writeFile(`${protocolDefDir}/js_protocol.ts`, jsProtocolStr ,'utf-8')
-    await fs.writeFile(`${protocolDefDir}/browser_protocol.ts`, browserProtocolStr ,'utf-8')
+    jsProtocolStr = getProtocolDefHeader(jsProtocolUrl) + await fetchProtocolJson(jsProtocolUrl);
+    browserProtocolStr = getProtocolDefHeader(browserProtocolUrl) + await fetchProtocolJson(browserProtocolUrl);
+    fs.writeFileSync(`${protocolDefDir}/js_protocol.ts`, jsProtocolStr ,'utf-8')
+    fs.writeFileSync(`${protocolDefDir}/browser_protocol.ts`, browserProtocolStr ,'utf-8')
     console.log(`protocolDefs updated at ${protocolDefDir}`);
   } catch (e) {
     console.error(e.message);
