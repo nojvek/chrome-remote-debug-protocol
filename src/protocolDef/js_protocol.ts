@@ -335,6 +335,15 @@ export const protocol: IProtocol =
                 {
                     "name": "enable",
                     "description": "Enables debugger for the given page. Clients should not assume that the debugging has been\nenabled until the result for this command is received.",
+                    "parameters": [
+                        {
+                            "name": "maxScriptsCacheSize",
+                            "description": "The maximum size in bytes of collected scripts (not referenced by other heap objects)\nthe debugger can hold. Puts no limit if paramter is omitted.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "number"
+                        }
+                    ],
                     "returns": [
                         {
                             "name": "debuggerId",
@@ -394,6 +403,13 @@ export const protocol: IProtocol =
                             "description": "Whether to throw an exception if side effect cannot be ruled out during evaluation.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "timeout",
+                            "description": "Terminate execution after timing out (number of milliseconds).",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "Runtime.TimeDelta"
                         }
                     ],
                     "returns": [
@@ -540,11 +556,6 @@ export const protocol: IProtocol =
                 {
                     "name": "resume",
                     "description": "Resumes JavaScript execution."
-                },
-                {
-                    "name": "scheduleStepIntoAsync",
-                    "description": "This method is deprecated - use Debugger.stepInto with breakOnAsyncCall and\nDebugger.pauseOnAsyncTask instead. Steps into next scheduled async task if any is scheduled\nbefore next pause. Returns success when async task is actually scheduled, returns error if no\ntask were scheduled or another scheduleStepIntoAsync was called.",
-                    "experimental": true
                 },
                 {
                     "name": "searchInContent",
@@ -1185,6 +1196,11 @@ export const protocol: IProtocol =
                             "type": "number"
                         },
                         {
+                            "name": "id",
+                            "description": "Node id. Ids are unique across all profiles collected between startSampling and stopSampling.",
+                            "type": "integer"
+                        },
+                        {
                             "name": "children",
                             "description": "Child nodes.",
                             "type": "array",
@@ -1195,13 +1211,42 @@ export const protocol: IProtocol =
                     ]
                 },
                 {
+                    "id": "SamplingHeapProfileSample",
+                    "description": "A single sample from a sampling profile.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "size",
+                            "description": "Allocation size in bytes attributed to the sample.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Id of the corresponding profile tree node.",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "ordinal",
+                            "description": "Time-ordered sample ordinal number. It is unique across all profiles retrieved\nbetween startSampling and stopSampling.",
+                            "type": "number"
+                        }
+                    ]
+                },
+                {
                     "id": "SamplingHeapProfile",
-                    "description": "Profile.",
+                    "description": "Sampling profile.",
                     "type": "object",
                     "properties": [
                         {
                             "name": "head",
                             "$ref": "SamplingHeapProfileNode"
+                        },
+                        {
+                            "name": "samples",
+                            "type": "array",
+                            "items": {
+                                "$ref": "SamplingHeapProfileSample"
+                            }
                         }
                     ]
                 }
@@ -1852,7 +1897,9 @@ export const protocol: IProtocol =
                                 "error",
                                 "proxy",
                                 "promise",
-                                "typedarray"
+                                "typedarray",
+                                "arraybuffer",
+                                "dataview"
                             ]
                         },
                         {
@@ -1907,22 +1954,12 @@ export const protocol: IProtocol =
                     "properties": [
                         {
                             "name": "header",
+                            "description": "The JSON-stringified result of formatter.header(object, config) call.\nIt contains json ML array that represents RemoteObject.",
                             "type": "string"
                         },
                         {
-                            "name": "hasBody",
-                            "type": "boolean"
-                        },
-                        {
-                            "name": "formatterObjectId",
-                            "$ref": "RemoteObjectId"
-                        },
-                        {
-                            "name": "bindRemoteObjectFunctionId",
-                            "$ref": "RemoteObjectId"
-                        },
-                        {
-                            "name": "configObjectId",
+                            "name": "bodyGetterId",
+                            "description": "If formatter returns true as a result of formatter.hasBody call then bodyGetterId will\ncontain RemoteObjectId for the function that returns result of formatter.body(object, config) call.\nThe result value is json ML array.",
                             "optional": true,
                             "$ref": "RemoteObjectId"
                         }
@@ -2155,6 +2192,24 @@ export const protocol: IProtocol =
                             "name": "value",
                             "description": "The value associated with the property.",
                             "optional": true,
+                            "$ref": "RemoteObject"
+                        }
+                    ]
+                },
+                {
+                    "id": "PrivatePropertyDescriptor",
+                    "description": "Object private field descriptor.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "name",
+                            "description": "Private property name.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "value",
+                            "description": "The value associated with the private property.",
                             "$ref": "RemoteObject"
                         }
                     ]
@@ -2711,6 +2766,16 @@ export const protocol: IProtocol =
                             }
                         },
                         {
+                            "name": "privateProperties",
+                            "description": "Object private properties.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "PrivatePropertyDescriptor"
+                            }
+                        },
+                        {
                             "name": "exceptionDetails",
                             "description": "Exception details.",
                             "optional": true,
@@ -2855,6 +2920,18 @@ export const protocol: IProtocol =
                     ]
                 },
                 {
+                    "name": "setAsyncCallStackDepth",
+                    "description": "Enables or disables async call stacks tracking.",
+                    "redirect": "Debugger",
+                    "parameters": [
+                        {
+                            "name": "maxDepth",
+                            "description": "Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async\ncall stacks (default).",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
                     "name": "setCustomObjectFormatterEnabled",
                     "experimental": true,
                     "parameters": [
@@ -2865,12 +2942,69 @@ export const protocol: IProtocol =
                     ]
                 },
                 {
+                    "name": "setMaxCallStackSizeToCapture",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "size",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
                     "name": "terminateExecution",
                     "description": "Terminate current or next JavaScript execution.\nWill cancel the termination when the outer-most script execution ends.",
                     "experimental": true
+                },
+                {
+                    "name": "addBinding",
+                    "description": "If executionContextId is empty, adds binding with the given name on the\nglobal objects of all inspected contexts, including those created later,\nbindings survive reloads.\nIf executionContextId is specified, adds binding only on global object of\ngiven execution context.\nBinding function takes exactly one argument, this argument should be string,\nin case of any other input, function throws an exception.\nEach binding function call produces Runtime.bindingCalled notification.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "name": "executionContextId",
+                            "optional": true,
+                            "$ref": "ExecutionContextId"
+                        }
+                    ]
+                },
+                {
+                    "name": "removeBinding",
+                    "description": "This method does not remove binding function from global object but\nunsubscribes current runtime agent from Runtime.bindingCalled notifications.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ]
                 }
             ],
             "events": [
+                {
+                    "name": "bindingCalled",
+                    "description": "Notification is issued every time when binding is called.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "name": "payload",
+                            "type": "string"
+                        },
+                        {
+                            "name": "executionContextId",
+                            "description": "Identifier of the context where the call was made.",
+                            "$ref": "ExecutionContextId"
+                        }
+                    ]
+                },
                 {
                     "name": "consoleAPICalled",
                     "description": "Issued when console API was called.",
@@ -2920,7 +3054,7 @@ export const protocol: IProtocol =
                         },
                         {
                             "name": "stackTrace",
-                            "description": "Stack trace captured when the call was made.",
+                            "description": "Stack trace captured when the call was made. The async stack chain is automatically reported for\nthe following call types: `assert`, `error`, `trace`, `warning`. For other types the async call\nchain can be retrieved using `Debugger.getStackTrace` and `stackTrace.parentId` field.",
                             "optional": true,
                             "$ref": "StackTrace"
                         },

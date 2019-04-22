@@ -27,11 +27,15 @@ export namespace Crdp {
 
         Audits: AuditsClient;
 
+        BackgroundService: BackgroundServiceClient;
+
         Browser: BrowserClient;
 
         CSS: CSSClient;
 
         CacheStorage: CacheStorageClient;
+
+        Cast: CastClient;
 
         DOM: DOMClient;
 
@@ -85,6 +89,10 @@ export namespace Crdp {
 
         Tracing: TracingClient;
 
+        Fetch: FetchClient;
+
+        WebAudio: WebAudioClient;
+
     }
 
     export interface CrdpServer {
@@ -108,11 +116,15 @@ export namespace Crdp {
 
         Audits: AuditsServer;
 
+        BackgroundService: BackgroundServiceServer;
+
         Browser: BrowserServer;
 
         CSS: CSSServer;
 
         CacheStorage: CacheStorageServer;
+
+        Cast: CastServer;
 
         DOM: DOMServer;
 
@@ -165,6 +177,10 @@ export namespace Crdp {
         Tethering: TetheringServer;
 
         Tracing: TracingServer;
+
+        Fetch: FetchServer;
+
+        WebAudio: WebAudioServer;
 
     }
 
@@ -338,6 +354,13 @@ variables as its properties. */
 
         }
 
+        export interface EnableRequest {
+            /** The maximum size in bytes of collected scripts (not referenced by other heap objects)
+the debugger can hold. Puts no limit if paramter is omitted. */
+            maxScriptsCacheSize?: number;
+
+        }
+
         export interface EnableResponse {
             /** Unique identifier of the debugger. */
             debuggerId: Runtime.UniqueDebuggerId;
@@ -371,6 +394,9 @@ execution. Overrides `setPauseOnException` state. */
 
             /** Whether to throw an exception if side effect cannot be ruled out during evaluation. */
             throwOnSideEffect?: boolean;
+
+            /** Terminate execution after timing out (number of milliseconds). */
+            timeout?: Runtime.TimeDelta;
 
         }
 
@@ -777,7 +803,7 @@ This field is available only after `Debugger.stepInto` call with `breakOnAsynCal
 
         /** Enables debugger for the given page. Clients should not assume that the debugging has been
 enabled until the result for this command is received. */
-        enable?: () => Promise<Debugger.EnableResponse>;
+        enable?: (params: Debugger.EnableRequest) => Promise<Debugger.EnableResponse>;
 
         /** Evaluates expression on a given call frame. */
         evaluateOnCallFrame?: (params: Debugger.EvaluateOnCallFrameRequest) => Promise<Debugger.EvaluateOnCallFrameResponse>;
@@ -805,12 +831,6 @@ the same. */
 
         /** Resumes JavaScript execution. */
         resume?: () => Promise<void>;
-
-        /** This method is deprecated - use Debugger.stepInto with breakOnAsyncCall and
-Debugger.pauseOnAsyncTask instead. Steps into next scheduled async task if any is scheduled
-before next pause. Returns success when async task is actually scheduled, returns error if no
-task were scheduled or another scheduleStepIntoAsync was called. */
-        scheduleStepIntoAsync?: () => Promise<void>;
 
         /** Searches for given string in script content. */
         searchInContent?: (params: Debugger.SearchInContentRequest) => Promise<Debugger.SearchInContentResponse>;
@@ -927,14 +947,33 @@ scripts upon enabling debugger. */
             /** Allocations size in bytes for the node excluding children. */
             selfSize: number;
 
+            /** Node id. Ids are unique across all profiles collected between startSampling and stopSampling. */
+            id: integer;
+
             /** Child nodes. */
             children: SamplingHeapProfileNode[];
 
         }
 
-        /** Profile. */
+        /** A single sample from a sampling profile. */
+        export interface SamplingHeapProfileSample {
+            /** Allocation size in bytes attributed to the sample. */
+            size: number;
+
+            /** Id of the corresponding profile tree node. */
+            nodeId: integer;
+
+            /** Time-ordered sample ordinal number. It is unique across all profiles retrieved
+between startSampling and stopSampling. */
+            ordinal: number;
+
+        }
+
+        /** Sampling profile. */
         export interface SamplingHeapProfile {
             head: SamplingHeapProfileNode;
+
+            samples: SamplingHeapProfileSample[];
 
         }
 
@@ -1371,7 +1410,7 @@ other objects in their object group. */
             type: ('object' | 'function' | 'undefined' | 'string' | 'number' | 'boolean' | 'symbol' | 'bigint');
 
             /** Object subtype hint. Specified for `object` type values only. */
-            subtype?: ('array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'weakmap' | 'weakset' | 'iterator' | 'generator' | 'error' | 'proxy' | 'promise' | 'typedarray');
+            subtype?: ('array' | 'null' | 'node' | 'regexp' | 'date' | 'map' | 'set' | 'weakmap' | 'weakset' | 'iterator' | 'generator' | 'error' | 'proxy' | 'promise' | 'typedarray' | 'arraybuffer' | 'dataview');
 
             /** Object class (constructor) name. Specified for `object` type values only. */
             className?: string;
@@ -1397,15 +1436,14 @@ property. */
         }
 
         export interface CustomPreview {
+            /** The JSON-stringified result of formatter.header(object, config) call.
+It contains json ML array that represents RemoteObject. */
             header: string;
 
-            hasBody: boolean;
-
-            formatterObjectId: RemoteObjectId;
-
-            bindRemoteObjectFunctionId: RemoteObjectId;
-
-            configObjectId?: RemoteObjectId;
+            /** If formatter returns true as a result of formatter.hasBody call then bodyGetterId will
+contain RemoteObjectId for the function that returns result of formatter.body(object, config) call.
+The result value is json ML array. */
+            bodyGetterId?: RemoteObjectId;
 
         }
 
@@ -1503,6 +1541,16 @@ object. */
 
             /** The value associated with the property. */
             value?: RemoteObject;
+
+        }
+
+        /** Object private field descriptor. */
+        export interface PrivatePropertyDescriptor {
+            /** Private property name. */
+            name: string;
+
+            /** The value associated with the private property. */
+            value: RemoteObject;
 
         }
 
@@ -1807,6 +1855,9 @@ returned either. */
             /** Internal object properties (only of the element itself). */
             internalProperties?: InternalPropertyDescriptor[];
 
+            /** Object private properties. */
+            privateProperties?: PrivatePropertyDescriptor[];
+
             /** Exception details. */
             exceptionDetails?: ExceptionDetails;
 
@@ -1889,8 +1940,42 @@ resolved. */
 
         }
 
+        export interface SetAsyncCallStackDepthRequest {
+            /** Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async
+call stacks (default). */
+            maxDepth: integer;
+
+        }
+
         export interface SetCustomObjectFormatterEnabledRequest {
             enabled: boolean;
+
+        }
+
+        export interface SetMaxCallStackSizeToCaptureRequest {
+            size: integer;
+
+        }
+
+        export interface AddBindingRequest {
+            name: string;
+
+            executionContextId?: ExecutionContextId;
+
+        }
+
+        export interface RemoveBindingRequest {
+            name: string;
+
+        }
+
+        export interface BindingCalledEvent {
+            name: string;
+
+            payload: string;
+
+            /** Identifier of the context where the call was made. */
+            executionContextId: ExecutionContextId;
 
         }
 
@@ -1907,7 +1992,9 @@ resolved. */
             /** Call timestamp. */
             timestamp: Timestamp;
 
-            /** Stack trace captured when the call was made. */
+            /** Stack trace captured when the call was made. The async stack chain is automatically reported for
+the following call types: `assert`, `error`, `trace`, `warning`. For other types the async call
+chain can be retrieved using `Debugger.getStackTrace` and `stackTrace.parentId` field. */
             stackTrace?: StackTrace;
 
             /** Console context descriptor for calls on non-default console context (not console.*):
@@ -2007,15 +2094,37 @@ object. */
         /** Runs script with given id in a given context. */
         runScript?: (params: Runtime.RunScriptRequest) => Promise<Runtime.RunScriptResponse>;
 
+        /** Enables or disables async call stacks tracking. */
+        setAsyncCallStackDepth?: (params: Runtime.SetAsyncCallStackDepthRequest) => Promise<void>;
+
         setCustomObjectFormatterEnabled?: (params: Runtime.SetCustomObjectFormatterEnabledRequest) => Promise<void>;
+
+        setMaxCallStackSizeToCapture?: (params: Runtime.SetMaxCallStackSizeToCaptureRequest) => Promise<void>;
 
         /** Terminate current or next JavaScript execution.
 Will cancel the termination when the outer-most script execution ends. */
         terminateExecution?: () => Promise<void>;
 
+        /** If executionContextId is empty, adds binding with the given name on the
+global objects of all inspected contexts, including those created later,
+bindings survive reloads.
+If executionContextId is specified, adds binding only on global object of
+given execution context.
+Binding function takes exactly one argument, this argument should be string,
+in case of any other input, function throws an exception.
+Each binding function call produces Runtime.bindingCalled notification. */
+        addBinding?: (params: Runtime.AddBindingRequest) => Promise<void>;
+
+        /** This method does not remove binding function from global object but
+unsubscribes current runtime agent from Runtime.bindingCalled notifications. */
+        removeBinding?: (params: Runtime.RemoveBindingRequest) => Promise<void>;
+
     }
 
     export interface RuntimeClient extends RuntimeCommands {
+        /** Notification is issued every time when binding is called. */
+        onBindingCalled(handler: (params: Runtime.BindingCalledEvent) => void): void;
+
         /** Issued when console API was called. */
         onConsoleAPICalled(handler: (params: Runtime.ConsoleAPICalledEvent) => void): void;
 
@@ -2041,6 +2150,9 @@ call). */
     }
 
     export interface RuntimeServer {
+        /** Notification is issued every time when binding is called. */
+        emitBindingCalled(params: Runtime.BindingCalledEvent): void;
+
         /** Issued when console API was called. */
         emitConsoleAPICalled(params: Runtime.ConsoleAPICalledEvent): void;
 
@@ -2183,12 +2295,13 @@ call). */
 
         }
 
-        /** Values of AXProperty name: from 'busy' to 'roledescription' - states which apply to every AX
-node, from 'live' to 'root' - attributes which apply to nodes in live regions, from
-'autocomplete' to 'valuetext' - attributes which apply to widgets, from 'checked' to 'selected'
-- states which apply to widgets, from 'activedescendant' to 'owns' - relationships between
-elements other than parent/child/sibling. */
-        export type AXPropertyName = ('busy' | 'disabled' | 'hidden' | 'hiddenRoot' | 'invalid' | 'keyshortcuts' | 'roledescription' | 'live' | 'atomic' | 'relevant' | 'root' | 'autocomplete' | 'haspopup' | 'level' | 'multiselectable' | 'orientation' | 'multiline' | 'readonly' | 'required' | 'valuemin' | 'valuemax' | 'valuetext' | 'checked' | 'expanded' | 'modal' | 'pressed' | 'selected' | 'activedescendant' | 'controls' | 'describedby' | 'details' | 'errormessage' | 'flowto' | 'labelledby' | 'owns');
+        /** Values of AXProperty name:
+- from 'busy' to 'roledescription': states which apply to every AX node
+- from 'live' to 'root': attributes which apply to nodes in live regions
+- from 'autocomplete' to 'valuetext': attributes which apply to widgets
+- from 'checked' to 'selected': states which apply to widgets
+- from 'activedescendant' to 'owns' - relationships between elements other than parent/child/sibling. */
+        export type AXPropertyName = ('busy' | 'disabled' | 'editable' | 'focusable' | 'focused' | 'hidden' | 'hiddenRoot' | 'invalid' | 'keyshortcuts' | 'settable' | 'roledescription' | 'live' | 'atomic' | 'relevant' | 'root' | 'autocomplete' | 'hasPopup' | 'level' | 'multiselectable' | 'orientation' | 'multiline' | 'readonly' | 'required' | 'valuemin' | 'valuemax' | 'valuetext' | 'checked' | 'expanded' | 'modal' | 'pressed' | 'selected' | 'activedescendant' | 'controls' | 'describedby' | 'details' | 'errormessage' | 'flowto' | 'labelledby' | 'owns');
 
         /** A node in the accessibility tree. */
         export interface AXNode {
@@ -2245,11 +2358,26 @@ children, if requested. */
             nodes: AXNode[];
 
         }
+
+        export interface GetFullAXTreeResponse {
+            nodes: AXNode[];
+
+        }
     }
 
     export interface AccessibilityCommands {
+        /** Disables the accessibility domain. */
+        disable?: () => Promise<void>;
+
+        /** Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls.
+This turns on accessibility for the page, which can impact performance until accessibility is disabled. */
+        enable?: () => Promise<void>;
+
         /** Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists. */
         getPartialAXTree?: (params: Accessibility.GetPartialAXTreeRequest) => Promise<Accessibility.GetPartialAXTreeResponse>;
+
+        /** Fetches the entire accessibility tree */
+        getFullAXTree?: () => Promise<Accessibility.GetFullAXTreeResponse>;
 
     }
 
@@ -2676,6 +2804,118 @@ applies to images. */
 
     }
 
+    /** Defines events for background web platform features. */
+    export module BackgroundService {
+
+        /** The Background Service that will be associated with the commands/events.
+Every Background Service operates independently, but they share the same
+API. */
+        export type ServiceName = ('backgroundFetch' | 'backgroundSync');
+
+        /** A key-value pair for additional event information to pass along. */
+        export interface EventMetadata {
+            key: string;
+
+            value: string;
+
+        }
+
+        export interface BackgroundServiceEvent {
+            /** Timestamp of the event (in seconds). */
+            timestamp: Network.TimeSinceEpoch;
+
+            /** The origin this event belongs to. */
+            origin: string;
+
+            /** The Service Worker ID that initiated the event. */
+            serviceWorkerRegistrationId: ServiceWorker.RegistrationID;
+
+            /** The Background Service this event belongs to. */
+            service: ServiceName;
+
+            /** A description of the event. */
+            eventName: string;
+
+            /** An identifier that groups related events together. */
+            instanceId: string;
+
+            /** A list of event-specific information. */
+            eventMetadata: EventMetadata[];
+
+        }
+
+        export interface StartObservingRequest {
+            service: ServiceName;
+
+        }
+
+        export interface StopObservingRequest {
+            service: ServiceName;
+
+        }
+
+        export interface SetRecordingRequest {
+            shouldRecord: boolean;
+
+            service: ServiceName;
+
+        }
+
+        export interface ClearEventsRequest {
+            service: ServiceName;
+
+        }
+
+        export interface RecordingStateChangedEvent {
+            isRecording: boolean;
+
+            service: ServiceName;
+
+        }
+
+        export interface BackgroundServiceEventReceivedEvent {
+            backgroundServiceEvent: BackgroundServiceEvent;
+
+        }
+    }
+
+    export interface BackgroundServiceCommands {
+        /** Enables event updates for the service. */
+        startObserving?: (params: BackgroundService.StartObservingRequest) => Promise<void>;
+
+        /** Disables event updates for the service. */
+        stopObserving?: (params: BackgroundService.StopObservingRequest) => Promise<void>;
+
+        /** Set the recording state for the service. */
+        setRecording?: (params: BackgroundService.SetRecordingRequest) => Promise<void>;
+
+        /** Clears all stored data for the service. */
+        clearEvents?: (params: BackgroundService.ClearEventsRequest) => Promise<void>;
+
+    }
+
+    export interface BackgroundServiceClient extends BackgroundServiceCommands {
+        /** Called when the recording state for the service has been updated. */
+        onRecordingStateChanged(handler: (params: BackgroundService.RecordingStateChangedEvent) => void): void;
+
+        /** Called with all existing backgroundServiceEvents when enabled, and all new
+events afterwards if enabled and recording. */
+        onBackgroundServiceEventReceived(handler: (params: BackgroundService.BackgroundServiceEventReceivedEvent) => void): void;
+
+    }
+
+    export interface BackgroundServiceServer {
+        /** Called when the recording state for the service has been updated. */
+        emitRecordingStateChanged(params: BackgroundService.RecordingStateChangedEvent): void;
+
+        /** Called with all existing backgroundServiceEvents when enabled, and all new
+events afterwards if enabled and recording. */
+        emitBackgroundServiceEventReceived(params: BackgroundService.BackgroundServiceEventReceivedEvent): void;
+
+        expose(domain: BackgroundServiceCommands): void;
+
+    }
+
     /** The Browser domain defines methods and events for browser managing. */
     export module Browser {
 
@@ -2703,6 +2943,8 @@ applies to images. */
 
         }
 
+        export type PermissionType = ('accessibilityEvents' | 'audioCapture' | 'backgroundSync' | 'backgroundFetch' | 'clipboardRead' | 'clipboardWrite' | 'durableStorage' | 'flash' | 'geolocation' | 'midi' | 'midiSysex' | 'notifications' | 'paymentHandler' | 'protectedMediaIdentifier' | 'sensors' | 'videoCapture' | 'idleDetection');
+
         /** Chrome histogram bucket. */
         export interface Bucket {
             /** Minimum value (inclusive). */
@@ -2729,6 +2971,22 @@ applies to images. */
 
             /** Buckets. */
             buckets: Bucket[];
+
+        }
+
+        export interface GrantPermissionsRequest {
+            origin: string;
+
+            permissions: PermissionType[];
+
+            /** BrowserContext to override permissions. When omitted, default browser context is used. */
+            browserContextId?: Target.BrowserContextID;
+
+        }
+
+        export interface ResetPermissionsRequest {
+            /** BrowserContext to reset permissions. When omitted, default browser context is used. */
+            browserContextId?: Target.BrowserContextID;
 
         }
 
@@ -2762,6 +3020,9 @@ substring in their name are extracted. An empty or absent query returns
 all histograms. */
             query?: string;
 
+            /** If true, retrieve delta since last call. */
+            delta?: boolean;
+
         }
 
         export interface GetHistogramsResponse {
@@ -2773,6 +3034,9 @@ all histograms. */
         export interface GetHistogramRequest {
             /** Requested histogram name. */
             name: string;
+
+            /** If true, retrieve delta since last call. */
+            delta?: boolean;
 
         }
 
@@ -2796,8 +3060,8 @@ position and size are returned. */
         }
 
         export interface GetWindowForTargetRequest {
-            /** Devtools agent host id. */
-            targetId: Target.TargetID;
+            /** Devtools agent host id. If called as a part of the session, associated targetId is used. */
+            targetId?: Target.TargetID;
 
         }
 
@@ -2820,11 +3084,31 @@ with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged. */
             bounds: Bounds;
 
         }
+
+        export interface SetDockTileRequest {
+            badgeLabel?: string;
+
+            /** Png encoded image. */
+            image?: string;
+
+        }
     }
 
     export interface BrowserCommands {
+        /** Grant specific permissions to the given origin and reject all others. */
+        grantPermissions?: (params: Browser.GrantPermissionsRequest) => Promise<void>;
+
+        /** Reset all permission management for all origins. */
+        resetPermissions?: (params: Browser.ResetPermissionsRequest) => Promise<void>;
+
         /** Close browser gracefully. */
         close?: () => Promise<void>;
+
+        /** Crashes browser on the main thread. */
+        crash?: () => Promise<void>;
+
+        /** Crashes GPU process. */
+        crashGpuProcess?: () => Promise<void>;
 
         /** Returns version information. */
         getVersion?: () => Promise<Browser.GetVersionResponse>;
@@ -2847,6 +3131,9 @@ with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged. */
 
         /** Set position and/or size of the browser window. */
         setWindowBounds?: (params: Browser.SetWindowBoundsRequest) => Promise<void>;
+
+        /** Set dock tile details, platform-specific. */
+        setDockTile?: (params: Browser.SetDockTileRequest) => Promise<void>;
 
     }
 
@@ -3297,9 +3584,6 @@ be ignored (as if the image had failed to load). */
 '100'). */
             computedFontWeight?: string;
 
-            /** The computed font size for the document body, as a computed CSS value string (e.g. '16px'). */
-            computedBodyFontSize?: string;
-
         }
 
         export interface GetComputedStyleForNodeRequest {
@@ -3616,6 +3900,9 @@ resized.) The current implementation considers only viewport-dependent media fea
         /** Unique identifier of the Cache object. */
         export type CacheId = string;
 
+        /** type of HTTP response cached */
+        export type CachedResponseType = ('basic' | 'cors' | 'default' | 'error' | 'opaqueResponse' | 'opaqueRedirect');
+
         /** Data entry. */
         export interface DataEntry {
             /** Request URL. */
@@ -3635,6 +3922,9 @@ resized.) The current implementation considers only viewport-dependent media fea
 
             /** HTTP response status text. */
             responseStatusText: string;
+
+            /** HTTP response type */
+            responseType: CachedResponseType;
 
             /** Response headers */
             responseHeaders: Header[];
@@ -3696,11 +3986,14 @@ resized.) The current implementation considers only viewport-dependent media fea
         }
 
         export interface RequestCachedResponseRequest {
-            /** Id of cache that contains the enty. */
+            /** Id of cache that contains the entry. */
             cacheId: CacheId;
 
             /** URL spec of the request. */
             requestURL: string;
+
+            /** headers of the request. */
+            requestHeaders: Header[];
 
         }
 
@@ -3720,14 +4013,18 @@ resized.) The current implementation considers only viewport-dependent media fea
             /** Number of records to fetch. */
             pageSize: integer;
 
+            /** If present, only return the entries containing this substring in the path */
+            pathFilter?: string;
+
         }
 
         export interface RequestEntriesResponse {
             /** Array of object store data entries. */
             cacheDataEntries: DataEntry[];
 
-            /** If true, there are more entries to fetch in the given range. */
-            hasMore: boolean;
+            /** Count of returned entries from this storage. If pathFilter is empty, it
+is the count of all entries from this storage. */
+            returnCount: number;
 
         }
     }
@@ -3755,6 +4052,88 @@ resized.) The current implementation considers only viewport-dependent media fea
 
     export interface CacheStorageServer {
         expose(domain: CacheStorageCommands): void;
+
+    }
+
+    /** A domain for interacting with Cast, Presentation API, and Remote Playback API
+functionalities. */
+    export module Cast {
+
+        export interface EnableRequest {
+            presentationUrl?: string;
+
+        }
+
+        export interface SetSinkToUseRequest {
+            sinkName: string;
+
+        }
+
+        export interface StartTabMirroringRequest {
+            sinkName: string;
+
+        }
+
+        export interface StopCastingRequest {
+            sinkName: string;
+
+        }
+
+        export interface SinksUpdatedEvent {
+            sinkNames: string[];
+
+        }
+
+        export interface IssueUpdatedEvent {
+            issueMessage: string;
+
+        }
+    }
+
+    export interface CastCommands {
+        /** Starts observing for sinks that can be used for tab mirroring, and if set,
+sinks compatible with |presentationUrl| as well. When sinks are found, a
+|sinksUpdated| event is fired.
+Also starts observing for issue messages. When an issue is added or removed,
+an |issueUpdated| event is fired. */
+        enable?: (params: Cast.EnableRequest) => Promise<void>;
+
+        /** Stops observing for sinks and issues. */
+        disable?: () => Promise<void>;
+
+        /** Sets a sink to be used when the web page requests the browser to choose a
+sink via Presentation API, Remote Playback API, or Cast SDK. */
+        setSinkToUse?: (params: Cast.SetSinkToUseRequest) => Promise<void>;
+
+        /** Starts mirroring the tab to the sink. */
+        startTabMirroring?: (params: Cast.StartTabMirroringRequest) => Promise<void>;
+
+        /** Stops the active Cast session on the sink. */
+        stopCasting?: (params: Cast.StopCastingRequest) => Promise<void>;
+
+    }
+
+    export interface CastClient extends CastCommands {
+        /** This is fired whenever the list of available sinks changes. A sink is a
+device or a software surface that you can cast to. */
+        onSinksUpdated(handler: (params: Cast.SinksUpdatedEvent) => void): void;
+
+        /** This is fired whenever the outstanding issue/error message changes.
+|issueMessage| is empty if there is no issue. */
+        onIssueUpdated(handler: (params: Cast.IssueUpdatedEvent) => void): void;
+
+    }
+
+    export interface CastServer {
+        /** This is fired whenever the list of available sinks changes. A sink is a
+device or a software surface that you can cast to. */
+        emitSinksUpdated(params: Cast.SinksUpdatedEvent): void;
+
+        /** This is fired whenever the outstanding issue/error message changes.
+|issueMessage| is empty if there is no issue. */
+        emitIssueUpdated(params: Cast.IssueUpdatedEvent): void;
+
+        expose(domain: CastCommands): void;
 
     }
 
@@ -4061,6 +4440,24 @@ entire subtree or provide an integer larger than 0. */
 
         }
 
+        export interface GetContentQuadsRequest {
+            /** Identifier of the node. */
+            nodeId?: NodeId;
+
+            /** Identifier of the backend node. */
+            backendNodeId?: BackendNodeId;
+
+            /** JavaScript object id of the node wrapper. */
+            objectId?: Runtime.RemoteObjectId;
+
+        }
+
+        export interface GetContentQuadsResponse {
+            /** Quads that describe node layout relative to viewport. */
+            quads: Quad[];
+
+        }
+
         export interface GetDocumentRequest {
             /** The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
 entire subtree or provide an integer larger than 0. */
@@ -4108,8 +4505,11 @@ entire subtree or provide an integer larger than 0. */
         }
 
         export interface GetNodeForLocationResponse {
-            /** Id of the node at given coordinates. */
-            nodeId: NodeId;
+            /** Resulting node. */
+            backendNodeId: BackendNodeId;
+
+            /** Id of the node at given coordinates, only when enabled and requested document. */
+            nodeId?: NodeId;
 
         }
 
@@ -4304,6 +4704,9 @@ entire subtree or provide an integer larger than 0. */
             /** Symbolic group name that can be used to release multiple objects. */
             objectGroup?: string;
 
+            /** Execution context in which to resolve the node. */
+            executionContextId?: Runtime.ExecutionContextId;
+
         }
 
         export interface ResolveNodeResponse {
@@ -4352,6 +4755,17 @@ successfully. */
 
         }
 
+        export interface GetFileInfoRequest {
+            /** JavaScript object id of the node wrapper. */
+            objectId: Runtime.RemoteObjectId;
+
+        }
+
+        export interface GetFileInfoResponse {
+            path: string;
+
+        }
+
         export interface SetInspectedNodeRequest {
             /** DOM node id to be accessible by means of $x command line API. */
             nodeId: NodeId;
@@ -4397,7 +4811,11 @@ successfully. */
         }
 
         export interface GetFrameOwnerResponse {
-            nodeId: NodeId;
+            /** Resulting node. */
+            backendNodeId: BackendNodeId;
+
+            /** Id of the node at given coordinates, only when enabled and requested document. */
+            nodeId?: NodeId;
 
         }
 
@@ -4553,13 +4971,18 @@ be called for that search. */
         /** Returns boxes for the given node. */
         getBoxModel?: (params: DOM.GetBoxModelRequest) => Promise<DOM.GetBoxModelResponse>;
 
+        /** Returns quads that describe node position on the page. This method
+might return multiple quads for inline nodes. */
+        getContentQuads?: (params: DOM.GetContentQuadsRequest) => Promise<DOM.GetContentQuadsResponse>;
+
         /** Returns the root DOM node (and optionally the subtree) to the caller. */
         getDocument?: (params: DOM.GetDocumentRequest) => Promise<DOM.GetDocumentResponse>;
 
         /** Returns the root DOM node (and optionally the subtree) to the caller. */
         getFlattenedDocument?: (params: DOM.GetFlattenedDocumentRequest) => Promise<DOM.GetFlattenedDocumentResponse>;
 
-        /** Returns node id at given location. */
+        /** Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
+either returned or not. */
         getNodeForLocation?: (params: DOM.GetNodeForLocationRequest) => Promise<DOM.GetNodeForLocationResponse>;
 
         /** Returns node's HTML markup. */
@@ -4634,6 +5057,10 @@ attribute value and types in several attribute name/value pairs. */
 
         /** Sets files for the given file input element. */
         setFileInputFiles?: (params: DOM.SetFileInputFilesRequest) => Promise<void>;
+
+        /** Returns file information for the given
+File wrapper. */
+        getFileInfo?: (params: DOM.GetFileInfoRequest) => Promise<DOM.GetFileInfoResponse>;
 
         /** Enables console to refer to the node with given id via $x (see Command Line API for more details
 $x functions). */
@@ -4980,14 +5407,6 @@ any. */
 `getSnapshot`, if any. */
             contentDocumentIndex?: integer;
 
-            /** Index of the imported document's node of a link element in the `domNodes` array returned by
-`getSnapshot`, if any. */
-            importedDocumentIndex?: integer;
-
-            /** Index of the content node of a template element in the `domNodes` array returned by
-`getSnapshot`. */
-            templateContentIndex?: integer;
-
             /** Type of a pseudo element node. */
             pseudoType?: DOM.PseudoType;
 
@@ -5005,12 +5424,20 @@ clicked. */
             /** The selected url for nodes with a srcset attribute. */
             currentSourceURL?: string;
 
+            /** The url of the script (if any) that generates this node. */
+            originURL?: string;
+
+            /** Scroll offsets, set when this node is a Document. */
+            scrollOffsetX?: number;
+
+            scrollOffsetY?: number;
+
         }
 
         /** Details of post layout rendered text positions. The exact layout should not be regarded as
 stable and may change between versions. */
         export interface InlineTextBox {
-            /** The absolute position bounding box. */
+            /** The bounding box in document coordinates. Note that scroll offset of the document is ignored. */
             boundingBox: DOM.Rect;
 
             /** The starting index in characters, for this post layout textbox substring. Characters that
@@ -5028,7 +5455,7 @@ represented as a surrogate pair in UTF-16 have length 2. */
             /** The index of the related DOM node in the `domNodes` array returned by `getSnapshot`. */
             domNodeIndex: integer;
 
-            /** The absolute position bounding box. */
+            /** The bounding box in document coordinates. Note that scroll offset of the document is ignored. */
             boundingBox: DOM.Rect;
 
             /** Contents of the LayoutText, if any. */
@@ -5044,6 +5471,9 @@ represented as a surrogate pair in UTF-16 have length 2. */
 that are painted together will have the same index. Only provided if includePaintOrder in
 getSnapshot was true. */
             paintOrder?: integer;
+
+            /** Set to true to indicate the element begins a new stacking context. */
+            isStackingContext?: boolean;
 
         }
 
@@ -5061,6 +5491,162 @@ getSnapshot was true. */
 
             /** Attribute/property value. */
             value: string;
+
+        }
+
+        /** Index of the string in the strings table. */
+        export type StringIndex = integer;
+
+        /** Index of the string in the strings table. */
+        export type ArrayOfStrings = StringIndex[];
+
+        /** Data that is only present on rare nodes. */
+        export interface RareStringData {
+            index: integer[];
+
+            value: StringIndex[];
+
+        }
+
+        export interface RareBooleanData {
+            index: integer[];
+
+        }
+
+        export interface RareIntegerData {
+            index: integer[];
+
+            value: integer[];
+
+        }
+
+        export type Rectangle = number[];
+
+        /** Document snapshot. */
+        export interface DocumentSnapshot {
+            /** Document URL that `Document` or `FrameOwner` node points to. */
+            documentURL: StringIndex;
+
+            /** Base URL that `Document` or `FrameOwner` node uses for URL completion. */
+            baseURL: StringIndex;
+
+            /** Contains the document's content language. */
+            contentLanguage: StringIndex;
+
+            /** Contains the document's character set encoding. */
+            encodingName: StringIndex;
+
+            /** `DocumentType` node's publicId. */
+            publicId: StringIndex;
+
+            /** `DocumentType` node's systemId. */
+            systemId: StringIndex;
+
+            /** Frame ID for frame owner elements and also for the document node. */
+            frameId: StringIndex;
+
+            /** A table with dom nodes. */
+            nodes: NodeTreeSnapshot;
+
+            /** The nodes in the layout tree. */
+            layout: LayoutTreeSnapshot;
+
+            /** The post-layout inline text nodes. */
+            textBoxes: TextBoxSnapshot;
+
+            /** Scroll offsets. */
+            scrollOffsetX?: number;
+
+            scrollOffsetY?: number;
+
+        }
+
+        /** Table containing nodes. */
+        export interface NodeTreeSnapshot {
+            /** Parent node index. */
+            parentIndex?: integer[];
+
+            /** `Node`'s nodeType. */
+            nodeType?: integer[];
+
+            /** `Node`'s nodeName. */
+            nodeName?: StringIndex[];
+
+            /** `Node`'s nodeValue. */
+            nodeValue?: StringIndex[];
+
+            /** `Node`'s id, corresponds to DOM.Node.backendNodeId. */
+            backendNodeId?: DOM.BackendNodeId[];
+
+            /** Attributes of an `Element` node. Flatten name, value pairs. */
+            attributes?: ArrayOfStrings[];
+
+            /** Only set for textarea elements, contains the text value. */
+            textValue?: RareStringData;
+
+            /** Only set for input elements, contains the input's associated text value. */
+            inputValue?: RareStringData;
+
+            /** Only set for radio and checkbox input elements, indicates if the element has been checked */
+            inputChecked?: RareBooleanData;
+
+            /** Only set for option elements, indicates if the element has been selected */
+            optionSelected?: RareBooleanData;
+
+            /** The index of the document in the list of the snapshot documents. */
+            contentDocumentIndex?: RareIntegerData;
+
+            /** Type of a pseudo element node. */
+            pseudoType?: RareStringData;
+
+            /** Whether this DOM node responds to mouse clicks. This includes nodes that have had click
+event listeners attached via JavaScript as well as anchor tags that naturally navigate when
+clicked. */
+            isClickable?: RareBooleanData;
+
+            /** The selected url for nodes with a srcset attribute. */
+            currentSourceURL?: RareStringData;
+
+            /** The url of the script (if any) that generates this node. */
+            originURL?: RareStringData;
+
+        }
+
+        /** Details of an element in the DOM tree with a LayoutObject. */
+        export interface LayoutTreeSnapshot {
+            /** The index of the related DOM node in the `domNodes` array returned by `getSnapshot`. */
+            nodeIndex: integer[];
+
+            /** Index into the `computedStyles` array returned by `captureSnapshot`. */
+            styles: ArrayOfStrings[];
+
+            /** The absolute position bounding box. */
+            bounds: Rectangle[];
+
+            /** Contents of the LayoutText, if any. */
+            text: StringIndex[];
+
+            /** Stacking context information. */
+            stackingContexts: RareBooleanData;
+
+        }
+
+        /** Details of post layout rendered text positions. The exact layout should not be regarded as
+stable and may change between versions. */
+        export interface TextBoxSnapshot {
+            /** Intex of th elayout tree node that owns this box collection. */
+            layoutIndex: integer[];
+
+            /** The absolute position bounding box. */
+            bounds: Rectangle[];
+
+            /** The starting index in characters, for this post layout textbox substring. Characters that
+would be represented as a surrogate pair in UTF-16 have length 2. */
+            start: integer[];
+
+            /** The number of characters in this post layout textbox substring. Characters that would be
+represented as a surrogate pair in UTF-16 have length 2. */
+            length: integer[];
 
         }
 
@@ -5090,14 +5676,41 @@ getSnapshot was true. */
             computedStyles: ComputedStyle[];
 
         }
+
+        export interface CaptureSnapshotRequest {
+            /** Whitelist of computed styles to return. */
+            computedStyles: string[];
+
+        }
+
+        export interface CaptureSnapshotResponse {
+            /** The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. */
+            documents: DocumentSnapshot[];
+
+            /** Shared string table that all string properties refer to with indexes. */
+            strings: string[];
+
+        }
     }
 
     export interface DOMSnapshotCommands {
+        /** Disables DOM snapshot agent for the given page. */
+        disable?: () => Promise<void>;
+
+        /** Enables DOM snapshot agent for the given page. */
+        enable?: () => Promise<void>;
+
         /** Returns a document snapshot, including the full DOM tree of the root node (including iframes,
 template contents, and imported documents) in a flattened array, as well as layout and
 white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
 flattened. */
         getSnapshot?: (params: DOMSnapshot.GetSnapshotRequest) => Promise<DOMSnapshot.GetSnapshotResponse>;
+
+        /** Returns a document snapshot, including the full DOM tree of the root node (including iframes,
+template contents, and imported documents) in a flattened array, as well as layout and
+white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
+flattened. */
+        captureSnapshot?: (params: DOMSnapshot.CaptureSnapshotRequest) => Promise<DOMSnapshot.CaptureSnapshotResponse>;
 
     }
 
@@ -5375,6 +5988,12 @@ resource fetches. */
 
         }
 
+        export interface SetFocusEmulationEnabledRequest {
+            /** Whether to enable to disable focus emulation. */
+            enabled: boolean;
+
+        }
+
         export interface SetCPUThrottlingRateRequest {
             /** Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc). */
             rate: number;
@@ -5426,6 +6045,18 @@ autosizing and more. */
             /** If set, the visible area of the page will be overridden to this viewport. This viewport
 change is not observed by the page, e.g. viewport-relative elements do not change positions. */
             viewport?: Page.Viewport;
+
+        }
+
+        export interface SetScrollbarsHiddenRequest {
+            /** Whether scrollbars should be always hidden. */
+            hidden: boolean;
+
+        }
+
+        export interface SetDocumentCookieDisabledRequest {
+            /** Whether document.coookie API should be disabled. */
+            disabled: boolean;
 
         }
 
@@ -5498,12 +6129,12 @@ forwards to prevent deadlock. */
 Note any previous deferred policy change is superseded. */
             waitForNavigation?: boolean;
 
+            /** If set, base::Time::Now will be overriden to initially return this value. */
+            initialVirtualTime?: Network.TimeSinceEpoch;
+
         }
 
         export interface SetVirtualTimePolicyResponse {
-            /** Absolute timestamp at which virtual time was first enabled (milliseconds since epoch). */
-            virtualTimeBase: Runtime.Timestamp;
-
             /** Absolute timestamp at which virtual time was first enabled (up time in milliseconds). */
             virtualTimeTicksBase: number;
 
@@ -5518,17 +6149,15 @@ Note any previous deferred policy change is superseded. */
 
         }
 
-        export interface VirtualTimeAdvancedEvent {
-            /** The amount of virtual time that has elapsed in milliseconds since virtual time was first
-enabled. */
-            virtualTimeElapsed: number;
+        export interface SetUserAgentOverrideRequest {
+            /** User agent to use. */
+            userAgent: string;
 
-        }
+            /** Browser langugage to emulate. */
+            acceptLanguage?: string;
 
-        export interface VirtualTimePausedEvent {
-            /** The amount of virtual time that has elapsed in milliseconds since virtual time was first
-enabled. */
-            virtualTimeElapsed: number;
+            /** The platform navigator.platform should return. */
+            platform?: string;
 
         }
     }
@@ -5546,6 +6175,9 @@ enabled. */
         /** Requests that page scale factor is reset to initial values. */
         resetPageScaleFactor?: () => Promise<void>;
 
+        /** Enables or disables simulating a focused and active page. */
+        setFocusEmulationEnabled?: (params: Emulation.SetFocusEmulationEnabledRequest) => Promise<void>;
+
         /** Enables CPU throttling to emulate slow CPUs. */
         setCPUThrottlingRate?: (params: Emulation.SetCPUThrottlingRateRequest) => Promise<void>;
 
@@ -5557,6 +6189,10 @@ if the content does not specify one. */
 window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
 query results). */
         setDeviceMetricsOverride?: (params: Emulation.SetDeviceMetricsOverrideRequest) => Promise<void>;
+
+        setScrollbarsHidden?: (params: Emulation.SetScrollbarsHiddenRequest) => Promise<void>;
+
+        setDocumentCookieDisabled?: (params: Emulation.SetDocumentCookieDisabledRequest) => Promise<void>;
 
         setEmitTouchEventsForMouse?: (params: Emulation.SetEmitTouchEventsForMouseRequest) => Promise<void>;
 
@@ -5588,29 +6224,20 @@ the current virtual time policy.  Note this supersedes any previous time budget.
 on Android. */
         setVisibleSize?: (params: Emulation.SetVisibleSizeRequest) => Promise<void>;
 
+        /** Allows overriding user agent with the given string. */
+        setUserAgentOverride?: (params: Emulation.SetUserAgentOverrideRequest) => Promise<void>;
+
     }
 
     export interface EmulationClient extends EmulationCommands {
-        /** Notification sent after the virtual time has advanced. */
-        onVirtualTimeAdvanced(handler: (params: Emulation.VirtualTimeAdvancedEvent) => void): void;
-
         /** Notification sent after the virtual time budget for the current VirtualTimePolicy has run out. */
         onVirtualTimeBudgetExpired(handler: () => void): void;
-
-        /** Notification sent after the virtual time has paused. */
-        onVirtualTimePaused(handler: (params: Emulation.VirtualTimePausedEvent) => void): void;
 
     }
 
     export interface EmulationServer {
-        /** Notification sent after the virtual time has advanced. */
-        emitVirtualTimeAdvanced(params: Emulation.VirtualTimeAdvancedEvent): void;
-
         /** Notification sent after the virtual time budget for the current VirtualTimePolicy has run out. */
         emitVirtualTimeBudgetExpired(): void;
-
-        /** Notification sent after the virtual time has paused. */
-        emitVirtualTimePaused(params: Emulation.VirtualTimePausedEvent): void;
 
         expose(domain: EmulationCommands): void;
 
@@ -5630,21 +6257,9 @@ on Android. */
         }
 
         export interface BeginFrameRequest {
-            /** Timestamp of this BeginFrame (milliseconds since epoch). If not set, the current time will
-be used unless frameTicks is specified. */
-            frameTime?: Runtime.Timestamp;
-
             /** Timestamp of this BeginFrame in Renderer TimeTicks (milliseconds of uptime). If not set,
-the current time will be used unless frameTime is specified. */
+the current time will be used. */
             frameTimeTicks?: number;
-
-            /** Deadline of this BeginFrame (milliseconds since epoch). If not set, the deadline will be
-calculated from the frameTime and interval unless deadlineTicks is specified. */
-            deadline?: Runtime.Timestamp;
-
-            /** Deadline of this BeginFrame in Renderer TimeTicks  (milliseconds of uptime). If not set,
-the deadline will be calculated from the frameTime and interval unless deadline is specified. */
-            deadlineTicks?: number;
 
             /** The interval between BeginFrames that is reported to the compositor, in milliseconds.
 Defaults to a 60 frames/second interval, i.e. about 16.666 milliseconds. */
@@ -5672,12 +6287,6 @@ display. Reported for diagnostic uses, may be removed in the future. */
 
         }
 
-        export interface EnterDeterministicModeRequest {
-            /** Number of seconds since the Epoch */
-            initialDate?: number;
-
-        }
-
         export interface NeedsBeginFramesChangedEvent {
             /** True if BeginFrames are needed, false otherwise. */
             needsBeginFrames: boolean;
@@ -5691,10 +6300,6 @@ screenshot from the resulting frame. Requires that the target was created with e
 BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
 https://goo.gl/3zHXhB for more background. */
         beginFrame?: (params: HeadlessExperimental.BeginFrameRequest) => Promise<HeadlessExperimental.BeginFrameResponse>;
-
-        /** Puts the browser into deterministic mode.  Only effective for subsequently created web contents.
-Only supported in headless mode.  Once set there's no way of leaving deterministic mode. */
-        enterDeterministicMode?: (params: HeadlessExperimental.EnterDeterministicModeRequest) => Promise<void>;
 
         /** Disables headless events for the target. */
         disable?: () => Promise<void>;
@@ -5736,7 +6341,7 @@ Only supported in headless mode.  Once set there's no way of leaving determinist
             handle: StreamHandle;
 
             /** Seek to the specified offset before reading (if not specificed, proceed with offset
-following the last read). */
+following the last read). Some types of streams may only support sequential reads. */
             offset?: integer;
 
             /** Maximum number of bytes to read (left upon the agent discretion if not specified). */
@@ -5796,8 +6401,9 @@ following the last read). */
             /** Database name. */
             name: string;
 
-            /** Database version. */
-            version: integer;
+            /** Database version (type is not 'integer', as the standard
+requires the version number to be 'unsigned long long') */
+            version: number;
 
             /** Object stores in this database. */
             objectStores: ObjectStore[];
@@ -5963,6 +6569,29 @@ following the last read). */
 
         }
 
+        export interface GetMetadataRequest {
+            /** Security origin. */
+            securityOrigin: string;
+
+            /** Database name. */
+            databaseName: string;
+
+            /** Object store name. */
+            objectStoreName: string;
+
+        }
+
+        export interface GetMetadataResponse {
+            /** the entries count */
+            entriesCount: number;
+
+            /** the current value of key generator, to become the next inserted
+key into the object store. Valid if objectStore.autoIncrement
+is true. */
+            keyGeneratorValue: number;
+
+        }
+
         export interface RequestDatabaseRequest {
             /** Security origin. */
             securityOrigin: string;
@@ -6009,6 +6638,9 @@ following the last read). */
 
         /** Requests data from object store or index. */
         requestData?: (params: IndexedDB.RequestDataRequest) => Promise<IndexedDB.RequestDataResponse>;
+
+        /** Gets metadata of an object store */
+        getMetadata?: (params: IndexedDB.GetMetadataRequest) => Promise<IndexedDB.GetMetadataResponse>;
 
         /** Requests database with given name in given frame. */
         requestDatabase?: (params: IndexedDB.RequestDatabaseRequest) => Promise<IndexedDB.RequestDatabaseResponse>;
@@ -6108,6 +6740,12 @@ modifiers, keyboard layout, etc (e.g., 'AltGr') (default: ""). */
 
         }
 
+        export interface InsertTextRequest {
+            /** The text to insert. */
+            text: string;
+
+        }
+
         export interface DispatchMouseEventRequest {
             /** Type of the mouse event. */
             type: ('mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel');
@@ -6127,7 +6765,11 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
             timestamp?: TimeSinceEpoch;
 
             /** Mouse button (default: "none"). */
-            button?: ('none' | 'left' | 'middle' | 'right');
+            button?: ('none' | 'left' | 'middle' | 'right' | 'back' | 'forward');
+
+            /** A number indicating which buttons are pressed on the mouse when a mouse event is triggered.
+Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0. */
+            buttons?: integer;
 
             /** Number of times the mouse button was clicked (default: 0). */
             clickCount?: integer;
@@ -6137,6 +6779,9 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
 
             /** Y delta in CSS pixels for mouse wheel event (default: 0). */
             deltaY?: number;
+
+            /** Pointer type (default: "mouse"). */
+            pointerType?: ('mouse' | 'pen');
 
         }
 
@@ -6280,6 +6925,10 @@ for the preferred input type). */
     export interface InputCommands {
         /** Dispatches a key event to the page. */
         dispatchKeyEvent?: (params: Input.DispatchKeyEventRequest) => Promise<void>;
+
+        /** This method emulates inserting text that doesn't come from a key press,
+for example an emoji keyboard or an IME. */
+        insertText?: (params: Input.InsertTextRequest) => Promise<void>;
 
         /** Dispatches a mouse event to the page. */
         dispatchMouseEvent?: (params: Input.DispatchMouseEventRequest) => Promise<void>;
@@ -6731,6 +7380,25 @@ transform/scrolling purposes only. */
         export interface SamplingProfile {
             samples: SamplingProfileNode[];
 
+            modules: Module[];
+
+        }
+
+        /** Executable module information */
+        export interface Module {
+            /** Name of the module. */
+            name: string;
+
+            /** UUID of the module. */
+            uuid: string;
+
+            /** Base address where the module is loaded into memory. Encoded as a decimal
+or hexadecimal (0x prefixed) string. */
+            baseAddress: string;
+
+            /** Size of the module in bytes. */
+            size: number;
+
         }
 
         export interface GetDOMCountersResponse {
@@ -6784,6 +7452,9 @@ transform/scrolling purposes only. */
 
         prepareForLeakDetection?: () => Promise<void>;
 
+        /** Simulate OomIntervention by purging V8 memory. */
+        forciblyPurgeJavaScriptMemory?: () => Promise<void>;
+
         /** Enable/disable suppressing memory pressure notifications in all processes. */
         setPressureNotificationsSuppressed?: (params: Memory.SetPressureNotificationsSuppressedRequest) => Promise<void>;
 
@@ -6822,6 +7493,9 @@ collected since browser process startup. */
 file, data and other requests and responses, their headers, bodies, timing, etc. */
     export module Network {
 
+        /** Resource type as it was perceived by the rendering engine. */
+        export type ResourceType = ('Document' | 'Stylesheet' | 'Image' | 'Media' | 'Font' | 'Script' | 'TextTrack' | 'XHR' | 'Fetch' | 'EventSource' | 'WebSocket' | 'Manifest' | 'SignedExchange' | 'Ping' | 'CSPViolationReport' | 'Other');
+
         /** Unique loader identifier. */
         export type LoaderId = string;
 
@@ -6832,7 +7506,7 @@ file, data and other requests and responses, their headers, bodies, timing, etc.
         export type InterceptionId = string;
 
         /** Network level fetch failure reason. */
-        export type ErrorReason = ('Failed' | 'Aborted' | 'TimedOut' | 'AccessDenied' | 'ConnectionClosed' | 'ConnectionReset' | 'ConnectionRefused' | 'ConnectionAborted' | 'ConnectionFailed' | 'NameNotResolved' | 'InternetDisconnected' | 'AddressUnreachable');
+        export type ErrorReason = ('Failed' | 'Aborted' | 'TimedOut' | 'AccessDenied' | 'ConnectionClosed' | 'ConnectionReset' | 'ConnectionRefused' | 'ConnectionAborted' | 'ConnectionFailed' | 'NameNotResolved' | 'InternetDisconnected' | 'AddressUnreachable' | 'BlockedByClient' | 'BlockedByResponse');
 
         /** UTC time in seconds, counted from January 1, 1970. */
         export type TimeSinceEpoch = number;
@@ -6850,7 +7524,7 @@ file, data and other requests and responses, their headers, bodies, timing, etc.
 
         /** Represents the cookie's 'SameSite' status:
 https://tools.ietf.org/html/draft-west-first-party-cookies */
-        export type CookieSameSite = ('Strict' | 'Lax');
+        export type CookieSameSite = ('Strict' | 'Lax' | 'Extended' | 'None');
 
         /** Timing information for the request. */
         export interface ResourceTiming {
@@ -6910,8 +7584,11 @@ milliseconds relatively to this requestTime. */
 
         /** HTTP request data. */
         export interface Request {
-            /** Request URL. */
+            /** Request URL (without fragment). */
             url: string;
+
+            /** Fragment of the requested URL starting with hash, if present. */
+            urlFragment?: string;
 
             /** HTTP request method. */
             method: string;
@@ -7014,7 +7691,7 @@ milliseconds relatively to this requestTime. */
         export type CertificateTransparencyCompliance = ('unknown' | 'not-compliant' | 'compliant');
 
         /** The reason why request was blocked. */
-        export type BlockedReason = ('csp' | 'mixed-content' | 'origin' | 'inspector' | 'subresource-filter' | 'other');
+        export type BlockedReason = ('other' | 'csp' | 'mixed-content' | 'origin' | 'inspector' | 'subresource-filter' | 'content-type' | 'collapsed-by-client');
 
         /** HTTP response data. */
         export interface Response {
@@ -7106,15 +7783,17 @@ milliseconds relatively to this requestTime. */
 
         }
 
-        /** WebSocket frame data. */
+        /** WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests. */
         export interface WebSocketFrame {
-            /** WebSocket frame opcode. */
+            /** WebSocket message opcode. */
             opcode: number;
 
-            /** WebSocke frame mask. */
+            /** WebSocket message mask. */
             mask: boolean;
 
-            /** WebSocke frame payload data. */
+            /** WebSocket message payload data.
+If the opcode is 1, this is a text message and payloadData is a UTF-8 string.
+If the opcode isn't 1, then payloadData is a base64 encoded string representing binary data. */
             payloadData: string;
 
         }
@@ -7125,7 +7804,7 @@ milliseconds relatively to this requestTime. */
             url: string;
 
             /** Type of this resource. */
-            type: Page.ResourceType;
+            type: ResourceType;
 
             /** Cached response data. */
             response?: Response;
@@ -7138,12 +7817,12 @@ milliseconds relatively to this requestTime. */
         /** Information about the request initiator. */
         export interface Initiator {
             /** Type of this initiator. */
-            type: ('parser' | 'script' | 'preload' | 'other');
+            type: ('parser' | 'script' | 'preload' | 'SignedExchange' | 'other');
 
             /** Initiator JavaScript stack trace, set for Script only. */
             stack?: Runtime.StackTrace;
 
-            /** Initiator URL, set for Parser type or for Script type (when script is importing module). */
+            /** Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type. */
             url?: string;
 
             /** Initiator line number, set for Parser type or for Script type (when script is importing
@@ -7262,10 +7941,91 @@ backslash. Omitting is equivalent to "*". */
             urlPattern?: string;
 
             /** If set, only requests for matching resource types will be intercepted. */
-            resourceType?: Page.ResourceType;
+            resourceType?: ResourceType;
 
             /** Stage at wich to begin intercepting requests. Default is Request. */
             interceptionStage?: InterceptionStage;
+
+        }
+
+        /** Information about a signed exchange signature.
+https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#rfc.section.3.1 */
+        export interface SignedExchangeSignature {
+            /** Signed exchange signature label. */
+            label: string;
+
+            /** The hex string of signed exchange signature. */
+            signature: string;
+
+            /** Signed exchange signature integrity. */
+            integrity: string;
+
+            /** Signed exchange signature cert Url. */
+            certUrl?: string;
+
+            /** The hex string of signed exchange signature cert sha256. */
+            certSha256?: string;
+
+            /** Signed exchange signature validity Url. */
+            validityUrl: string;
+
+            /** Signed exchange signature date. */
+            date: integer;
+
+            /** Signed exchange signature expires. */
+            expires: integer;
+
+            /** The encoded certificates. */
+            certificates?: string[];
+
+        }
+
+        /** Information about a signed exchange header.
+https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cbor-representation */
+        export interface SignedExchangeHeader {
+            /** Signed exchange request URL. */
+            requestUrl: string;
+
+            /** Signed exchange response code. */
+            responseCode: integer;
+
+            /** Signed exchange response headers. */
+            responseHeaders: Headers;
+
+            /** Signed exchange response signature. */
+            signatures: SignedExchangeSignature[];
+
+        }
+
+        /** Field type for a signed exchange related error. */
+        export type SignedExchangeErrorField = ('signatureSig' | 'signatureIntegrity' | 'signatureCertUrl' | 'signatureCertSha256' | 'signatureValidityUrl' | 'signatureTimestamps');
+
+        /** Information about a signed exchange response. */
+        export interface SignedExchangeError {
+            /** Error message. */
+            message: string;
+
+            /** The index of the signature which caused the error. */
+            signatureIndex?: integer;
+
+            /** The field which caused the error. */
+            errorField?: SignedExchangeErrorField;
+
+        }
+
+        /** Information about a signed exchange response. */
+        export interface SignedExchangeInfo {
+            /** The outer response of signed HTTP exchange which was received from network. */
+            outerResponse: Response;
+
+            /** Information about the signed exchange header. */
+            header?: SignedExchangeHeader;
+
+            /** Security details for the signed exchange header. */
+            securityDetails?: SecurityDetails;
+
+            /** Errors occurred while handling the signed exchagne. */
+            errors?: SignedExchangeError[];
 
         }
 
@@ -7416,7 +8176,7 @@ provided URL. */
         }
 
         export interface GetRequestPostDataResponse {
-            /** Base64-encoded request body. */
+            /** Request body string, omitting files from multipart requests */
             postData: string;
 
         }
@@ -7433,6 +8193,16 @@ provided URL. */
 
             /** True, if content was sent as base64. */
             base64Encoded: boolean;
+
+        }
+
+        export interface TakeResponseBodyForInterceptionAsStreamRequest {
+            interceptionId: InterceptionId;
+
+        }
+
+        export interface TakeResponseBodyForInterceptionAsStreamResponse {
+            stream: IO.StreamHandle;
 
         }
 
@@ -7550,6 +8320,12 @@ continueInterceptedRequest call. */
             /** User agent to use. */
             userAgent: string;
 
+            /** Browser langugage to emulate. */
+            acceptLanguage?: string;
+
+            /** The platform navigator.platform should return. */
+            platform?: string;
+
         }
 
         export interface DataReceivedEvent {
@@ -7593,7 +8369,7 @@ continueInterceptedRequest call. */
             timestamp: MonotonicTime;
 
             /** Resource type. */
-            type: Page.ResourceType;
+            type: ResourceType;
 
             /** User friendly error message. */
             errorText: string;
@@ -7616,8 +8392,9 @@ continueInterceptedRequest call. */
             /** Total number of bytes received for this request. */
             encodedDataLength: number;
 
-            /** Set when response was blocked due to being cross-site document response. */
-            blockedCrossSiteDocument?: boolean;
+            /** Set when 1) response was blocked by Cross-Origin Read Blocking and also
+2) this needs to be reported to the DevTools console. */
+            shouldReportCorbBlocking?: boolean;
 
         }
 
@@ -7633,10 +8410,14 @@ Likewise if HTTP authentication is needed then the same fetch id will be used. *
             frameId: Page.FrameId;
 
             /** How the requested resource will be used. */
-            resourceType: Page.ResourceType;
+            resourceType: ResourceType;
 
             /** Whether this is a navigation request, which can abort the navigation completely. */
             isNavigationRequest: boolean;
+
+            /** Set if the request is a navigation that will result in a download.
+Only present after response is received from the server (i.e. HeadersReceived stage). */
+            isDownload?: boolean;
 
             /** Redirect location, only sent if a redirect was intercepted. */
             redirectUrl?: string;
@@ -7656,6 +8437,10 @@ request or auth retry occurred. */
             /** Response headers if intercepted at the response stage or if redirect occurred while
 intercepting request or auth retry occurred. */
             responseHeaders?: Headers;
+
+            /** If the intercepted request had a corresponding requestWillBeSent event fired for it, then
+this requestId will be the same as the requestId present in the requestWillBeSent event. */
+            requestId?: RequestId;
 
         }
 
@@ -7691,7 +8476,7 @@ intercepting request or auth retry occurred. */
             redirectResponse?: Response;
 
             /** Type of this resource. */
-            type?: Page.ResourceType;
+            type?: ResourceType;
 
             /** Frame identifier. */
             frameId?: Page.FrameId;
@@ -7713,6 +8498,15 @@ intercepting request or auth retry occurred. */
 
         }
 
+        export interface SignedExchangeReceivedEvent {
+            /** Request identifier. */
+            requestId: RequestId;
+
+            /** Information about the signed exchange response. */
+            info: SignedExchangeInfo;
+
+        }
+
         export interface ResponseReceivedEvent {
             /** Request identifier. */
             requestId: RequestId;
@@ -7724,7 +8518,7 @@ intercepting request or auth retry occurred. */
             timestamp: MonotonicTime;
 
             /** Resource type. */
-            type: Page.ResourceType;
+            type: ResourceType;
 
             /** Response data. */
             response: Response;
@@ -7762,7 +8556,7 @@ intercepting request or auth retry occurred. */
             /** Timestamp. */
             timestamp: MonotonicTime;
 
-            /** WebSocket frame error message. */
+            /** WebSocket error message. */
             errorMessage: string;
 
         }
@@ -7873,6 +8667,12 @@ detailed cookie information in the `cookies` field. */
         /** Returns content served for the given currently intercepted request. */
         getResponseBodyForInterception?: (params: Network.GetResponseBodyForInterceptionRequest) => Promise<Network.GetResponseBodyForInterceptionResponse>;
 
+        /** Returns a handle to the stream representing the response body. Note that after this command,
+the intercepted request can't be continued as is -- you either need to cancel it or to provide
+the response body. The stream only supports sequential read, IO.read will fail if the position
+is specified. */
+        takeResponseBodyForInterceptionAsStream?: (params: Network.TakeResponseBodyForInterceptionAsStreamRequest) => Promise<Network.TakeResponseBodyForInterceptionAsStreamResponse>;
+
         /** This method sends a new XMLHttpRequest which is identical to the original one. The following
 parameters should be identical: method, url, async, request body, extra headers, withCredentials
 attribute, user, password. */
@@ -7902,7 +8702,7 @@ attribute, user, password. */
         /** Specifies whether to always send extra HTTP headers with the requests from this page. */
         setExtraHTTPHeaders?: (params: Network.SetExtraHTTPHeadersRequest) => Promise<void>;
 
-        /** Sets the requests to intercept that match a the provided patterns and optionally resource types. */
+        /** Sets the requests to intercept that match the provided patterns and optionally resource types. */
         setRequestInterception?: (params: Network.SetRequestInterceptionRequest) => Promise<void>;
 
         /** Allows overriding user agent with the given string. */
@@ -7936,6 +8736,9 @@ mocked. */
         /** Fired when resource loading priority is changed */
         onResourceChangedPriority(handler: (params: Network.ResourceChangedPriorityEvent) => void): void;
 
+        /** Fired when a signed exchange was received over the network */
+        onSignedExchangeReceived(handler: (params: Network.SignedExchangeReceivedEvent) => void): void;
+
         /** Fired when HTTP response is available. */
         onResponseReceived(handler: (params: Network.ResponseReceivedEvent) => void): void;
 
@@ -7945,13 +8748,13 @@ mocked. */
         /** Fired upon WebSocket creation. */
         onWebSocketCreated(handler: (params: Network.WebSocketCreatedEvent) => void): void;
 
-        /** Fired when WebSocket frame error occurs. */
+        /** Fired when WebSocket message error occurs. */
         onWebSocketFrameError(handler: (params: Network.WebSocketFrameErrorEvent) => void): void;
 
-        /** Fired when WebSocket frame is received. */
+        /** Fired when WebSocket message is received. */
         onWebSocketFrameReceived(handler: (params: Network.WebSocketFrameReceivedEvent) => void): void;
 
-        /** Fired when WebSocket frame is sent. */
+        /** Fired when WebSocket message is sent. */
         onWebSocketFrameSent(handler: (params: Network.WebSocketFrameSentEvent) => void): void;
 
         /** Fired when WebSocket handshake response becomes available. */
@@ -7988,6 +8791,9 @@ mocked. */
         /** Fired when resource loading priority is changed */
         emitResourceChangedPriority(params: Network.ResourceChangedPriorityEvent): void;
 
+        /** Fired when a signed exchange was received over the network */
+        emitSignedExchangeReceived(params: Network.SignedExchangeReceivedEvent): void;
+
         /** Fired when HTTP response is available. */
         emitResponseReceived(params: Network.ResponseReceivedEvent): void;
 
@@ -7997,13 +8803,13 @@ mocked. */
         /** Fired upon WebSocket creation. */
         emitWebSocketCreated(params: Network.WebSocketCreatedEvent): void;
 
-        /** Fired when WebSocket frame error occurs. */
+        /** Fired when WebSocket message error occurs. */
         emitWebSocketFrameError(params: Network.WebSocketFrameErrorEvent): void;
 
-        /** Fired when WebSocket frame is received. */
+        /** Fired when WebSocket message is received. */
         emitWebSocketFrameReceived(params: Network.WebSocketFrameReceivedEvent): void;
 
-        /** Fired when WebSocket frame is sent. */
+        /** Fired when WebSocket message is sent. */
         emitWebSocketFrameSent(params: Network.WebSocketFrameSentEvent): void;
 
         /** Fired when WebSocket handshake response becomes available. */
@@ -8024,13 +8830,14 @@ mocked. */
             /** Whether the node info tooltip should be shown (default: false). */
             showInfo?: boolean;
 
+            /** Whether the node styles in the tooltip (default: false). */
+            showStyles?: boolean;
+
             /** Whether the rulers should be shown (default: false). */
             showRulers?: boolean;
 
             /** Whether the extension lines from node to the rulers should be shown (default: false). */
             showExtensionLines?: boolean;
-
-            displayAsMaterial?: boolean;
 
             /** The content box highlight fill color (default: transparent). */
             contentColor?: DOM.RGBA;
@@ -8053,15 +8860,12 @@ mocked. */
             /** The shape margin fill color (default: transparent). */
             shapeMarginColor?: DOM.RGBA;
 
-            /** Selectors to highlight relevant nodes. */
-            selectorList?: string;
-
             /** The grid layout color (default: transparent). */
             cssGridColor?: DOM.RGBA;
 
         }
 
-        export type InspectMode = ('searchForNode' | 'searchForUAShadowDOM' | 'none');
+        export type InspectMode = ('searchForNode' | 'searchForUAShadowDOM' | 'captureAreaScreenshot' | 'showDistances' | 'none');
 
         export interface GetHighlightObjectForTestRequest {
             /** Id of the node to get highlight object for. */
@@ -8099,6 +8903,9 @@ mocked. */
 
             /** JavaScript object id of the node to be highlighted. */
             objectId?: Runtime.RemoteObjectId;
+
+            /** Selectors to highlight relevant nodes. */
+            selector?: string;
 
         }
 
@@ -8145,6 +8952,12 @@ mocked. */
 
         }
 
+        export interface SetShowAdHighlightsRequest {
+            /** True for showing ad highlights */
+            show: boolean;
+
+        }
+
         export interface SetPausedInDebuggerMessageRequest {
             /** The message to display, also triggers resume and step over controls. */
             message?: string;
@@ -8175,15 +8988,15 @@ mocked. */
 
         }
 
-        export interface SetShowViewportSizeOnResizeRequest {
-            /** Whether to paint size or not. */
+        export interface SetShowHitTestBordersRequest {
+            /** True for showing hit-test borders */
             show: boolean;
 
         }
 
-        export interface SetSuspendedRequest {
-            /** Whether overlay should be suspended and not consume any resources until resumed. */
-            suspended: boolean;
+        export interface SetShowViewportSizeOnResizeRequest {
+            /** Whether to paint size or not. */
+            show: boolean;
 
         }
 
@@ -8199,7 +9012,7 @@ mocked. */
         }
 
         export interface ScreenshotRequestedEvent {
-            /** Viewport to capture, in CSS. */
+            /** Viewport to capture, in device independent pixels (dip). */
             viewport: Page.Viewport;
 
         }
@@ -8235,6 +9048,9 @@ objectId must be specified. */
 Backend then generates 'inspectNodeRequested' event upon element selection. */
         setInspectMode?: (params: Overlay.SetInspectModeRequest) => Promise<void>;
 
+        /** Highlights owner element of all frames detected to be ads. */
+        setShowAdHighlights?: (params: Overlay.SetShowAdHighlightsRequest) => Promise<void>;
+
         setPausedInDebuggerMessage?: (params: Overlay.SetPausedInDebuggerMessageRequest) => Promise<void>;
 
         /** Requests that backend shows debug borders on layers */
@@ -8249,10 +9065,11 @@ Backend then generates 'inspectNodeRequested' event upon element selection. */
         /** Requests that backend shows scroll bottleneck rects */
         setShowScrollBottleneckRects?: (params: Overlay.SetShowScrollBottleneckRectsRequest) => Promise<void>;
 
+        /** Requests that backend shows hit-test borders on layers */
+        setShowHitTestBorders?: (params: Overlay.SetShowHitTestBordersRequest) => Promise<void>;
+
         /** Paints viewport size upon main frame resize. */
         setShowViewportSizeOnResize?: (params: Overlay.SetShowViewportSizeOnResizeRequest) => Promise<void>;
-
-        setSuspended?: (params: Overlay.SetSuspendedRequest) => Promise<void>;
 
     }
 
@@ -8267,6 +9084,9 @@ user manually inspects an element. */
         /** Fired when user asks to capture screenshot of some area on the page. */
         onScreenshotRequested(handler: (params: Overlay.ScreenshotRequestedEvent) => void): void;
 
+        /** Fired when user cancels the inspect mode. */
+        onInspectModeCanceled(handler: () => void): void;
+
     }
 
     export interface OverlayServer {
@@ -8280,15 +9100,15 @@ user manually inspects an element. */
         /** Fired when user asks to capture screenshot of some area on the page. */
         emitScreenshotRequested(params: Overlay.ScreenshotRequestedEvent): void;
 
+        /** Fired when user cancels the inspect mode. */
+        emitInspectModeCanceled(): void;
+
         expose(domain: OverlayCommands): void;
 
     }
 
     /** Actions and events related to the inspected page belong to the page domain. */
     export module Page {
-
-        /** Resource type as it was perceived by the rendering engine. */
-        export type ResourceType = ('Document' | 'Stylesheet' | 'Image' | 'Media' | 'Font' | 'Script' | 'TextTrack' | 'XHR' | 'Fetch' | 'EventSource' | 'WebSocket' | 'Manifest' | 'Other');
 
         /** Unique frame identifier. */
         export type FrameId = string;
@@ -8327,7 +9147,7 @@ user manually inspects an element. */
             url: string;
 
             /** Type of this resource. */
-            type: ResourceType;
+            type: Network.ResourceType;
 
             /** Resource mimeType as determined by the browser. */
             mimeType: string;
@@ -8373,7 +9193,7 @@ user manually inspects an element. */
         export type ScriptIdentifier = string;
 
         /** Transition type. */
-        export type TransitionType = ('link' | 'typed' | 'auto_bookmark' | 'auto_subframe' | 'manual_subframe' | 'generated' | 'auto_toplevel' | 'form_submit' | 'reload' | 'keyword' | 'keyword_generated' | 'other');
+        export type TransitionType = ('link' | 'typed' | 'address_bar' | 'auto_bookmark' | 'auto_subframe' | 'manual_subframe' | 'generated' | 'auto_toplevel' | 'form_submit' | 'reload' | 'keyword' | 'keyword_generated' | 'other');
 
         /** Navigation history entry. */
         export interface NavigationEntry {
@@ -8477,26 +9297,66 @@ user manually inspects an element. */
             /** Scale relative to the ideal viewport (size at width=device-width). */
             scale: number;
 
+            /** Page zoom factor (CSS to device independent pixels ratio). */
+            zoom?: number;
+
         }
 
         /** Viewport for capturing screenshot. */
         export interface Viewport {
-            /** X offset in CSS pixels. */
+            /** X offset in device independent pixels (dip). */
             x: number;
 
-            /** Y offset in CSS pixels */
+            /** Y offset in device independent pixels (dip). */
             y: number;
 
-            /** Rectangle width in CSS pixels */
+            /** Rectangle width in device independent pixels (dip). */
             width: number;
 
-            /** Rectangle height in CSS pixels */
+            /** Rectangle height in device independent pixels (dip). */
             height: number;
 
             /** Page scale factor. */
             scale: number;
 
         }
+
+        /** Generic font families collection. */
+        export interface FontFamilies {
+            /** The standard font-family. */
+            standard?: string;
+
+            /** The fixed font-family. */
+            fixed?: string;
+
+            /** The serif font-family. */
+            serif?: string;
+
+            /** The sansSerif font-family. */
+            sansSerif?: string;
+
+            /** The cursive font-family. */
+            cursive?: string;
+
+            /** The fantasy font-family. */
+            fantasy?: string;
+
+            /** The pictograph font-family. */
+            pictograph?: string;
+
+        }
+
+        /** Default font sizes. */
+        export interface FontSizes {
+            /** Default standard font size. */
+            standard?: integer;
+
+            /** Default fixed font size. */
+            fixed?: integer;
+
+        }
+
+        export type ClientNavigationReason = ('formSubmissionGet' | 'formSubmissionPost' | 'httpHeaderRefresh' | 'scriptInitiated' | 'metaTagRefresh' | 'pageBlockInterstitial' | 'reload');
 
         export interface AddScriptToEvaluateOnLoadRequest {
             scriptSource: string;
@@ -8511,6 +9371,11 @@ user manually inspects an element. */
 
         export interface AddScriptToEvaluateOnNewDocumentRequest {
             source: string;
+
+            /** If specified, creates an isolated world with the given name and evaluates given script in it.
+This world name will be used as the ExecutionContextDescription::name when the corresponding
+event is emitted. */
+            worldName?: string;
 
         }
 
@@ -8537,6 +9402,18 @@ user manually inspects an element. */
 
         export interface CaptureScreenshotResponse {
             /** Base64-encoded image data. */
+            data: string;
+
+        }
+
+        export interface CaptureSnapshotRequest {
+            /** Format (defaults to mhtml). */
+            format?: ('mhtml');
+
+        }
+
+        export interface CaptureSnapshotResponse {
+            /** Serialized page data. */
             data: string;
 
         }
@@ -8577,6 +9454,11 @@ option, use with caution. */
 
             /** Manifest content. */
             data?: string;
+
+        }
+
+        export interface GetInstallabilityErrorsResponse {
+            errors: string[];
 
         }
 
@@ -8859,6 +9741,18 @@ autosizing and more. */
 
         }
 
+        export interface SetFontFamiliesRequest {
+            /** Specifies font families to set. If a font family is not specified, it won't be changed. */
+            fontFamilies: FontFamilies;
+
+        }
+
+        export interface SetFontSizesRequest {
+            /** Specifies font sizes to set. If a font size is not specified, it won't be changed. */
+            fontSizes: FontSizes;
+
+        }
+
         export interface SetDocumentContentRequest {
             /** Frame id to set HTML for. */
             frameId: FrameId;
@@ -8923,6 +9817,34 @@ available (otherwise deny). */
 
         }
 
+        export interface SetWebLifecycleStateRequest {
+            /** Target lifecycle state */
+            state: ('frozen' | 'active');
+
+        }
+
+        export interface SetProduceCompilationCacheRequest {
+            enabled: boolean;
+
+        }
+
+        export interface AddCompilationCacheRequest {
+            url: string;
+
+            /** Base64-encoded data */
+            data: string;
+
+        }
+
+        export interface GenerateTestReportRequest {
+            /** Message to be displayed in the report. */
+            message: string;
+
+            /** Specifies the endpoint group to deliver the report to. */
+            group?: string;
+
+        }
+
         export interface DomContentEventFiredEvent {
             timestamp: Network.MonotonicTime;
 
@@ -8955,6 +9877,18 @@ available (otherwise deny). */
         export interface FrameNavigatedEvent {
             /** Frame object. */
             frame: Frame;
+
+        }
+
+        export interface FrameRequestedNavigationEvent {
+            /** Id of the frame that is being navigated. */
+            frameId: FrameId;
+
+            /** The reason for the navigation. */
+            reason: ClientNavigationReason;
+
+            /** The destination URL for the requested navigation. */
+            url: string;
 
         }
 
@@ -9074,6 +10008,14 @@ the page execution. Execution can be resumed via calling Page.handleJavaScriptDi
             userGesture: boolean;
 
         }
+
+        export interface CompilationCacheProducedEvent {
+            url: string;
+
+            /** Base64-encoded data */
+            data: string;
+
+        }
     }
 
     export interface PageCommands {
@@ -9088,6 +10030,10 @@ the page execution. Execution can be resumed via calling Page.handleJavaScriptDi
 
         /** Capture page screenshot. */
         captureScreenshot?: (params: Page.CaptureScreenshotRequest) => Promise<Page.CaptureScreenshotResponse>;
+
+        /** Returns a snapshot of the page as a string. For MHTML format, the serialization includes
+iframes, shadow DOM, external resources, and element-inline styles. */
+        captureSnapshot?: (params: Page.CaptureSnapshotRequest) => Promise<Page.CaptureSnapshotResponse>;
 
         /** Clears the overriden device metrics. */
         clearDeviceMetricsOverride?: () => Promise<void>;
@@ -9112,6 +10058,8 @@ the page execution. Execution can be resumed via calling Page.handleJavaScriptDi
 
         getAppManifest?: () => Promise<Page.GetAppManifestResponse>;
 
+        getInstallabilityErrors?: () => Promise<Page.GetInstallabilityErrorsResponse>;
+
         /** Returns all browser cookies. Depending on the backend support, will return detailed cookie
 information in the `cookies` field. */
         getCookies?: () => Promise<Page.GetCookiesResponse>;
@@ -9124,6 +10072,9 @@ information in the `cookies` field. */
 
         /** Returns navigation history for the current page. */
         getNavigationHistory?: () => Promise<Page.GetNavigationHistoryResponse>;
+
+        /** Resets navigation history for the current page. */
+        resetNavigationHistory?: () => Promise<void>;
 
         /** Returns content of the given resource. */
         getResourceContent?: (params: Page.GetResourceContentRequest) => Promise<Page.GetResourceContentResponse>;
@@ -9152,8 +10103,6 @@ information in the `cookies` field. */
         /** Removes given script from the list. */
         removeScriptToEvaluateOnNewDocument?: (params: Page.RemoveScriptToEvaluateOnNewDocumentRequest) => Promise<void>;
 
-        requestAppBanner?: () => Promise<void>;
-
         /** Acknowledges that a screencast frame has been received by the frontend. */
         screencastFrameAck?: (params: Page.ScreencastFrameAckRequest) => Promise<void>;
 
@@ -9173,6 +10122,12 @@ query results). */
 
         /** Overrides the Device Orientation. */
         setDeviceOrientationOverride?: (params: Page.SetDeviceOrientationOverrideRequest) => Promise<void>;
+
+        /** Set generic font families. */
+        setFontFamilies?: (params: Page.SetFontFamiliesRequest) => Promise<void>;
+
+        /** Set default font sizes. */
+        setFontSizes?: (params: Page.SetFontSizesRequest) => Promise<void>;
 
         /** Sets given markup as the document's HTML. */
         setDocumentContent?: (params: Page.SetDocumentContentRequest) => Promise<void>;
@@ -9199,8 +10154,32 @@ unavailable. */
         /** Crashes renderer on the IO thread, generates minidumps. */
         crash?: () => Promise<void>;
 
+        /** Tries to close page, running its beforeunload hooks, if any. */
+        close?: () => Promise<void>;
+
+        /** Tries to update the web lifecycle state of the page.
+It will transition the page to the given state according to:
+https://github.com/WICG/web-lifecycle/ */
+        setWebLifecycleState?: (params: Page.SetWebLifecycleStateRequest) => Promise<void>;
+
         /** Stops sending each frame in the `screencastFrame`. */
         stopScreencast?: () => Promise<void>;
+
+        /** Forces compilation cache to be generated for every subresource script. */
+        setProduceCompilationCache?: (params: Page.SetProduceCompilationCacheRequest) => Promise<void>;
+
+        /** Seeds compilation cache for given url. Compilation cache does not survive
+cross-process navigation. */
+        addCompilationCache?: (params: Page.AddCompilationCacheRequest) => Promise<void>;
+
+        /** Clears seeded compilation cache. */
+        clearCompilationCache?: () => Promise<void>;
+
+        /** Generates a report for testing. */
+        generateTestReport?: (params: Page.GenerateTestReportRequest) => Promise<void>;
+
+        /** Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger. */
+        waitForDebugger?: () => Promise<void>;
 
     }
 
@@ -9220,6 +10199,10 @@ unavailable. */
         onFrameNavigated(handler: (params: Page.FrameNavigatedEvent) => void): void;
 
         onFrameResized(handler: () => void): void;
+
+        /** Fired when a renderer-initiated navigation is requested.
+Navigation may still be cancelled after the event is issued. */
+        onFrameRequestedNavigation(handler: (params: Page.FrameRequestedNavigationEvent) => void): void;
 
         /** Fired when frame schedules a potential navigation. */
         onFrameScheduledNavigation(handler: (params: Page.FrameScheduledNavigationEvent) => void): void;
@@ -9262,6 +10245,10 @@ open. */
 etc. */
         onWindowOpen(handler: (params: Page.WindowOpenEvent) => void): void;
 
+        /** Issued for every compilation cache generated. Is only available
+if Page.setGenerateCompilationCache is enabled. */
+        onCompilationCacheProduced(handler: (params: Page.CompilationCacheProducedEvent) => void): void;
+
     }
 
     export interface PageServer {
@@ -9280,6 +10267,10 @@ etc. */
         emitFrameNavigated(params: Page.FrameNavigatedEvent): void;
 
         emitFrameResized(): void;
+
+        /** Fired when a renderer-initiated navigation is requested.
+Navigation may still be cancelled after the event is issued. */
+        emitFrameRequestedNavigation(params: Page.FrameRequestedNavigationEvent): void;
 
         /** Fired when frame schedules a potential navigation. */
         emitFrameScheduledNavigation(params: Page.FrameScheduledNavigationEvent): void;
@@ -9322,6 +10313,10 @@ open. */
 etc. */
         emitWindowOpen(params: Page.WindowOpenEvent): void;
 
+        /** Issued for every compilation cache generated. Is only available
+if Page.setGenerateCompilationCache is enabled. */
+        emitCompilationCacheProduced(params: Page.CompilationCacheProducedEvent): void;
+
         expose(domain: PageCommands): void;
 
     }
@@ -9335,6 +10330,12 @@ etc. */
 
             /** Metric value. */
             value: number;
+
+        }
+
+        export interface SetTimeDomainRequest {
+            /** Time domain */
+            timeDomain: ('timeTicks' | 'threadTicks');
 
         }
 
@@ -9360,6 +10361,11 @@ etc. */
 
         /** Enable collecting and reporting metrics. */
         enable?: () => Promise<void>;
+
+        /** Sets time domain to use for collecting and reporting duration metrics.
+Note that this must be called before enabling metrics collection. Calling
+this method while metrics collection is enabled returns an error. */
+        setTimeDomain?: (params: Performance.SetTimeDomainRequest) => Promise<void>;
 
         /** Retrieve current values of run-time metrics. */
         getMetrics?: () => Promise<Performance.GetMetricsResponse>;
@@ -9413,31 +10419,32 @@ https://www.w3.org/TR/mixed-content/#categories */
             /** Page certificate. */
             certificate: string[];
 
+            /** Recommendations to fix any issues. */
+            recommendations?: string[];
+
         }
 
         /** Information about insecure content on the page. */
         export interface InsecureContentStatus {
-            /** True if the page was loaded over HTTPS and ran mixed (HTTP) content such as scripts. */
+            /** Always false. */
             ranMixedContent: boolean;
 
-            /** True if the page was loaded over HTTPS and displayed mixed (HTTP) content such as images. */
+            /** Always false. */
             displayedMixedContent: boolean;
 
-            /** True if the page was loaded over HTTPS and contained a form targeting an insecure url. */
+            /** Always false. */
             containedMixedForm: boolean;
 
-            /** True if the page was loaded over HTTPS without certificate errors, and ran content such as
-scripts that were loaded with certificate errors. */
+            /** Always false. */
             ranContentWithCertErrors: boolean;
 
-            /** True if the page was loaded over HTTPS without certificate errors, and displayed content
-such as images that were loaded with certificate errors. */
+            /** Always false. */
             displayedContentWithCertErrors: boolean;
 
-            /** Security state representing a page that ran insecure content. */
+            /** Always set to unknown. */
             ranInsecureContentStyle: SecurityState;
 
-            /** Security state representing a page that displayed insecure content. */
+            /** Always set to unknown. */
             displayedInsecureContentStyle: SecurityState;
 
         }
@@ -9546,9 +10553,11 @@ certificate errors at the same time. */
 
     export module ServiceWorker {
 
+        export type RegistrationID = string;
+
         /** ServiceWorker registration. */
         export interface ServiceWorkerRegistration {
-            registrationId: string;
+            registrationId: RegistrationID;
 
             scopeURL: string;
 
@@ -9564,7 +10573,7 @@ certificate errors at the same time. */
         export interface ServiceWorkerVersion {
             versionId: string;
 
-            registrationId: string;
+            registrationId: RegistrationID;
 
             scriptURL: string;
 
@@ -9589,7 +10598,7 @@ For cached script it is the last time the cache entry was validated. */
         export interface ServiceWorkerErrorMessage {
             errorMessage: string;
 
-            registrationId: string;
+            registrationId: RegistrationID;
 
             versionId: string;
 
@@ -9604,7 +10613,7 @@ For cached script it is the last time the cache entry was validated. */
         export interface DeliverPushMessageRequest {
             origin: string;
 
-            registrationId: string;
+            registrationId: RegistrationID;
 
             data: string;
 
@@ -9613,7 +10622,7 @@ For cached script it is the last time the cache entry was validated. */
         export interface DispatchSyncEventRequest {
             origin: string;
 
-            registrationId: string;
+            registrationId: RegistrationID;
 
             tag: string;
 
@@ -9738,7 +10747,7 @@ For cached script it is the last time the cache entry was validated. */
             /** Security origin. */
             origin: string;
 
-            /** Comma separated origin names. */
+            /** Comma separated list of StorageType to clear. */
             storageTypes: string;
 
         }
@@ -9907,6 +10916,20 @@ For cached script it is the last time the cache entry was validated. */
 
         }
 
+        /** Represents process info. */
+        export interface ProcessInfo {
+            /** Specifies process type. */
+            type: string;
+
+            /** Specifies process id. */
+            id: integer;
+
+            /** Specifies cumulative CPU usage in seconds across all threads of the
+process since the process start. */
+            cpuTime: number;
+
+        }
+
         export interface GetInfoResponse {
             /** Information about the GPUs on the system. */
             gpu: GPUInfo;
@@ -9924,11 +10947,20 @@ supported. */
             commandLine: string;
 
         }
+
+        export interface GetProcessInfoResponse {
+            /** An array of process info blocks. */
+            processInfo: ProcessInfo[];
+
+        }
     }
 
     export interface SystemInfoCommands {
         /** Returns information about the system. */
         getInfo?: () => Promise<SystemInfo.GetInfoResponse>;
+
+        /** Returns information about all running processes. */
+        getProcessInfo?: () => Promise<SystemInfo.GetProcessInfoResponse>;
 
     }
 
@@ -9965,6 +10997,8 @@ supported. */
             /** Opener target Id */
             openerId?: TargetID;
 
+            browserContextId?: BrowserContextID;
+
         }
 
         export interface RemoteLocation {
@@ -9982,9 +11016,18 @@ supported. */
         export interface AttachToTargetRequest {
             targetId: TargetID;
 
+            /** Enables "flat" access to the session via specifying sessionId attribute in the commands. */
+            flatten?: boolean;
+
         }
 
         export interface AttachToTargetResponse {
+            /** Id assigned to the session. */
+            sessionId: SessionID;
+
+        }
+
+        export interface AttachToBrowserTargetResponse {
             /** Id assigned to the session. */
             sessionId: SessionID;
 
@@ -10000,9 +11043,23 @@ supported. */
 
         }
 
+        export interface ExposeDevToolsProtocolRequest {
+            targetId: TargetID;
+
+            /** Binding name, 'cdp' if not specified. */
+            bindingName?: string;
+
+        }
+
         export interface CreateBrowserContextResponse {
             /** The id of the context created. */
             browserContextId: BrowserContextID;
+
+        }
+
+        export interface GetBrowserContextsResponse {
+            /** An array of browser context ids. */
+            browserContextIds: BrowserContextID[];
 
         }
 
@@ -10016,7 +11073,7 @@ supported. */
             /** Frame height in DIP (headless chrome only). */
             height?: integer;
 
-            /** The browser context to create the page in (headless chrome only). */
+            /** The browser context to create the page in. */
             browserContextId?: BrowserContextID;
 
             /** Whether BeginFrames for this target will be controlled via DevTools (headless chrome only,
@@ -10045,13 +11102,8 @@ not supported on MacOS yet, false by default). */
 
         }
 
-        export interface DisposeBrowserContextResponse {
-            success: boolean;
-
-        }
-
         export interface GetTargetInfoRequest {
-            targetId: TargetID;
+            targetId?: TargetID;
 
         }
 
@@ -10084,6 +11136,9 @@ not supported on MacOS yet, false by default). */
             /** Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger`
 to run paused targets. */
             waitForDebuggerOnStart: boolean;
+
+            /** Enables "flat" access to the session via specifying sessionId attribute in the commands. */
+            flatten?: boolean;
 
         }
 
@@ -10139,6 +11194,17 @@ to run paused targets. */
 
         }
 
+        export interface TargetCrashedEvent {
+            targetId: TargetID;
+
+            /** Termination status type. */
+            status: string;
+
+            /** Termination error code. */
+            errorCode: integer;
+
+        }
+
         export interface TargetInfoChangedEvent {
             targetInfo: TargetInfo;
 
@@ -10152,12 +11218,28 @@ to run paused targets. */
         /** Attaches to the target with given id. */
         attachToTarget?: (params: Target.AttachToTargetRequest) => Promise<Target.AttachToTargetResponse>;
 
+        /** Attaches to the browser target, only uses flat sessionId mode. */
+        attachToBrowserTarget?: () => Promise<Target.AttachToBrowserTargetResponse>;
+
         /** Closes the target. If the target is a page that gets closed too. */
         closeTarget?: (params: Target.CloseTargetRequest) => Promise<Target.CloseTargetResponse>;
+
+        /** Inject object to the target's main frame that provides a communication
+channel with browser target.
+
+Injected object will be available as `window[bindingName]`.
+
+The object has the follwing API:
+- `binding.send(json)` - a method to send messages over the remote debugging protocol
+- `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses. */
+        exposeDevToolsProtocol?: (params: Target.ExposeDevToolsProtocolRequest) => Promise<void>;
 
         /** Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
 one. */
         createBrowserContext?: () => Promise<Target.CreateBrowserContextResponse>;
+
+        /** Returns all browser contexts created with `Target.createBrowserContext` method. */
+        getBrowserContexts?: () => Promise<Target.GetBrowserContextsResponse>;
 
         /** Creates a new page. */
         createTarget?: (params: Target.CreateTargetRequest) => Promise<Target.CreateTargetResponse>;
@@ -10165,8 +11247,9 @@ one. */
         /** Detaches session with given id. */
         detachFromTarget?: (params: Target.DetachFromTargetRequest) => Promise<void>;
 
-        /** Deletes a BrowserContext, will fail of any open page uses it. */
-        disposeBrowserContext?: (params: Target.DisposeBrowserContextRequest) => Promise<Target.DisposeBrowserContextResponse>;
+        /** Deletes a BrowserContext. All the belonging pages will be closed without calling their
+beforeunload hooks. */
+        disposeBrowserContext?: (params: Target.DisposeBrowserContextRequest) => Promise<void>;
 
         /** Returns information about a target. */
         getTargetInfo?: (params: Target.GetTargetInfoRequest) => Promise<Target.GetTargetInfoResponse>;
@@ -10210,6 +11293,9 @@ issued multiple times per target if multiple sessions have been attached to it. 
         /** Issued when a target is destroyed. */
         onTargetDestroyed(handler: (params: Target.TargetDestroyedEvent) => void): void;
 
+        /** Issued when a target has crashed. */
+        onTargetCrashed(handler: (params: Target.TargetCrashedEvent) => void): void;
+
         /** Issued when some information about a target has changed. This only happens between
 `targetCreated` and `targetDestroyed`. */
         onTargetInfoChanged(handler: (params: Target.TargetInfoChangedEvent) => void): void;
@@ -10233,6 +11319,9 @@ issued multiple times per target if multiple sessions have been attached to it. 
 
         /** Issued when a target is destroyed. */
         emitTargetDestroyed(params: Target.TargetDestroyedEvent): void;
+
+        /** Issued when a target has crashed. */
+        emitTargetCrashed(params: Target.TargetCrashedEvent): void;
 
         /** Issued when some information about a target has changed. This only happens between
 `targetCreated` and `targetDestroyed`. */
@@ -10324,6 +11413,10 @@ issued multiple times per target if multiple sessions have been attached to it. 
 
         }
 
+        /** Data format of a trace. Can be either the legacy JSON format or the
+protocol buffer format. Note that the JSON format will be deprecated soon. */
+        export type StreamFormat = ('json' | 'proto');
+
         /** Compression type to use for traces returned via streams. */
         export type StreamCompression = ('none' | 'gzip');
 
@@ -10362,6 +11455,10 @@ issued multiple times per target if multiple sessions have been attached to it. 
 stream (defaults to `ReportEvents`). */
             transferMode?: ('ReportEvents' | 'ReturnAsStream');
 
+            /** Trace data format to use. This only applies when using `ReturnAsStream`
+transfer mode (defaults to `json`). */
+            streamFormat?: StreamFormat;
+
             /** Compression format to use. This only applies when using `ReturnAsStream`
 transfer mode (defaults to `none`) */
             streamCompression?: StreamCompression;
@@ -10392,6 +11489,9 @@ total size. */
         export interface TracingCompleteEvent {
             /** A handle of the stream that holds resulting trace data. */
             stream?: IO.StreamHandle;
+
+            /** Trace data format of returned stream. */
+            traceFormat?: StreamFormat;
 
             /** Compression format of returned stream. */
             streamCompression?: StreamCompression;
@@ -10442,6 +11542,397 @@ delivered via dataCollected events. */
         emitTracingComplete(params: Tracing.TracingCompleteEvent): void;
 
         expose(domain: TracingCommands): void;
+
+    }
+
+    /** A domain for letting clients substitute browser's network layer with client code. */
+    export module Fetch {
+
+        /** Unique request identifier. */
+        export type RequestId = string;
+
+        /** Stages of the request to handle. Request will intercept before the request is
+sent. Response will intercept after the response is received (but before response
+body is received. */
+        export type RequestStage = ('Request' | 'Response');
+
+        export interface RequestPattern {
+            /** Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is
+backslash. Omitting is equivalent to "*". */
+            urlPattern?: string;
+
+            /** If set, only requests for matching resource types will be intercepted. */
+            resourceType?: Network.ResourceType;
+
+            /** Stage at wich to begin intercepting requests. Default is Request. */
+            requestStage?: RequestStage;
+
+        }
+
+        /** Response HTTP header entry */
+        export interface HeaderEntry {
+            name: string;
+
+            value: string;
+
+        }
+
+        /** Authorization challenge for HTTP status code 401 or 407. */
+        export interface AuthChallenge {
+            /** Source of the authentication challenge. */
+            source?: ('Server' | 'Proxy');
+
+            /** Origin of the challenger. */
+            origin: string;
+
+            /** The authentication scheme used, such as basic or digest */
+            scheme: string;
+
+            /** The realm of the challenge. May be empty. */
+            realm: string;
+
+        }
+
+        /** Response to an AuthChallenge. */
+        export interface AuthChallengeResponse {
+            /** The decision on what to do in response to the authorization challenge.  Default means
+deferring to the default behavior of the net stack, which will likely either the Cancel
+authentication or display a popup dialog box. */
+            response: ('Default' | 'CancelAuth' | 'ProvideCredentials');
+
+            /** The username to provide, possibly empty. Should only be set if response is
+ProvideCredentials. */
+            username?: string;
+
+            /** The password to provide, possibly empty. Should only be set if response is
+ProvideCredentials. */
+            password?: string;
+
+        }
+
+        export interface EnableRequest {
+            /** If specified, only requests matching any of these patterns will produce
+fetchRequested event and will be paused until clients response. If not set,
+all requests will be affected. */
+            patterns?: RequestPattern[];
+
+            /** If true, authRequired events will be issued and requests will be paused
+expecting a call to continueWithAuth. */
+            handleAuthRequests?: boolean;
+
+        }
+
+        export interface FailRequestRequest {
+            /** An id the client received in requestPaused event. */
+            requestId: RequestId;
+
+            /** Causes the request to fail with the given reason. */
+            errorReason: Network.ErrorReason;
+
+        }
+
+        export interface FulfillRequestRequest {
+            /** An id the client received in requestPaused event. */
+            requestId: RequestId;
+
+            /** An HTTP response code. */
+            responseCode: integer;
+
+            /** Response headers. */
+            responseHeaders: HeaderEntry[];
+
+            /** A response body. */
+            body?: string;
+
+            /** A textual representation of responseCode.
+If absent, a standard phrase mathcing responseCode is used. */
+            responsePhrase?: string;
+
+        }
+
+        export interface ContinueRequestRequest {
+            /** An id the client received in requestPaused event. */
+            requestId: RequestId;
+
+            /** If set, the request url will be modified in a way that's not observable by page. */
+            url?: string;
+
+            /** If set, the request method is overridden. */
+            method?: string;
+
+            /** If set, overrides the post data in the request. */
+            postData?: string;
+
+            /** If set, overrides the request headrts. */
+            headers?: HeaderEntry[];
+
+        }
+
+        export interface ContinueWithAuthRequest {
+            /** An id the client received in authRequired event. */
+            requestId: RequestId;
+
+            /** Response to  with an authChallenge. */
+            authChallengeResponse: AuthChallengeResponse;
+
+        }
+
+        export interface GetResponseBodyRequest {
+            /** Identifier for the intercepted request to get body for. */
+            requestId: RequestId;
+
+        }
+
+        export interface GetResponseBodyResponse {
+            /** Response body. */
+            body: string;
+
+            /** True, if content was sent as base64. */
+            base64Encoded: boolean;
+
+        }
+
+        export interface TakeResponseBodyAsStreamRequest {
+            requestId: RequestId;
+
+        }
+
+        export interface TakeResponseBodyAsStreamResponse {
+            stream: IO.StreamHandle;
+
+        }
+
+        export interface RequestPausedEvent {
+            /** Each request the page makes will have a unique id. */
+            requestId: RequestId;
+
+            /** The details of the request. */
+            request: Network.Request;
+
+            /** The id of the frame that initiated the request. */
+            frameId: Page.FrameId;
+
+            /** How the requested resource will be used. */
+            resourceType: Network.ResourceType;
+
+            /** Response error if intercepted at response stage. */
+            responseErrorReason?: Network.ErrorReason;
+
+            /** Response code if intercepted at response stage. */
+            responseStatusCode?: integer;
+
+            /** Response headers if intercepted at the response stage. */
+            responseHeaders?: HeaderEntry[];
+
+            /** If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
+then this networkId will be the same as the requestId present in the requestWillBeSent event. */
+            networkId?: RequestId;
+
+        }
+
+        export interface AuthRequiredEvent {
+            /** Each request the page makes will have a unique id. */
+            requestId: RequestId;
+
+            /** The details of the request. */
+            request: Network.Request;
+
+            /** The id of the frame that initiated the request. */
+            frameId: Page.FrameId;
+
+            /** How the requested resource will be used. */
+            resourceType: Network.ResourceType;
+
+            /** Details of the Authorization Challenge encountered.
+If this is set, client should respond with continueRequest that
+contains AuthChallengeResponse. */
+            authChallenge: AuthChallenge;
+
+        }
+    }
+
+    export interface FetchCommands {
+        /** Disables the fetch domain. */
+        disable?: () => Promise<void>;
+
+        /** Enables issuing of requestPaused events. A request will be paused until client
+calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth. */
+        enable?: (params: Fetch.EnableRequest) => Promise<void>;
+
+        /** Causes the request to fail with specified reason. */
+        failRequest?: (params: Fetch.FailRequestRequest) => Promise<void>;
+
+        /** Provides response to the request. */
+        fulfillRequest?: (params: Fetch.FulfillRequestRequest) => Promise<void>;
+
+        /** Continues the request, optionally modifying some of its parameters. */
+        continueRequest?: (params: Fetch.ContinueRequestRequest) => Promise<void>;
+
+        /** Continues a request supplying authChallengeResponse following authRequired event. */
+        continueWithAuth?: (params: Fetch.ContinueWithAuthRequest) => Promise<void>;
+
+        /** Causes the body of the response to be received from the server and
+returned as a single string. May only be issued for a request that
+is paused in the Response stage and is mutually exclusive with
+takeResponseBodyForInterceptionAsStream. Calling other methods that
+affect the request or disabling fetch domain before body is received
+results in an undefined behavior. */
+        getResponseBody?: (params: Fetch.GetResponseBodyRequest) => Promise<Fetch.GetResponseBodyResponse>;
+
+        /** Returns a handle to the stream representing the response body.
+The request must be paused in the HeadersReceived stage.
+Note that after this command the request can't be continued
+as is -- client either needs to cancel it or to provide the
+response body.
+The stream only supports sequential read, IO.read will fail if the position
+is specified.
+This method is mutually exclusive with getResponseBody.
+Calling other methods that affect the request or disabling fetch
+domain before body is received results in an undefined behavior. */
+        takeResponseBodyAsStream?: (params: Fetch.TakeResponseBodyAsStreamRequest) => Promise<Fetch.TakeResponseBodyAsStreamResponse>;
+
+    }
+
+    export interface FetchClient extends FetchCommands {
+        /** Issued when the domain is enabled and the request URL matches the
+specified filter. The request is paused until the client responds
+with one of continueRequest, failRequest or fulfillRequest.
+The stage of the request can be determined by presence of responseErrorReason
+and responseStatusCode -- the request is at the response stage if either
+of these fields is present and in the request stage otherwise. */
+        onRequestPaused(handler: (params: Fetch.RequestPausedEvent) => void): void;
+
+        /** Issued when the domain is enabled with handleAuthRequests set to true.
+The request is paused until client responds with continueWithAuth. */
+        onAuthRequired(handler: (params: Fetch.AuthRequiredEvent) => void): void;
+
+    }
+
+    export interface FetchServer {
+        /** Issued when the domain is enabled and the request URL matches the
+specified filter. The request is paused until the client responds
+with one of continueRequest, failRequest or fulfillRequest.
+The stage of the request can be determined by presence of responseErrorReason
+and responseStatusCode -- the request is at the response stage if either
+of these fields is present and in the request stage otherwise. */
+        emitRequestPaused(params: Fetch.RequestPausedEvent): void;
+
+        /** Issued when the domain is enabled with handleAuthRequests set to true.
+The request is paused until client responds with continueWithAuth. */
+        emitAuthRequired(params: Fetch.AuthRequiredEvent): void;
+
+        expose(domain: FetchCommands): void;
+
+    }
+
+    /** This domain allows inspection of Web Audio API.
+https://webaudio.github.io/web-audio-api/ */
+    export module WebAudio {
+
+        /** Context's UUID in string */
+        export type ContextId = string;
+
+        /** Enum of BaseAudioContext types */
+        export type ContextType = ('realtime' | 'offline');
+
+        /** Enum of AudioContextState from the spec */
+        export type ContextState = ('suspended' | 'running' | 'closed');
+
+        /** Fields in AudioContext that change in real-time. These are not updated
+on OfflineAudioContext. */
+        export interface ContextRealtimeData {
+            /** The current context time in second in BaseAudioContext. */
+            currentTime?: number;
+
+            /** The time spent on rendering graph divided by render qunatum duration,
+and multiplied by 100. 100 means the audio renderer reached the full
+capacity and glitch may occur. */
+            renderCapacity?: number;
+
+        }
+
+        /** Protocol object for BaseAudioContext */
+        export interface BaseAudioContext {
+            contextId: ContextId;
+
+            contextType: ContextType;
+
+            contextState: ContextState;
+
+            realtimeData?: ContextRealtimeData;
+
+            /** Platform-dependent callback buffer size. */
+            callbackBufferSize: number;
+
+            /** Number of output channels supported by audio hardware in use. */
+            maxOutputChannelCount: number;
+
+            /** Context sample rate. */
+            sampleRate: number;
+
+        }
+
+        export interface GetRealtimeDataRequest {
+            contextId: ContextId;
+
+        }
+
+        export interface GetRealtimeDataResponse {
+            realtimeData: ContextRealtimeData;
+
+        }
+
+        export interface ContextCreatedEvent {
+            context: BaseAudioContext;
+
+        }
+
+        export interface ContextDestroyedEvent {
+            contextId: ContextId;
+
+        }
+
+        export interface ContextChangedEvent {
+            context: BaseAudioContext;
+
+        }
+    }
+
+    export interface WebAudioCommands {
+        /** Enables the WebAudio domain and starts sending context lifetime events. */
+        enable?: () => Promise<void>;
+
+        /** Disables the WebAudio domain. */
+        disable?: () => Promise<void>;
+
+        /** Fetch the realtime data from the registered contexts. */
+        getRealtimeData?: (params: WebAudio.GetRealtimeDataRequest) => Promise<WebAudio.GetRealtimeDataResponse>;
+
+    }
+
+    export interface WebAudioClient extends WebAudioCommands {
+        /** Notifies that a new BaseAudioContext has been created. */
+        onContextCreated(handler: (params: WebAudio.ContextCreatedEvent) => void): void;
+
+        /** Notifies that existing BaseAudioContext has been destroyed. */
+        onContextDestroyed(handler: (params: WebAudio.ContextDestroyedEvent) => void): void;
+
+        /** Notifies that existing BaseAudioContext has changed some properties (id stays the same).. */
+        onContextChanged(handler: (params: WebAudio.ContextChangedEvent) => void): void;
+
+    }
+
+    export interface WebAudioServer {
+        /** Notifies that a new BaseAudioContext has been created. */
+        emitContextCreated(params: WebAudio.ContextCreatedEvent): void;
+
+        /** Notifies that existing BaseAudioContext has been destroyed. */
+        emitContextDestroyed(params: WebAudio.ContextDestroyedEvent): void;
+
+        /** Notifies that existing BaseAudioContext has changed some properties (id stays the same).. */
+        emitContextChanged(params: WebAudio.ContextChangedEvent): void;
+
+        expose(domain: WebAudioCommands): void;
 
     }
 }

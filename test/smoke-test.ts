@@ -7,10 +7,9 @@ async function run() {
     // Just test enable methods of core domains
     await Promise.all([
         api.Runtime.enable(),
-        api.Debugger.enable(),
+        api.Debugger.enable({}),
         api.Profiler.enable(),
         api.Inspector.enable(),
         api.Console.enable(),
     ])
 }
-
